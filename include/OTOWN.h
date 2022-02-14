@@ -79,7 +79,7 @@
 
 #define RECEIVED_HIT_PER_KILL			 (200/ATTACK_SLOW_DOWN)	 // no. of received hits will result in one death of town people
 
-#define MAX_TRAIN_QUEUE					10
+#define MAX_TRAIN_QUEUE					20
 
 //-------- Define class Town ----------//
 
