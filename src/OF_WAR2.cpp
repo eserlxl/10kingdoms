@@ -170,11 +170,11 @@ int FirmWar::should_build_new_weapon()
 	if( nationPtr->true_profit_365days() < 0 )		// don't build new weapons if we are currently losing money
 		return 0;
 
-	if( nationPtr->expense_365days(EXPENSE_WEAPON) >
+	/*if( nationPtr->expense_365days(EXPENSE_WEAPON) >
 		 nationPtr->income_365days() * 30 + nationPtr->pref_use_weapon/2 )		// if weapon expenses are larger than 30% to 80% of the total income, don't build new weapons
 	{
 		return 0;
-	}
+	}*/
 
 	//----- see if there is any space on existing camps -----//
 
