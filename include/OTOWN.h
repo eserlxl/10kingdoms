@@ -68,7 +68,7 @@
 
 #define INDEPENDENT_LINK_RESISTANCE  50	 // only if the resistance of an independent town is lower than this, the town will enable its link with a foreign firm
 
-#define TAX_PER_PERSON           	  5	 // amount of tax can be collected from each person
+#define TAX_PER_PERSON           	  1	 // amount of tax can be collected from each person
 #define COLLECT_TAX_LOYALTY_DECREASE 10	 // Reduce 10 loyalty points per tax collection
 
 #define TOWN_REWARD_PER_PERSON		   10
