@@ -679,7 +679,7 @@ int Nation::think_declare_war()
 							  targetNation->economic_rank_rating()/3;
 
 		// War decision is a serious thing, think carefully!
-		if( targetStrength < minStrength && m.random(100) < 7 )
+		if( targetStrength < minStrength && misc.random(100) < 7 )
 		{
 			minStrength = targetStrength;
 			bestTargetNation = i;

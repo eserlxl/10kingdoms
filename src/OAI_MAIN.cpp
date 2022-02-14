@@ -311,11 +311,11 @@ void Nation::process_ai()
 		if( food < 100 )
 			food += 1000;
 	}
-    else if( info.game_date%60 < (int)m.random(5))
+    else if( info.game_date%60 < (int)misc.random(5))
     {
         // In normal game mode, sometimes AI may be defeated easily
         if( cash < 3000 )
-            add_cheat( (float)200+m.random(500) );
+            add_cheat( (float)200+misc.random(500) );
 
         if( food < 1000 )
             food += 1000;
