@@ -817,6 +817,9 @@ int Battle::create_town(int nationRecno, int raceId, int& xLoc, int& yLoc)
 
 		int curPop, totalPop=0, townResistance;
 
+		// Nationalism!
+        mixedRaceCount=1;
+
 		for( int i=0 ; i<mixedRaceCount ; i++ )
 		{
 			if(totalPop>=MAX_TOWN_POPULATION)
