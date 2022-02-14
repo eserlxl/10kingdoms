@@ -248,7 +248,7 @@ void ConfigAdv::reset()
 	scenario_config = 1;
 
 	town_ai_emerge_nation_pop_limit = 60 * MAX_NATION;
-	town_ai_emerge_town_pop_limit = 1000;
+	town_ai_emerge_town_pop_limit = 100000;
 	town_loyalty_qol = 1;
 
 	unit_ai_team_help = 1;
