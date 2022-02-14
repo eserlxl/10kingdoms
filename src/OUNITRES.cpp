@@ -172,7 +172,11 @@ void UnitRes::load_info()
 		unitInfo->build_cost    = unitInfo->year_cost;
 
 		if( unitInfo->unit_class == UNIT_CLASS_WEAPON )
-			unitInfo->weapon_power = unitRec->weapon_power-'0';
+        {
+            unitInfo->weapon_power = unitRec->weapon_power-'0';
+            unitInfo->year_cost *= 2;
+            unitInfo->build_cost *= 3;
+        }
 
 		unitInfo->carry_unit_capacity = misc.atoi(unitRec->carry_unit_capacity, unitRec->CARRY_CAPACITY_LEN);
 		unitInfo->carry_goods_capacity = misc.atoi(unitRec->carry_goods_capacity, unitRec->CARRY_CAPACITY_LEN);
