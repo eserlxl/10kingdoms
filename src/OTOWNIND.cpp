@@ -223,7 +223,7 @@ int Town::form_new_nation()
 	//------ increase the loyalty of the town -----//
 
 	for( i=0 ; i<MAX_RACE ; i++ )
-		race_loyalty_array[i] = (float) 70 + misc.random(20);			// 70 to 90 initial loyalty
+		race_loyalty_array[i] = (float) 95 + misc.random(5);			// 95 to 100 initial loyalty
 
 	//--------- add news ----------//
 
