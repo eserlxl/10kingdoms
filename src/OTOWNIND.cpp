@@ -138,10 +138,12 @@ int Town::think_independent_form_new_nation()
 	if( population < 30 )
 		return 0;
 
+	/*
 	//---- don't form if the world is already densely populated ----//
 
 	if( nation_array.all_nation_population > config_adv.town_ai_emerge_nation_pop_limit )
 		return 0;
+    */
 
 	//----------------------------------------------//
 
