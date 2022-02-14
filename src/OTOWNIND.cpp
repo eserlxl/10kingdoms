@@ -130,7 +130,7 @@ void Town::think_independent_set_link()
 //
 int Town::think_independent_form_new_nation()
 {
-	if( misc.random(10) > 0 )		// 1/10 chance to set up a new nation.
+	if( misc.random(5) > 0 )		// 1/5 chance to set up a new nation.
 		return 0;
 
 	//-------- check if the town is big enough -------//
