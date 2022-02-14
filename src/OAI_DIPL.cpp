@@ -635,7 +635,7 @@ int Nation::think_declare_war()
 	NationRelation* nationRelation;
 	int rc=0;
 
-	//---- don't declare a new war if we already has enemies ---//
+	//---- don't declare a new war if we already have enemies ---//
 
 	int i;
 	for( i=1 ; i<=nation_array.size() ; i++ )
@@ -678,7 +678,8 @@ int Nation::think_declare_war()
 							  targetNation->population_rank_rating()/2 +
 							  targetNation->economic_rank_rating()/3;
 
-		if( targetStrength < minStrength )
+		// War decision is a serious thing, think carefully!
+		if( targetStrength < minStrength && m.random(100) < 7 )
 		{
 			minStrength = targetStrength;
 			bestTargetNation = i;
