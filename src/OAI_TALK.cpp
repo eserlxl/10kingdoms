@@ -1015,6 +1015,9 @@ int Nation::consider_military_aid(TalkMsg* talkMsg)
 //
 int Nation::consider_accept_surrender_request(TalkMsg* talkMsg)
 {
+    // Never surrender!
+    return 0;
+
 	Nation* nationPtr = nation_array[talkMsg->from_nation_recno];
 	int    offeredAmt = talkMsg->talk_para1 * 10;			// *10 to restore its original value which has been divided by 10 to cope with <short> upper limit
 
