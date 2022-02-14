@@ -1058,6 +1058,13 @@ static void init_window_size()
    if( SDL_GetDisplayUsableBounds(display_idx, &rect)<0 )
       goto unknown_display;
 
+   if( rect.w >= 1920 && rect.h >= 1080 )
+   {
+      config_adv.vga_window_width = 1920;
+      config_adv.vga_window_height = 1080;
+      return;
+   }
+
    if( rect.w >= 1024 && rect.h >= 768 )
    {
       config_adv.vga_window_width = 1024;
