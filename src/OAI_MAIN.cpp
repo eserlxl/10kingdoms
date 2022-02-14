@@ -326,7 +326,7 @@ void Nation::process_ai()
 	if( info.game_date%360 == nation_recno%360 )
 		ai_improve_relation();
 
-	//------ think about surrendering -------//
+	/*//------ think about surrendering -------//
 
 	if( info.game_date%60 == nation_recno%60 )
 	{
