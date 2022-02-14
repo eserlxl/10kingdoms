@@ -31,8 +31,8 @@
 
 //----------- define constants ----------//
 
-#define VGA_WIDTH             800
-#define VGA_HEIGHT            600
+#define VGA_WIDTH             1920
+#define VGA_HEIGHT            1080
 #define VGA_BPP                 8
 #define VGA_PALETTE_SIZE      256
 

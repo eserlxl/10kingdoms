@@ -41,9 +41,9 @@ enum { INFO_REPAINT=10, INFO_UPDATE, INFO_SPECIAL };
 #define TOP_MENU_X2   (ZOOM_X2-4)
 #define TOP_MENU_Y2	 30
 
-#define INFO_X1 	586
+#define INFO_X1 (WORLD_WIDTH-MAX_MAP_WIDTH-4)
 #define INFO_Y1   265
-#define INFO_X2   790
+#define INFO_X2   WORLD_WIDTH
 #define INFO_Y2	589
 
 #define MSG_X1		INFO_X1
