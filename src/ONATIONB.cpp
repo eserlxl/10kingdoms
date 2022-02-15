@@ -1090,23 +1090,6 @@ void NationBase::set_relation_status(short nationRecno, char newStatus, char rec
 */
 	//-------------------------------------------------//
 	//
-	// When two nations agree to a cease-fire, there may
-	// still be some bullets on their ways, and those
-	// will set the status back to War status, so we need
-	// the following code to handle this case.
-	//
-	//-------------------------------------------------//
-
-	if( !recursiveCall &&
-		 nationRelation->status == NATION_TENSE &&
-		 newStatus == NATION_HOSTILE &&
-		 info.game_date < nationRelation->last_change_status_date + 5 )		// 5 days after the cease-fire, the nation will remain cease-fire
-	{
-		return;
-	}
-
-	//-------------------------------------------------//
-	//
 	// If the nation cease fire or form a friendly/alliance
 	// treaty with a nation. And this nation current
 	// has plan to attack that nation, then cancel the plan.
@@ -1394,6 +1377,10 @@ void NationBase::being_attacked(int attackNationRecno)
 
 	if( attackNation->get_relation(nation_recno)->should_attack==0 )
 		return;
+
+	// Wait 5 days to decide a new war again.
+    if(info.game_date < attackNation->get_relation(nation_recno)->last_change_status_date+5)
+        return;
 
 	//--- check if there a treaty between these two nations ---//
 
