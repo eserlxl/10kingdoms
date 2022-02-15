@@ -165,6 +165,8 @@ void Nation::ai_notify_reply(int talkMsgRecno)
 		case TALK_REQUEST_CEASE_WAR:
 			if( talkMsg->reply_type == REPLY_REJECT )
 				relationChange = -5;
+			else
+                relationChange = 5; // Increase relation to prevent attacking immediately.
 			break;
 
 		case TALK_REQUEST_DECLARE_WAR:
