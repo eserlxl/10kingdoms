@@ -546,7 +546,7 @@ void Firm::ai_firm_captured(int capturerNationRecno)
 	if( ownNation->get_relation(capturerNationRecno)->status >= NATION_FRIENDLY )
 		ownNation->ai_end_treaty(capturerNationRecno);
 
-	talk_res.ai_send_talk_msg(capturerNationRecno, nation_recno, TALK_DECLARE_WAR);
+    ownNation->change_ai_relation_level( capturerNationRecno, -50 );
 }
 //--------- End of function Firm::ai_firm_captured --------//
 
