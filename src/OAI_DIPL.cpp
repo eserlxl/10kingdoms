@@ -691,6 +691,23 @@ int Nation::think_declare_war()
             continue;
         }
 
+        // Don't be a very good ally!
+        int fightingAllyCount = 0;
+        for( j=1 ; j<=nation_array.size() ; j++ )
+        {
+            if( nation_array.is_deleted(j) || j==nation_recno || j == i || !get_relation(j)->has_contact )
+                continue;
+
+            if( get_relation(j)->status > NATION_NEUTRAL && nation_array[i]->get_relation(j)->status < NATION_NEUTRAL )
+            {
+                fightingAllyCount++;
+            }
+        }
+        if( activeNation > 2 && fightingAllyCount > 0.5*(activeNation-1) )
+        {
+            continue;
+        }
+
 		//----------------------------------------//
 
 		Nation* targetNation = nation_array[i];
