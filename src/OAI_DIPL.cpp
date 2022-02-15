@@ -649,6 +649,25 @@ int Nation::think_declare_war()
 			return 0;
 	}
 
+	// Search for mutual enemies
+	int j;
+    for( i=1 ; i<=nation_array.size() ; i++ )
+    {
+        if( nation_array.is_deleted(i) || i==nation_recno )
+            continue;
+
+        for( j=1 ; j<=nation_array.size() ; j++ )
+        {
+            if( nation_array.is_deleted(j) || j==nation_recno || j == i)
+                continue;
+
+            if( get_relation(j)->status < NATION_NEUTRAL && nation_array[i]->get_relation(j)->status < NATION_NEUTRAL)
+            {
+                return 0;
+            }
+        }
+    }
+
 	//------------------------------------------------//
 
 	int targetStrength, minStrength=0x1000, bestTargetNation=0;
