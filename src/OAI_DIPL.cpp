@@ -637,9 +637,42 @@ int Nation::think_declare_war()
 	NationRelation* nationRelation;
 	int rc=0;
 
+    int i, j, activeNation = 0;
+    for( i=1 ; i<=nation_array.size() ; i++ ) {
+        if (nation_array.is_deleted(i) || i == nation_recno)
+            continue;
+
+        activeNation++;
+    }
+
+    // Don't be in a huge coalition forever
+    int allyCount = 0;
+    for( j=1 ; j<=nation_array.size() ; j++ )
+    {
+        if( nation_array.is_deleted(j) || j==nation_recno || j == i || !get_relation(j)->has_contact )
+            continue;
+
+        if( get_relation(j)->status > NATION_NEUTRAL )
+        {
+            allyCount++;
+        }
+    }
+    if(activeNation > 2 && allyCount > activeNation - 2)
+    {
+        for( j=1 ; j<=nation_array.size() ; j++ )
+        {
+            if( nation_array.is_deleted(j) || j==nation_recno || j == i || !get_relation(j)->has_contact )
+                continue;
+
+            if( get_relation(j)->status > NATION_NEUTRAL )
+            {
+                change_ai_relation_level( j, -misc.random(100));
+            }
+        }
+    }
+
 	//---- don't declare a new war if we already have enemies ---//
 
-	int i;
 	for( i=1 ; i<=nation_array.size() ; i++ )
 	{
 		if( nation_array.is_deleted(i) || i==nation_recno )
@@ -652,14 +685,12 @@ int Nation::think_declare_war()
 	//------------------------------------------------//
 
 	int targetStrength, minStrength=0x1000, bestTargetNation=0;
-    int j, activeNation = 0, mutualEnemy = 0;
+    int mutualEnemy = 0;
 
 	for( i=1 ; i<=nation_array.size() ; i++ )
 	{
 		if( nation_array.is_deleted(i) || i==nation_recno )
 			continue;
-
-        activeNation++;
 
 		nationRelation = get_relation(i);
 
