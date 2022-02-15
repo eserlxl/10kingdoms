@@ -174,8 +174,6 @@ void UnitRes::load_info()
 		if( unitInfo->unit_class == UNIT_CLASS_WEAPON )
         {
             unitInfo->weapon_power = unitRec->weapon_power-'0';
-            unitInfo->year_cost *= 2;
-            unitInfo->build_cost *= 3;
         }
 
 		unitInfo->carry_unit_capacity = misc.atoi(unitRec->carry_unit_capacity, unitRec->CARRY_CAPACITY_LEN);
