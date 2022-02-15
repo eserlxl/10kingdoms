@@ -652,11 +652,14 @@ int Nation::think_declare_war()
 	//------------------------------------------------//
 
 	int targetStrength, minStrength=0x1000, bestTargetNation=0;
+    int activeNation = 0, mutualEnemy = 0;
 
 	for( i=1 ; i<=nation_array.size() ; i++ )
 	{
 		if( nation_array.is_deleted(i) || i==nation_recno )
 			continue;
+
+        activeNation++;
 
 		nationRelation = get_relation(i);
 
@@ -672,21 +675,18 @@ int Nation::think_declare_war()
 		if( !ai_should_spend( 100-trade_rating(i) ) )		// if trade_rating is 0, importanceRating will be 100, if trade_rating is 100, importanceRating will be 0
 			continue;
 
-		bool skipThisNation = false;
-
         // Search for mutual enemies
         for( j=1 ; j<=nation_array.size() ; j++ )
         {
-            if( nation_array.is_deleted(j) || j==nation_recno || j == i)
+            if( nation_array.is_deleted(j) || j==nation_recno || j == i || !get_relation(j)->has_contact )
                 continue;
 
-            if( get_relation(j)->status < NATION_NEUTRAL && nation_array[i]->get_relation(j)->status < NATION_NEUTRAL)
+            if( get_relation(j)->status < NATION_NEUTRAL && nation_array[i]->get_relation(j)->status < NATION_NEUTRAL )
             {
-                skipThisNation = true;
+                mutualEnemy++;
             }
         }
-
-        if( skipThisNation )
+        if( mutualEnemy )
         {
             continue;
         }
