@@ -652,7 +652,7 @@ int Nation::think_declare_war()
 	//------------------------------------------------//
 
 	int targetStrength, minStrength=0x1000, bestTargetNation=0;
-    int activeNation = 0, mutualEnemy = 0;
+    int j, activeNation = 0, mutualEnemy = 0;
 
 	for( i=1 ; i<=nation_array.size() ; i++ )
 	{
