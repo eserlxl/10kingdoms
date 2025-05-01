@@ -103,7 +103,7 @@ if test x"$ac_cv_string_strcasecmp" = "xno" ; then
 fi
 
 AM_GNU_GETTEXT([external])
-AM_GNU_GETTEXT_VERSION([0.19])
+AM_GNU_GETTEXT_VERSION([0.24])
 
 # Configuration variables
 
@@ -344,7 +344,7 @@ AS_IF([test "$enable_asm" = yes], [
 AC_SUBST([GLOBAL_LDFLAGS])
 AC_SUBST([GLOBAL_CFLAGS])
 
-AC_CONFIG_FILES([
+AC_CONFIG_FILES([ po/Makefile.in
   Makefile
   data/Makefile
   include/Makefile
@@ -355,7 +355,6 @@ AC_CONFIG_FILES([
   src/imgfun/generic/Makefile
   src/imgfun/x86/Makefile
   src/openal/Makefile
-  po/Makefile.in
 ])
 
 AC_OUTPUT
