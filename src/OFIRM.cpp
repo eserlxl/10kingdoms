@@ -1098,8 +1098,8 @@ int Firm::assign_settle(int raceId, int unitLoyalty, int isOverseer)
 	if( world.locate_space( &xLoc, &yLoc, loc_x2, loc_y2, STD_TOWN_LOC_WIDTH,
 									STD_TOWN_LOC_HEIGHT, UNIT_LAND, region_id, 1 ) )		// the town must be in the same region as this firm.
    {
-      if( misc.points_distance( center_x, center_y, xLoc+(STD_TOWN_LOC_WIDTH-1)/2,
-          yLoc+(STD_TOWN_LOC_HEIGHT-1)/2 ) <= EFFECTIVE_FIRM_TOWN_DISTANCE )
+      if( misc.rects_distance(xLoc, yLoc, xLoc+STD_TOWN_LOC_WIDTH-1, yLoc+STD_TOWN_LOC_HEIGHT-1,
+          loc_x1, loc_y1, loc_x2, loc_y2) <= EFFECTIVE_FIRM_TOWN_DISTANCE )
       {
 			int townRecno = town_array.add_town( nation_recno, raceId, xLoc, yLoc );
 
@@ -1142,7 +1142,8 @@ int Firm::find_settle_town()
 		if( townPtr->nation_recno != nation_recno )
 			continue;
 
-		townDistance = misc.points_distance( townPtr->center_x, townPtr->center_y, center_x, center_y );
+		townDistance = misc.rects_distance(townPtr->loc_x1, townPtr->loc_y1, townPtr->loc_x2, townPtr->loc_y2,
+			loc_x1, loc_y1, loc_x2, loc_y2);
 
 		if( townDistance < minDistance )
 		{
@@ -1437,8 +1438,12 @@ void Firm::process_construction()
 
 		// ##### begin Gilbert 10/10 #######//
 		if( nation_recno == nation_array.player_recno )
+		{
+			if( config_adv.news_notify_complete )
+				news_array.firm_constructed(firm_recno);
 			se_res.far_sound(center_x, center_y, 1, 'S', unitPtr->sprite_id,
 				"FINS", 'F',  firm_id);
+		}
 		// ##### end Gilbert 10/10 #######//
 
 		err_when(builder_recno<=0 || unit_array.is_deleted(builder_recno));
@@ -2811,17 +2816,20 @@ void Firm::think_worker_migrate()
 			if( workerPtr->town_recno == townRecno )
 				continue;
 
-			//-- do not migrate if the target town's population of that race is less than half of the population of the current town --//
-
 			raceId = workerPtr->race_id;
 			workerTownPtr = town_array[workerPtr->town_recno];
+
+			//-- do not migrate if the target town's population of that race is less than half of the population of the current town --//
 
 			if( townPtr->race_pop_array[raceId-1] < workerTownPtr->race_pop_array[raceId-1]/2 )
 				continue;
 
-			//------ calc the current and target attractiveness level ------//
+			//-- do not migrate if the target town might not be a place this worker will stay --//
 
-			workerTownPtr = town_array[workerPtr->town_recno];
+			if( config_adv.firm_migrate_stricter_rules && townPtr->race_loyalty_array[raceId-1] < 40 ) // < 40 is considered as negative force
+				continue;
+
+			//------ calc the current and target attractiveness level ------//
 
 			if( workerTownPtr->nation_recno )
 				curBaseAttractLevel = (int) nation_array[workerTownPtr->nation_recno]->reputation;
@@ -2838,7 +2846,7 @@ void Firm::think_worker_migrate()
 									workerTownPtr->race_harmony(raceId) +
 									((int)workerPtr->loyalty() - 40);     		 // loyalty > 40 is considered as positive force, < 40 is considered as negative force
 
-			if( targetAttractLevel > curAttractLevel )
+			if( config_adv.firm_migrate_stricter_rules ? targetAttractLevel - curAttractLevel > MIN_MIGRATE_ATTRACT_LEVEL/2 : targetAttractLevel > curAttractLevel )
 			{
 				int newLoyalty = MAX( REBEL_LOYALTY+1, targetAttractLevel/2 );
 
@@ -2872,8 +2880,8 @@ void Firm::worker_migrate(int workerId, int destTownRecno, int newLoyalty)
 	Town* destTown		 = town_array[destTownRecno];
 
    err_when( !raceId );
-   err_when( misc.points_distance( center_x, center_y, destTown->center_x,
-				 destTown->center_y ) > EFFECTIVE_FIRM_TOWN_DISTANCE );
+	err_when( misc.rects_distance(loc_x1, loc_y1, loc_x2, loc_y2, destTown->loc_x1, destTown->loc_y1,
+		destTown->loc_x2, destTown->loc_y2) > EFFECTIVE_FIRM_TOWN_DISTANCE );
 
 	//------------- add news --------------//
 
@@ -3037,7 +3045,7 @@ int Worker::target_loyalty(int firmRecno)
 
 //------- Begin of function Firm::setup_link ---------//
 //
-void Firm::setup_link()
+void Firm::setup_link(int reload)
 {
    //-----------------------------------------------------------------------------//
 	// check the connected firms location and structure if ai_link_checked is true
@@ -3052,7 +3060,8 @@ void Firm::setup_link()
 	Firm* firmPtr;
 	FirmInfo* firmInfo = firm_res[firm_id];
 
-	linked_firm_count = 0;
+	if( !reload )
+		linked_firm_count = 0;
 
 	for( firmRecno=firm_array.size() ; firmRecno>0 ; firmRecno-- )
 	{
@@ -3061,6 +3070,11 @@ void Firm::setup_link()
 
 		firmPtr = firm_array[firmRecno];
 
+		//---- if we are loading make sure it's not linked already ----//
+
+		if( reload && firmPtr->is_linked_to_firm(firm_recno) )
+			continue;
+
 		//---- do not allow links between firms of different nation ----//
 
 		if( firmPtr->nation_recno != nation_recno )
@@ -3068,8 +3082,8 @@ void Firm::setup_link()
 
 		//---------- check if the firm is close enough to this firm -------//
 
-		if( misc.points_distance( firmPtr->center_x, firmPtr->center_y,
-			 center_x, center_y ) > EFFECTIVE_FIRM_FIRM_DISTANCE )
+		if( misc.rects_distance(firmPtr->loc_x1, firmPtr->loc_y1, firmPtr->loc_x2, firmPtr->loc_y2,
+			loc_x1, loc_y1, loc_x2, loc_y2) > EFFECTIVE_FIRM_FIRM_DISTANCE )
 		{
 			continue;
 		}
@@ -3136,37 +3150,43 @@ void Firm::setup_link()
 		}
       }
 
-   //----- build firm-to-town link relationship -------//
+	//----- build firm-to-town link relationship -------//
 
-   linked_town_count = 0;
+	if( !reload )
+		linked_town_count = 0;
 
 	if( !firmInfo->is_linkable_to_town )
-      return;
+		return;
 
-   int   townRecno;
-   Town* townPtr;
+	int   townRecno;
+	Town* townPtr;
 
-   for( townRecno=town_array.size() ; townRecno>0 ; townRecno-- )
-   {
-      if( town_array.is_deleted(townRecno) )
-         continue;
+	for( townRecno=town_array.size() ; townRecno>0 ; townRecno-- )
+	{
+		if( town_array.is_deleted(townRecno) )
+			continue;
 
 		townPtr = town_array[townRecno];
 
-      //------ check if the town is close enough to this firm -------//
+		//---- if we are loading make sure it's not linked already ----//
 
-      if( misc.points_distance( townPtr->center_x, townPtr->center_y,
-			 center_x, center_y ) > EFFECTIVE_FIRM_TOWN_DISTANCE )
-      {
-         continue;
-      }
+		if( reload && townPtr->is_linked_to_firm(firm_recno) )
+			continue;
 
-      //------ check if both are on the same terrain type ------//
+		//------ check if the town is close enough to this firm -------//
 
-      if( (world.get_loc(townPtr->center_x, townPtr->center_y)->is_plateau()==1)
-          != (world.get_loc(center_x, center_y)->is_plateau()==1) )
-      {
-         continue;
+		if( misc.rects_distance(townPtr->loc_x1, townPtr->loc_y1, townPtr->loc_x2, townPtr->loc_y2,
+			loc_x1, loc_y1, loc_x2, loc_y2) > EFFECTIVE_FIRM_TOWN_DISTANCE )
+		{
+			continue;
+		}
+
+		//------ check if both are on the same terrain type ------//
+
+		if( (world.get_loc(townPtr->center_x, townPtr->center_y)->is_plateau()==1)
+			!= (world.get_loc(center_x, center_y)->is_plateau()==1) )
+		{
+			continue;
 		}
 
 		//----- check for empty link slots -----//
@@ -3317,6 +3337,28 @@ void Firm::release_town_link(int releaseTownRecno)
    err_here();
 }
 //------- End of function Firm::release_town_link ---------//
+
+
+//------- Begin of function Firm::is_linked_to_firm -------//
+int Firm::is_linked_to_firm(short firmRecno)
+{
+	for( int i=0; i<linked_firm_count; i++ )
+		if( linked_firm_array[i] == firmRecno )
+			return 1;
+	return 0;
+}
+//-------- End of function Firm::is_linked_to_firm ---------//
+
+
+//------- Begin of function Firm::is_linked_to_town -------//
+int Firm::is_linked_to_town(short townRecno)
+{
+	for( int i=0; i<linked_town_count; i++ )
+		if( linked_town_array[i] == townRecno )
+			return 1;
+	return 0;
+}
+//-------- End of function Firm::is_linked_to_town ---------//
 
 
 //--------- Begin of function Firm::capture_firm --------//

@@ -33,6 +33,7 @@
 #include <OFIRMALL.h>
 #include <OSERES.h>
 #include <OLOG.h>
+#include <ConfigAdv.h>
 
 //### begin alex 22/9 ###//
 #ifdef DEBUG
@@ -436,7 +437,8 @@ int FirmArray::process()
 
 				//--- think about having other nations capturing this firm ----//
 
-				if( info.game_date%60==i%60 )		// this is not limited to ai firms only, it is called on all firms as AI can capture other player's firm
+				if( config_adv.firm_ai_enable_think_spy_capture &&
+					 info.game_date%60==i%60 )		// this is not limited to ai firms only, it is called on all firms as AI can capture other player's firm
 					firmPtr->think_capture();
 			}
 		}
@@ -776,3 +778,23 @@ void FirmArray::disp_next(int seekDir, int sameNation)
 	}
 }
 //---------- End of function FirmArray::disp_next ----------//
+
+
+//--------- Begin of function FirmArray::update_firm_links --------//
+//
+// The purpose of this is to initialize links that are missing in
+// saved games from old versions of the game.
+//
+void FirmArray::update_firm_links()
+{
+	for( int i=size() ; i>0 ; i-- )
+	{
+		Firm* firmPtr = (Firm*) get_ptr(i);
+
+		if( !firmPtr )
+			continue;
+
+		firmPtr->setup_link(1);
+	}
+}
+//----------- End of function FirmArray::update_firm_links --------//

@@ -63,6 +63,8 @@ public:
 
 	int     file_put_short(int16_t);
 	int16_t file_get_short();
+	int	file_put_short_array(int16_t *out, int count);
+	int	file_get_short_array(int16_t *in, int count);
 
 	int      file_put_unsigned_short(uint16_t);
 	uint16_t file_get_unsigned_short();

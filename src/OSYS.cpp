@@ -42,8 +42,7 @@
 #include <OGAME.h>
 #include <ONEWS.h>
 #include <OGAMESET.h>
-#include <OSaveGameArray.h>
-#include <OSaveGameProvider.h>
+#include <OGFILE.h>
 #include <OGAMHALL.h>
 #include <OINFO.h>
 #include <OVBROWSE.h>
@@ -314,10 +313,16 @@ int Sys::init_directx()
 
    //---------- Initialize Audio ----------//
 
-   DEBUG_LOG("Attempt audio.init()");
-   if( cmd_line.enable_if )
+   if( cmd_line.enable_audio )
+   {
+      DEBUG_LOG("Attempt audio.init()");
       audio.init();
-   DEBUG_LOG(audio.wav_init_flag);
+      DEBUG_LOG(audio.wav_init_flag);
+   }
+   else
+   {
+      DEBUG_LOG("Audio backend disabled");
+   }
    music.init();
    se_ctrl.init();
 
@@ -446,9 +451,9 @@ int Sys::init_objects()
    help.init("HELP.RES");
 
    tutor.init();
-   // Need to init hall_of_fame *before* save_game_array to persist the last savegame filename
+   // Need to init hall_of_fame *before* game_file_array to persist the last savegame filename
    hall_of_fame.init();
-   save_game_array.init("*.SAV");
+   game_file_array.init("*.SAV");
 
    //---------- init game_set -----------//
 
@@ -501,8 +506,8 @@ void Sys::deinit_objects()
 
    tutor.deinit();
    config.deinit();
-   // Need to deinit hall_of_fame *after* save_game_array to persist the last savegame filename
-   save_game_array.deinit();
+   // Need to deinit hall_of_fame *after* game_file_array to persist the last savegame filename
+   game_file_array.deinit();
    hall_of_fame.deinit();
 }
 //------- End of function Sys::deinit_objects -----------//
@@ -788,8 +793,6 @@ void Sys::main_loop(int isLoadedGame)
          vga_front.lock_buf();
 
          yield();       // could be improved, give back the control to Windows, so it can do some OS management. Maybe call WaitMessage() here and set up a timer to get messages regularly.
-         if( cmd_line.enable_if )
-            vga.flip();
 
          detect();
 
@@ -964,7 +967,7 @@ void Sys::main_loop(int isLoadedGame)
 
             if( nation_array.player_recno )     // only save when the player is still in the game
             {
-               SaveGameProvider::save_game(remote.save_file_name);
+               game_file.save_game(remote.save_file_name);
 
                // ####### begin Gilbert 24/10 ######//
                //static String str;
@@ -1025,11 +1028,11 @@ void Sys::auto_save()
          static int saveCount = 0;
          switch(saveCount)
          {
-            case 0:  SaveGameProvider::save_game("DEBUG1.SAV");
+            case 0:  game_file.save_game("DEBUG1.SAV");
                      break;
-			case 1:  SaveGameProvider::save_game("DEBUG2.SAV");
+			case 1:  game_file.save_game("DEBUG2.SAV");
                      break;
-			case 2:  SaveGameProvider::save_game("DEBUG3.SAV");
+			case 2:  game_file.save_game("DEBUG3.SAV");
                      break;
          }
          if( ++saveCount>=3 )
@@ -1057,7 +1060,7 @@ void Sys::auto_save()
             rename( auto1_path, auto2_path );
          }
 
-         SaveGameProvider::save_game("AUTO.SAV");
+         game_file.save_game("AUTO.SAV");
       }
 
       //-*********** syn game test ***********-//
@@ -1106,7 +1109,7 @@ void Sys::auto_save()
          rename( auto1_path, auto2_path );
       }
 
-      SaveGameProvider::save_game("AUTO.SVM");
+      game_file.save_game("AUTO.SVM");
    }
 }
 //-------- End of function Sys::auto_save --------//
@@ -1556,37 +1559,101 @@ void Sys::process_key(unsigned scanCode, unsigned skeyState)
 //
 void Sys::detect_letter_key(unsigned scanCode, unsigned skeyState)
 {
-   int keyCode;
+   //---- keys for unit groups ----//
 
-   if((keyCode = mouse.is_key(scanCode, skeyState, (unsigned short) 0, K_IS_CTRL)))
+   if( ISKEY(KEYEVENT_SET_GROUP_1) )
    {
-      int groupId;
-      switch(keyCode)
-      {
-         case '1': case '2': case '3': case '4': case '5':
-         case '6': case '7': case '8': case '9':
-            groupId = keyCode-'0';
-            group_select.group_units(groupId);
-            break;
-      }
+      group_select.group_units(1);
    }
 
-   if((keyCode = mouse.is_key(scanCode, skeyState, (unsigned short) 0, K_IS_ALT)))
+   else if( ISKEY(KEYEVENT_SET_GROUP_2) )
    {
-      int groupId;
-      switch(keyCode)
-      {
-         case '1': case '2': case '3': case '4': case '5':
-         case '6': case '7': case '8': case '9':
-            groupId = keyCode-'0';
-            group_select.select_grouped_units(groupId);
-            break;
-      }
+      group_select.group_units(2);
+   }
+
+   else if( ISKEY(KEYEVENT_SET_GROUP_3) )
+   {
+      group_select.group_units(3);
+   }
+
+   else if( ISKEY(KEYEVENT_SET_GROUP_4) )
+   {
+      group_select.group_units(4);
+   }
+
+   else if( ISKEY(KEYEVENT_SET_GROUP_5) )
+   {
+      group_select.group_units(5);
+   }
+
+   else if( ISKEY(KEYEVENT_SET_GROUP_6) )
+   {
+      group_select.group_units(6);
+   }
+
+   else if( ISKEY(KEYEVENT_SET_GROUP_7) )
+   {
+      group_select.group_units(7);
+   }
+
+   else if( ISKEY(KEYEVENT_SET_GROUP_8) )
+   {
+      group_select.group_units(8);
+   }
+
+   else if( ISKEY(KEYEVENT_SET_GROUP_9) )
+   {
+      group_select.group_units(9);
+   }
+
+   else if( ISKEY(KEYEVENT_SEL_GROUP_1) )
+   {
+      group_select.select_grouped_units(1);
+   }
+
+   else if( ISKEY(KEYEVENT_SEL_GROUP_2) )
+   {
+      group_select.select_grouped_units(2);
+   }
+
+   else if( ISKEY(KEYEVENT_SEL_GROUP_3) )
+   {
+      group_select.select_grouped_units(3);
+   }
+
+   else if( ISKEY(KEYEVENT_SEL_GROUP_4) )
+   {
+      group_select.select_grouped_units(4);
+   }
+
+   else if( ISKEY(KEYEVENT_SEL_GROUP_5) )
+   {
+      group_select.select_grouped_units(5);
+   }
+
+   else if( ISKEY(KEYEVENT_SEL_GROUP_6) )
+   {
+      group_select.select_grouped_units(6);
+   }
+
+   else if( ISKEY(KEYEVENT_SEL_GROUP_7) )
+   {
+      group_select.select_grouped_units(7);
+   }
+
+   else if( ISKEY(KEYEVENT_SEL_GROUP_8) )
+   {
+      group_select.select_grouped_units(8);
+   }
+
+   else if( ISKEY(KEYEVENT_SEL_GROUP_9) )
+   {
+      group_select.select_grouped_units(9);
    }
 
    //---- keys for toggling map mode ----//
 
-   if( ISKEY(KEYEVENT_MAP_MODE_CYCLE) )
+   else if( ISKEY(KEYEVENT_MAP_MODE_CYCLE) )
    {
       world.map_matrix->cycle_map_mode();
    }
@@ -1644,7 +1711,6 @@ void Sys::detect_letter_key(unsigned scanCode, unsigned skeyState)
    else if( ISKEY(KEYEVENT_OPEN_OPTION_MENU) )
    {
       // ##### begin Gilbert 5/11 #######//
-      // game.in_game_option_menu();
       option_menu.enter(!remote.is_enable());
       // ##### end Gilbert 5/11 #######//
    }
@@ -1776,7 +1842,6 @@ void Sys::detect_function_key(unsigned scanCode, unsigned skeyState)
 
       case KEY_F10:
          // ##### begin Gilbert 5/11 ######//
-         //game.in_game_menu();
          in_game_menu.enter(!remote.is_enable());
          // ##### end Gilbert 5/11 ######//
          break;
@@ -2056,7 +2121,7 @@ int Sys::detect_debug_cheat_key(unsigned scanCode, unsigned skeyState)
 /*    //-*********** syn game test ***********-//
       case '\'':
          //if(debug2_enable_flag && debug_sim_game_type)
-         //save_game_array[0]->load_game("syn.sav");
+         //game_file_array[0]->load_game("syn.sav");
          game_file.load_game("syn.sav");
          sp_load_seed_file();
          debug_seed_status_flag = DEBUG_SYN_AUTO_LOAD;
@@ -2599,33 +2664,24 @@ void Sys::set_speed(int frameSpeed, int remoteCall)
 void Sys::capture_screen()
 {
    FilePath full_path(dir_config);
-   const char filename_template[] = "7KXX.BMP";
+   const char filename_template[] = "7KXXXXXX.BMP";
 
    full_path += filename_template; // template for screenshot filename
    if( full_path.error_flag )
       return;
 
    char *filename = (char*)full_path+strlen(dir_config);
-   String str("7K");
 
    int i;
-   for( i=0 ; i<=99 ; i++ )
+   for( i=0 ; i<=999999 ; i++ )
    {
-      str  = "7K";
-
-      if( i<10 )
-         str += "0";
-
-      str += i;
-      str += ".BMP";
-
-      memcpy(filename, str, strlen(filename_template));
+      sprintf(filename, "7K%06d.BMP", i);
 
       if( !misc.is_file_exist(full_path) )
          break;
    }
 
-   if( i>99 )        // all file names from DWORLD00 to DWORLD99 have been occupied
+   if( i>999999 )        // all file names from DWORLD00 to DWORLD999999 have been occupied
       return;
 
    if( sys.debug_session )    // in debug session, the buffer is not locked, we need to lock it for capturing the screen
@@ -2642,9 +2698,8 @@ void Sys::capture_screen()
    //------ display msg --------//
 
    String str2;
-   const char *file_name = str;
 
-   snprintf( str2, MAX_STR_LEN+1, _("The current screen has been written to file %s."), file_name );
+   snprintf( str2, MAX_STR_LEN+1, _("The current screen has been written to file %s."), filename );
 
    box.msg( str2 );
 }
@@ -2664,9 +2719,9 @@ void Sys::load_game()
 
    int rc=0;
 
-   save_game_array.init("*.SAV");                  // reload any save game file
-   save_game_array.menu(-2);               // save screen area to back buffer
-   switch( save_game_array.load_game() )
+   game_file_array.init("*.SAV");          // reload any save game file
+   game_file_array.menu(-2);               // save screen area to back buffer
+   switch( game_file_array.load_game() )
    {
       case 1:
          rc = 1;                 // fall through to case 0
@@ -2680,7 +2735,7 @@ void Sys::load_game()
 		 sys.signal_exit_flag = 1;
    }
 
-   save_game_array.menu(-1);               // restore screen area from back buffer
+   game_file_array.menu(-1);               // restore screen area from back buffer
 
    //-----------------------------------//
    if( rc == -1)
@@ -2700,7 +2755,7 @@ void Sys::load_game()
       signal_exit_flag=0;
       user_pause_flag = !config.frame_speed;
       if( user_pause_flag )
-         last_frame_speed = 9;
+         last_frame_speed = config_adv.game_load_default_frame_speed;
       else
          last_frame_speed = 0;
       info.disp();
@@ -2723,15 +2778,15 @@ void Sys::save_game()
       return;
    }
 
-   save_game_array.init("*.SAV");                  // reload any save game file
-   save_game_array.menu(-2);               // save screen area to back buffer
+   game_file_array.init("*.SAV");          // reload any save game file
+   game_file_array.menu(-2);               // save screen area to back buffer
 
-   if( save_game_array.menu(1) == 1 )
+   if( game_file_array.menu(1) == 1 )
    {
       box.msg( _("Game Saved Successfully") );
    }
 
-   save_game_array.menu(-1);               // restore screen area from back buffer
+   game_file_array.menu(-1);               // restore screen area from back buffer
 
 	// ##### patch begin Gilbert 16/3 #######//
 	info.disp();

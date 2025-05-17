@@ -36,7 +36,7 @@
 
 #define MAX_RAW			 		    3
 #define MAX_PRODUCT					 3
-#define MAX_RAW_RESERVE_QTY	1000000
+#define MAX_RAW_RESERVE_QTY	20000
 
 //------------ define icon size -------------//
 

@@ -42,6 +42,8 @@
 
 //----------- Define class Tornado -----------//
 
+struct TornadoGF;
+
 #pragma pack(1)
 class Tornado : public Sprite
 {
@@ -69,6 +71,8 @@ public:
 
 	int 	write_file(File* filePtr);
 	int	read_file(File* filePtr);
+	void	write_record(TornadoGF *r);
+	void	read_record(TornadoGF *r);
 };
 #pragma pack()
 
@@ -95,6 +99,8 @@ public:
 
 	int  write_file(File* filePtr);
 	int  read_file(File* filePtr);
+	void write_record(TornadoGF *r);
+	void read_record(TornadoGF *r);
 };
 
 extern TornadoArray tornado_array;

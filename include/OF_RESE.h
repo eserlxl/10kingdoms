@@ -28,9 +28,10 @@
 #include <OFIRM.h>
 #endif
 
-struct FirmResearchCrc;
-
 //------- Define class FirmResearch --------//
+
+struct FirmResearchCrc;
+struct FirmResearchGF;
 
 #pragma pack(1)
 class FirmResearch : public Firm
@@ -72,6 +73,11 @@ public:
 	virtual	uint8_t crc8();
 	virtual	void	clear_ptr();
 	virtual	void	init_crc(FirmResearchCrc *c);
+
+	int	write_derived_file(File *filePtr);
+	int	read_derived_file(File *filePtr);
+	void	write_derived_record(FirmResearchGF *r);
+	void	read_derived_record(FirmResearchGF *r);
 
 private:
 	void	disp_research_info(int dispY1, int refreshFlag);

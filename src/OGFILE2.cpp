@@ -55,11 +55,8 @@
 #include <OUNIT.h>
 #include <OWEATHER.h>
 #include <OWORLD.h>
-#include <OSaveGameArray.h>
 #include <dbglog.h>
-#include <file_io_visitor.h>
-
-using namespace FileIOVisitor;
+#include <OGF_REC.h>
 
 DBGLOG_DEFAULT_CHANNEL(GameFile);
 
@@ -116,8 +113,6 @@ DBGLOG_DEFAULT_CHANNEL(GameFile);
 
 static int loaded_random_seed;
 
-bool GameFile::read_file_same_version = true;
-
 //-------- Begin of function GameFile::write_file -------//
 //
 // Save a game to file
@@ -127,14 +122,9 @@ bool GameFile::read_file_same_version = true;
 //
 int GameFile::write_file(File* filePtr)
 {
-	bool demo_format = false;
-#if defined(DEMO) || defined(DEMO_DESIGN)
-	demo_format = true;
-#endif
-
 	//----- check valid version first ------//
 
-	if( demo_format )
+	if( game_file_array.demo_format )
 		filePtr->file_put_short( -GAME_VERSION );    // negative no. means shareware version
 	else
 		filePtr->file_put_short( GAME_VERSION );
@@ -146,7 +136,7 @@ int GameFile::write_file(File* filePtr)
 	//
 	//------------------------------------------------//
 
-	if( demo_format )
+	if( game_file_array.demo_format )
 	{
 		if( !write_file_1(filePtr) )
 			return 0;
@@ -181,29 +171,26 @@ int GameFile::write_file(File* filePtr)
 //
 int GameFile::read_file(File* filePtr)
 {
-	bool demo_format = false;
-#if defined(DEMO) || defined(DEMO_DESIGN)
-	demo_format = true;
-#endif
-
 	//----- check version no. first ------//
 
 	int originalRandomSeed = misc.get_random_seed();
 
-	short load_file_game_version = filePtr->file_get_short();
+	//### begin alex 5/3 ###//
+	game_file_array.load_file_game_version = filePtr->file_get_short();
 
 	// compare if same demo format or not
-	if( demo_format && load_file_game_version > 0
-		|| !demo_format && load_file_game_version < 0)
+	if( game_file_array.demo_format && game_file_array.load_file_game_version > 0
+		|| !game_file_array.demo_format && game_file_array.load_file_game_version < 0)
 		return -1;
 
 	// take the absolute value of game version
-	load_file_game_version = abs(load_file_game_version);
+	game_file_array.load_file_game_version = abs(game_file_array.load_file_game_version);
 
-	if(load_file_game_version > GAME_VERSION)
+	if(game_file_array.load_file_game_version > GAME_VERSION)
 		return -1;		// the executing program can't handle saved game in future version
 
-	read_file_same_version = ( load_file_game_version/100==GAME_VERSION/100 );
+	game_file_array.same_version = ( game_file_array.load_file_game_version/100==GAME_VERSION/100 );
+	//#### end alex 5/3 ####//
 
 	//------------------------------------------------//
 	//
@@ -212,7 +199,7 @@ int GameFile::read_file(File* filePtr)
 	//
 	//------------------------------------------------//
 
-	if( demo_format )
+	if( game_file_array.demo_format )
 	{
 		if( !read_file_1(filePtr) )
 			return 0;
@@ -711,6 +698,7 @@ int GameFile::read_file_3(File* filePtr)
 
 	// ##### begin Gilbert 2/10 ######//
 	if( !read_book_mark( filePtr, BOOK_MARK+215 ) )
+		return 0;
 
 	if( !firm_die_array.read_file(filePtr) )
 		return 0;
@@ -777,11 +765,11 @@ int RaceRes::read_file(File* filePtr)
 
 	for( int i=1 ; i<=race_res.race_count ; i++, raceInfo++ )
 	{
-		raceInfo->town_name_used_count = (!GameFile::read_file_same_version && i>VERSION_1_MAX_RACE) ?
+		raceInfo->town_name_used_count = (!game_file_array.same_version && i>VERSION_1_MAX_RACE) ?
 													0 : filePtr->file_get_short();
 	}
 
-	if(!GameFile::read_file_same_version)
+	if(!game_file_array.same_version)
 	{
 		memset(name_used_array, 0, sizeof(name_used_array[0]) * name_count);
 		return filePtr->file_read( name_used_array, sizeof(name_used_array[0]) * VERSION_1_RACERES_NAME_COUNT );
@@ -806,10 +794,10 @@ int UnitRes::write_file(File* filePtr)
 		if( !filePtr->file_write( unitInfo->nation_tech_level_array, sizeof(unitInfo->nation_tech_level_array) ) )
 			return 0;
 
-		if( !filePtr->file_write( unitInfo->nation_unit_count_array, sizeof(unitInfo->nation_unit_count_array) ) )
+		if( !filePtr->file_put_short_array( unitInfo->nation_unit_count_array, MAX_NATION ) )
 			return 0;
 
-		if( !filePtr->file_write( unitInfo->nation_general_count_array, sizeof(unitInfo->nation_general_count_array) ) )
+		if( !filePtr->file_put_short_array( unitInfo->nation_general_count_array, MAX_NATION ) )
 			return 0;
 	}
 
@@ -828,7 +816,7 @@ int UnitRes::read_file(File* filePtr)
 
 	for( int i=1 ; i<=unit_res.unit_info_count ; i++, unitInfo++ )
 	{
-			if(!GameFile::read_file_same_version && i > VERSION_1_UNITRES_UNIT_INFO_COUNT)
+			if(!game_file_array.same_version && i > VERSION_1_UNITRES_UNIT_INFO_COUNT)
 			{
 				memset(unitInfo->nation_tech_level_array, 0, sizeof(unitInfo->nation_tech_level_array));
 				memset(unitInfo->nation_unit_count_array, 0, sizeof(unitInfo->nation_unit_count_array));
@@ -839,10 +827,10 @@ int UnitRes::read_file(File* filePtr)
 		if( !filePtr->file_read( unitInfo->nation_tech_level_array, sizeof(unitInfo->nation_tech_level_array) ) )
 			return 0;
 
-		if( !filePtr->file_read( unitInfo->nation_unit_count_array, sizeof(unitInfo->nation_unit_count_array) ) )
+		if( !filePtr->file_get_short_array( unitInfo->nation_unit_count_array, MAX_NATION ) )
 			return 0;
 
-		if( !filePtr->file_read( unitInfo->nation_general_count_array, sizeof(unitInfo->nation_general_count_array) ) )
+		if( !filePtr->file_get_short_array( unitInfo->nation_general_count_array, MAX_NATION ) )
 			return 0;
 	}
 
@@ -856,7 +844,19 @@ int UnitRes::read_file(File* filePtr)
 //
 int FirmRes::write_file(File* filePtr)
 {
-	return filePtr->file_write( firm_info_array, firm_count * sizeof(FirmInfo) );
+	FirmInfoGF* firmInfoArray = (FirmInfoGF*) mem_add(firm_count*sizeof(FirmInfoGF));
+
+	for( int i=0; i<firm_count; i++ )
+	{
+		FirmInfo* firmInfo = firm_info_array+i;
+		firmInfo->write_record(firmInfoArray+i);
+	}
+
+	int rc = filePtr->file_write(firmInfoArray, firm_count*sizeof(FirmInfoGF));
+
+	mem_del(firmInfoArray);
+
+	return rc;
 }
 //--------- End of function FirmRes::write_file ---------------//
 
@@ -865,32 +865,23 @@ int FirmRes::write_file(File* filePtr)
 //
 int FirmRes::read_file(File* filePtr)
 {
-	int arraySize = firm_count * sizeof(FirmInfo);
+	FirmInfoGF* firmInfoArray = (FirmInfoGF*) mem_add(firm_count*sizeof(FirmInfoGF));
 
-	//----- save the firm names, so that it won't be overwritten by the saved game file ----//
-
-	FirmInfo* oldFirmInfoArray = (FirmInfo*) mem_add(arraySize);
-
-	memcpy( oldFirmInfoArray, firm_info_array, arraySize );
-
-	int rc = filePtr->file_read( firm_info_array, arraySize );
-
-	for( int i=0 ; i<firm_count ; i++ )
+	if( !filePtr->file_read(firmInfoArray, firm_count*sizeof(FirmInfoGF)) )
 	{
-		memcpy( firm_info_array[i].name			  , oldFirmInfoArray[i].name			  , FirmInfo::NAME_LEN+1 );
-		memcpy( firm_info_array[i].short_name	  , oldFirmInfoArray[i].short_name	  , FirmInfo::SHORT_NAME_LEN+1 );
-		memcpy( firm_info_array[i].overseer_title, oldFirmInfoArray[i].overseer_title, FirmInfo::TITLE_LEN+1 );
-		memcpy( firm_info_array[i].worker_title  , oldFirmInfoArray[i].worker_title  , FirmInfo::TITLE_LEN+1 );
-
-		// ###### patch begin Gilbert 11/3 ########//
-		firm_info_array[i].first_build_id = oldFirmInfoArray[i].first_build_id;
-		firm_info_array[i].build_count = oldFirmInfoArray[i].build_count;
-		// ###### patch end Gilbert 11/3 ########//
+		mem_del(firmInfoArray);
+		return 0;
 	}
 
-	mem_del( oldFirmInfoArray );
+	for( int i=0; i<firm_count; i++ )
+	{
+		FirmInfo* firmInfo = firm_info_array+i;
+		firmInfo->read_record(firmInfoArray+i);
+	}
 
-	return rc;
+	mem_del(firmInfoArray);
+
+	return 1;
 }
 //--------- End of function FirmRes::read_file ---------------//
 
@@ -909,7 +900,7 @@ int TownRes::write_file(File* filePtr)
 //
 int TownRes::read_file(File* filePtr)
 {
-	if(!GameFile::read_file_same_version)
+	if(!game_file_array.same_version)
 	{
 		memset(town_name_used_array, 0, sizeof(town_name_used_array));
 		return filePtr->file_read( town_name_used_array, sizeof(town_name_used_array[0]) * VERSION_1_TOWNRES_TOWN_NAME_COUNT );
@@ -925,11 +916,37 @@ int TownRes::read_file(File* filePtr)
 //
 int TechRes::write_file(File* filePtr)
 {
-	if( !filePtr->file_write( tech_class_array, tech_class_count * sizeof(TechClass) ) )
-		return 0;
+	TechClassGF* techClassArray = (TechClassGF*) mem_add(tech_class_count*sizeof(TechClassGF));
 
-	if( !filePtr->file_write( tech_info_array, tech_count * sizeof(TechInfo) ) )
+	for( int i=0; i<tech_class_count; i++ )
+	{
+		TechClass* techClass = tech_class_array+i;
+		techClass->write_record(techClassArray+i);
+	}
+
+	if( !filePtr->file_write(techClassArray, tech_class_count*sizeof(TechClassGF)) )
+	{
+		mem_del(techClassArray);
 		return 0;
+	}
+
+	mem_del(techClassArray);
+
+	TechInfoGF* techInfoArray = (TechInfoGF*) mem_add(tech_count*sizeof(TechInfoGF));
+
+	for( int i=0; i<tech_count; i++ )
+	{
+		TechInfo* techInfo = tech_info_array+i;
+		techInfo->write_record(techInfoArray+i);
+	}
+
+	if( !filePtr->file_write(techInfoArray, tech_count*sizeof(TechInfoGF)) )
+	{
+		mem_del(techInfoArray);
+		return 0;
+	}
+
+	mem_del(techInfoArray);
 
 	return 1;
 }
@@ -940,13 +957,39 @@ int TechRes::write_file(File* filePtr)
 //
 int TechRes::read_file(File* filePtr)
 {
-	if( !filePtr->file_read( tech_class_array, tech_class_count * sizeof(TechClass) ) )
-		return 0;
+	TechClassGF* techClassArray = (TechClassGF*) mem_add(tech_class_count*sizeof(TechClassGF));
 
-	if(!GameFile::read_file_same_version)
+	if( !filePtr->file_read(techClassArray, tech_class_count*sizeof(TechClassGF)) )
 	{
-		if(!filePtr->file_read( tech_info_array, VERSION_1_TECH_COUNT * sizeof(TechInfo) ) )
+		mem_del(techClassArray);
+		return 0;
+	}
+
+	for( int i=0; i<tech_class_count; i++ )
+	{
+		TechClass* techClass = tech_class_array+i;
+		techClass->read_record(techClassArray+i);
+	}
+
+	mem_del(techClassArray);
+
+	if(!game_file_array.same_version)
+	{
+		TechInfoGF* techInfoArray = (TechInfoGF*) mem_add(VERSION_1_TECH_COUNT*sizeof(TechInfoGF));
+
+		if( !filePtr->file_read(techInfoArray, VERSION_1_TECH_COUNT*sizeof(TechInfoGF)) )
+		{
+			mem_del(techInfoArray);
 			return 0;
+		}
+
+		for( int i=0; i<VERSION_1_TECH_COUNT; i++ )
+		{
+			TechInfo* techInfo = tech_info_array+i;
+			techInfo->read_record(techInfoArray+i);
+		}
+
+		mem_del(techInfoArray);
 
 		TechInfo *techInfoPtr = tech_info_array + VERSION_1_TECH_COUNT;
 		for(int i=VERSION_1_TECH_COUNT; i<tech_count; ++i, techInfoPtr++)
@@ -958,8 +1001,20 @@ int TechRes::read_file(File* filePtr)
 	}
 	else
 	{
-		if( !filePtr->file_read( tech_info_array, tech_count * sizeof(TechInfo) ) )
+		TechInfoGF* techInfoArray = (TechInfoGF*) mem_add(tech_count*sizeof(TechInfoGF));
+		if( !filePtr->file_read(techInfoArray, tech_count*sizeof(TechInfoGF)) )
+		{
+			mem_del(techInfoArray);
 			return 0;
+		}
+
+		for( int i=0; i<tech_count; i++ )
+		{
+			TechInfo* techInfo = tech_info_array+i;
+			techInfo->read_record(techInfoArray+i);
+		}
+
+		mem_del(techInfoArray);
 	}
 
 	return 1;
@@ -968,59 +1023,40 @@ int TechRes::read_file(File* filePtr)
 
 //***//
 
-template <typename Visitor>
-static void visit_talk_msg(Visitor *v, TalkMsg *tm)
-{
-	visit<int16_t>(v, &tm->talk_id);
-	visit<int16_t>(v, &tm->talk_para1);
-	visit<int16_t>(v, &tm->talk_para2);
-	visit<int32_t>(v, &tm->date);
-	visit<int8_t>(v, &tm->from_nation_recno);
-	visit<int8_t>(v, &tm->to_nation_recno);
-	visit<int8_t>(v, &tm->reply_type);
-	visit<int32_t>(v, &tm->reply_date);
-	visit<int8_t>(v, &tm->relation_status);
-}
-
-template <typename Visitor>
-static void visit_talk_choice(Visitor *v, TalkChoice *tc)
-{
-	visit_pointer(v, &tc->str);
-	visit<int16_t>(v, &tc->para);
-}
-
-template <typename Visitor>
-static void visit_talk_res(Visitor *v, TalkRes *tr)
-{
-	visit<int8_t>(v, &tr->init_flag);
-	visit<int16_t>(v, &tr->reply_talk_msg_recno);
-	visit_talk_msg(v, &tr->cur_talk_msg);
-	visit_pointer(v, &tr->choice_question);
-	visit_pointer(v, &tr->choice_question_second_line);
-	visit<int16_t>(v, &tr->talk_choice_count);
-
-	for (int n = 0; n < MAX_TALK_CHOICE; n++)
-		visit_talk_choice(v, &tr->talk_choice_array[n]);
-
-	visit_array<int8_t>(v, tr->available_talk_id_array, MAX_TALK_TYPE);
-	visit<int16_t>(v, &tr->cur_choice_id);
-	visit<int8_t>(v, &tr->save_view_mode);
-	visit<int8_t>(v, &tr->msg_add_nation_color);
-	v->skip(39); /* &tr->talk_msg_array */
-}
-
-enum { TALK_RES_RECORD_SIZE = 214 };
-
 //-------- Start of function TalkRes::write_file -------------//
 //
 int TalkRes::write_file(File* filePtr)
 {
-	if (!write_with_record_size(filePtr, this, &visit_talk_res<FileWriterVisitor>,
-										 TALK_RES_RECORD_SIZE))
+	write_record(&gf_rec.talk_res);
+	if( !filePtr->file_write(&gf_rec, sizeof(TalkResGF)) )
 		return 0;
 
-	if( !talk_msg_array.write_file(filePtr) )
+	DynArrayB* p = &talk_msg_array;
+
+	p->write_record(&gf_rec.dyn_array);
+	if( !filePtr->file_write(&gf_rec, sizeof(DynArrayGF)) )
 		return 0;
+
+	if( p->last_ele > 0 )
+	{
+		TalkMsgGF* talkMsgArray = (TalkMsgGF*) mem_add(p->last_ele*sizeof(TalkMsgGF));
+
+		for( int i=1; i<=p->last_ele; i++ )
+		{
+			TalkMsg* talkMsg = (TalkMsg*) p->get(i);
+			talkMsg->write_record(talkMsgArray+i-1);
+		}
+
+		if( !filePtr->file_write(talkMsgArray, p->last_ele*sizeof(TalkMsgGF)) )
+		{
+			mem_del(talkMsgArray);
+			return 0;
+		}
+
+		mem_del(talkMsgArray);
+	}
+
+	p->write_empty_room(filePtr);
 
 	return 1;
 }
@@ -1031,16 +1067,40 @@ int TalkRes::write_file(File* filePtr)
 //
 int TalkRes::read_file(File* filePtr)
 {
-	if (!read_with_record_size(filePtr, this, &visit_talk_res<FileReaderVisitor>,
-										TALK_RES_RECORD_SIZE))
+	if( !filePtr->file_read(&gf_rec, sizeof(TalkResGF)) )
 		return 0;
+	read_record(&gf_rec.talk_res);
 
-	if( !talk_msg_array.read_file(filePtr) )
+	DynArrayB* p = &talk_msg_array;
+
+	if( !filePtr->file_read(&gf_rec, sizeof(DynArrayGF)) )
 		return 0;
+	p->read_record(&gf_rec.dyn_array);
 
-	this->choice_question = NULL;
-	this->choice_question_second_line = NULL;
-	this->talk_choice_count = 0;
+	p->body_buf = mem_resize(p->body_buf, p->ele_num*p->ele_size);
+
+	if( p->last_ele > 0 )
+	{
+		TalkMsgGF* talkMsgArray = (TalkMsgGF*) mem_add(p->last_ele*sizeof(TalkMsgGF));
+
+		if( !filePtr->file_read(talkMsgArray, p->last_ele*sizeof(TalkMsgGF)) )
+		{
+			mem_del(talkMsgArray);
+			return 0;
+		}
+
+		for( int i=1; i<=p->last_ele; i++ )
+		{
+			TalkMsg* talkMsg = (TalkMsg*) p->get(i);
+			talkMsg->read_record(talkMsgArray+i-1);
+		}
+
+		mem_del(talkMsgArray);
+	}
+
+	p->read_empty_room(filePtr);
+
+	p->start();    // go top
 
 	return 1;
 }
@@ -1048,16 +1108,52 @@ int TalkRes::read_file(File* filePtr)
 
 //***//
 
+static int dynarray_short_write_file(File* filePtr, DynArray* a)
+{
+	a->write_record(&gf_rec.dyn_array);
+	if( !filePtr->file_write(&gf_rec, sizeof(DynArrayGF)) )
+		return 0;
+
+	if( a->last_ele > 0 )
+	{
+		if( !filePtr->file_put_short_array((int16_t*)a->body_buf, a->last_ele) )
+			return 0;
+	}
+
+	return 1;
+}
+
+static int dynarray_short_read_file(File* filePtr, DynArray* a)
+{
+	if( !filePtr->file_read(&gf_rec, sizeof(DynArrayGF)) )
+		return 0;
+	a->read_record(&gf_rec.dyn_array);
+
+	a->body_buf = mem_resize(a->body_buf, a->ele_num*a->ele_size);
+
+	if( a->last_ele > 0 )
+	{
+		if( !filePtr->file_get_short_array((int16_t*)a->body_buf, a->last_ele) )
+			return 0;
+	}
+
+	a->start();    // go top
+
+	return 1;
+}
+
 //-------- Start of function RawRes::write_file -------------//
 //
 int RawRes::write_file(File* filePtr)
 {
 	for( int i=0 ; i<MAX_RAW ; i++ )
 	{
-		if( !raw_info_array[i].raw_supply_firm_array.write_file(filePtr) )
+		DynArray* a = &raw_info_array[i].raw_supply_firm_array;
+		if( !dynarray_short_write_file(filePtr, a) )
 			return 0;
 
-		if( !raw_info_array[i].product_supply_firm_array.write_file(filePtr) )
+		a = &raw_info_array[i].product_supply_firm_array;
+		if( !dynarray_short_write_file(filePtr, a) )
 			return 0;
 	}
 
@@ -1072,10 +1168,12 @@ int RawRes::read_file(File* filePtr)
 {
 	for( int i=0 ; i<MAX_RAW ; i++ )
 	{
-		if( !raw_info_array[i].raw_supply_firm_array.read_file(filePtr) )
+		DynArray* a = &raw_info_array[i].raw_supply_firm_array;
+		if( !dynarray_short_read_file(filePtr, a) )
 			return 0;
 
-		if( !raw_info_array[i].product_supply_firm_array.read_file(filePtr) )
+		a = &raw_info_array[i].product_supply_firm_array;
+		if( !dynarray_short_read_file(filePtr, a) )
 			return 0;
 	}
 
@@ -1089,7 +1187,19 @@ int RawRes::read_file(File* filePtr)
 //
 int GodRes::write_file(File* filePtr)
 {
-	return filePtr->file_write( god_info_array, sizeof(GodInfo) * god_count );
+	GodInfoGF* godInfoArray = (GodInfoGF*) mem_add(god_count*sizeof(GodInfoGF));
+
+	for( int i=0; i<god_count; i++ )
+	{
+		GodInfo* godInfo = god_info_array+i;
+		godInfo->write_record(godInfoArray+i);
+	}
+
+	int rc = filePtr->file_write(godInfoArray, god_count*sizeof(GodInfoGF));
+
+	mem_del(godInfoArray);
+
+	return rc;
 }
 //--------- End of function GodRes::write_file ---------------//
 
@@ -1098,13 +1208,27 @@ int GodRes::write_file(File* filePtr)
 //
 int GodRes::read_file(File* filePtr)
 {
-	if(!GameFile::read_file_same_version)
+	short count = god_count;
+	if( !game_file_array.same_version )
+		count = VERSION_1_GODRES_GOD_COUNT;
+
+	GodInfoGF* godInfoArray = (GodInfoGF*) mem_add(count*sizeof(GodInfoGF));
+
+	if( !filePtr->file_read(godInfoArray, count*sizeof(GodInfoGF)) )
 	{
-		memset(god_info_array, 0, sizeof(god_info_array));
-		return filePtr->file_read( god_info_array, sizeof(GodInfo) * VERSION_1_GODRES_GOD_COUNT );
+		mem_del(godInfoArray);
+		return 0;
 	}
-	else
-		return filePtr->file_read( god_info_array, sizeof(GodInfo) * god_count );
+
+	for( int i=0; i<count; i++ )
+	{
+		GodInfo* godInfo = god_info_array+i;
+		godInfo->read_record(godInfoArray+i);
+	}
+
+	mem_del(godInfoArray);
+
+	return 1;
 }
 //--------- End of function GodRes::read_file ---------------//
 
@@ -1114,7 +1238,7 @@ int GodRes::read_file(File* filePtr)
 //
 int MonsterRes::write_file(File* filePtr)
 {
-	return filePtr->file_write( active_monster_array, sizeof(active_monster_array) );
+	return filePtr->file_put_short_array( active_monster_array, MAX_ACTIVE_MONSTER );
 }
 //--------- End of function MonsterRes::write_file ---------------//
 
@@ -1123,7 +1247,7 @@ int MonsterRes::write_file(File* filePtr)
 //
 int MonsterRes::read_file(File* filePtr)
 {
-	return filePtr->file_read( active_monster_array, sizeof(active_monster_array) );
+	return filePtr->file_get_short_array( active_monster_array, MAX_ACTIVE_MONSTER );
 }
 //--------- End of function MonsterRes::read_file ---------------//
 
@@ -1133,7 +1257,10 @@ int MonsterRes::read_file(File* filePtr)
 //
 int Game::write_file(File* filePtr)
 {
-	return filePtr->file_write( this, sizeof(Game) );
+	write_record(&gf_rec.game);
+	if( !filePtr->file_write(&gf_rec, sizeof(GameGF)) )
+		return 0;
+	return 1;
 }
 //--------- End of function Game::write_file ---------------//
 
@@ -1142,115 +1269,31 @@ int Game::write_file(File* filePtr)
 //
 int Game::read_file(File* filePtr)
 {
-	MSG(__FILE__":%d: file_read(this, ...);\n", __LINE__);
-	return filePtr->file_read( this, sizeof(Game) );
+	if( !filePtr->file_read(&gf_rec, sizeof(GameGF)) )
+		return 0;
+	read_record(&gf_rec.game);
+	return 1;
 }
 //--------- End of function Game::read_file ---------------//
 
 //***//
 
-template <typename Visitor>
-static void visit_config(Visitor *v, Config *cfg)
-{
-	visit<int16_t>(v, &cfg->difficulty_rating);
-	visit<int8_t>(v, &cfg->ai_nation_count);
-	visit<int16_t>(v, &cfg->start_up_cash);
-	visit<int16_t>(v, &cfg->ai_start_up_cash);
-	visit<int8_t>(v, &cfg->ai_aggressiveness);
-	visit<int16_t>(v, &cfg->start_up_independent_town);
-	visit<int16_t>(v, &cfg->start_up_raw_site);
-	visit<int8_t>(v, &cfg->difficulty_level);
-	visit<int8_t>(v, &cfg->explore_whole_map);
-	visit<int8_t>(v, &cfg->fog_of_war);
-	visit<int16_t>(v, &cfg->terrain_set);
-	visit<int16_t>(v, &cfg->latitude);
-	visit<int8_t>(v, &cfg->weather_effect);
-	visit<int8_t>(v, &cfg->land_mass);
-	visit<int8_t>(v, &cfg->new_independent_town_emerge);
-	visit<int8_t>(v, &cfg->independent_town_resistance);
-	visit<int8_t>(v, &cfg->random_event_frequency);
-	visit<int8_t>(v, &cfg->new_nation_emerge);
-	visit<int8_t>(v, &cfg->monster_type);
-	visit<int8_t>(v, &cfg->start_up_has_mine_nearby);
-	visit<int8_t>(v, &cfg->random_start_up);
-	visit<int8_t>(v, &cfg->goal_destroy_monster);
-	visit<int8_t>(v, &cfg->goal_population_flag);
-	visit<int8_t>(v, &cfg->goal_economic_score_flag);
-	visit<int8_t>(v, &cfg->goal_total_score_flag);
-	visit<int8_t>(v, &cfg->goal_year_limit_flag);
-	visit<int32_t>(v, &cfg->goal_population);
-	visit<int32_t>(v, &cfg->goal_economic_score);
-	visit<int32_t>(v, &cfg->goal_total_score);
-	visit<int32_t>(v, &cfg->goal_year_limit);
-	visit<int8_t>(v, &cfg->fire_spread_rate);
-	visit<int8_t>(v, &cfg->wind_spread_fire_rate);
-	visit<int8_t>(v, &cfg->fire_fade_rate);
-	visit<int8_t>(v, &cfg->fire_restore_prob);
-	visit<int8_t>(v, &cfg->rain_reduce_fire_rate);
-	visit<int8_t>(v, &cfg->fire_damage);
-	visit<int8_t>(v, &cfg->show_ai_info);
-	visit<int8_t>(v, &cfg->fast_build);
-	visit<int8_t>(v, &cfg->disable_ai_flag);
-	visit<int8_t>(v, &cfg->king_undie_flag);
-	visit<int8_t>(v, &cfg->race_id);
-	visit_array<int8_t>(v, cfg->player_name, HUMAN_NAME_LEN+1);
-	visit<int8_t>(v, &cfg->player_nation_color);
-	visit<int8_t>(v, &cfg->expired_flag);
-	visit<int8_t>(v, &cfg->opaque_report);
-	visit<int8_t>(v, &cfg->disp_news_flag);
-	visit<int16_t>(v, &cfg->scroll_speed);
-	visit<int16_t>(v, &cfg->frame_speed);
-	visit<int8_t>(v, &cfg->help_mode);
-	visit<int8_t>(v, &cfg->disp_town_name);
-	visit<int8_t>(v, &cfg->disp_spy_sign);
-	visit<int8_t>(v, &cfg->show_all_unit_icon);
-	visit<int8_t>(v, &cfg->show_unit_path);
-	visit<int8_t>(v, &cfg->music_flag);
-	visit<int16_t>(v, &cfg->cd_music_volume);
-	visit<int16_t>(v, &cfg->wav_music_volume);
-	visit<int8_t>(v, &cfg->sound_effect_flag);
-	visit<int16_t>(v, &cfg->sound_effect_volume);
-	visit<int8_t>(v, &cfg->pan_control);
-	visit<int8_t>(v, &cfg->lightning_visual);
-	visit<int8_t>(v, &cfg->earthquake_visual);
-	visit<int8_t>(v, &cfg->rain_visual);
-	visit<int8_t>(v, &cfg->snow_visual);
-	visit<int8_t>(v, &cfg->snow_ground);
-	visit<int8_t>(v, &cfg->lightning_audio);
-	visit<int8_t>(v, &cfg->earthquake_audio);
-	visit<int8_t>(v, &cfg->rain_audio);
-	visit<int8_t>(v, &cfg->snow_audio);
-	visit<int8_t>(v, &cfg->wind_audio);
-	visit<int32_t>(v, &cfg->lightning_brightness);
-	visit<int32_t>(v, &cfg->cloud_darkness);
-	visit<int32_t>(v, &cfg->lightning_volume);
-	visit<int32_t>(v, &cfg->earthquake_volume);
-	visit<int32_t>(v, &cfg->rain_volume);
-	visit<int32_t>(v, &cfg->snow_volume);
-	visit<int32_t>(v, &cfg->wind_volume);
-	visit<int8_t>(v, &cfg->blacken_map);
-	visit<int8_t>(v, &cfg->explore_mask_method);
-	visit<int8_t>(v, &cfg->fog_mask_method);
-}
-
-enum { CONFIG_RECORD_SIZE = 144 };
-
 //-------- Start of function Config::write_file -------------//
 //
 int Config::write_file(File* filePtr)
 {
-	return write_with_record_size(filePtr, this, &visit_config<FileWriterVisitor>,
-											CONFIG_RECORD_SIZE);
+	write_record(&gf_rec.config);
+	if( !filePtr->file_write(&gf_rec, sizeof(ConfigGF)) )
+		return 0;
+	return 1;
 }
 //--------- End of function Config::write_file ---------------//
+
 
 //-------- Start of function Config::read_file -------------//
 //
 int Config::read_file(File* filePtr, int keepSysSettings)
 {
-	FileReader r;
-	FileReaderVisitor v;
-
 	//--- these settings are not game dependent -----//
 
 	char  musicFlag 		 = music_flag;
@@ -1260,12 +1303,9 @@ int Config::read_file(File* filePtr, int keepSysSettings)
 	short	soundEffectVol  = sound_effect_volume;
 	char	helpMode			 = help_mode;
 
-	if (!r.init(filePtr))
+	if( !filePtr->file_read(&gf_rec, sizeof(ConfigGF)) )
 		return 0;
-
-	r.check_record_size(CONFIG_RECORD_SIZE);
-	v.init(&r);
-	visit_config(&v, this);
+	read_record(&gf_rec.config);
 
 	if( keepSysSettings )
 	{
@@ -1277,7 +1317,7 @@ int Config::read_file(File* filePtr, int keepSysSettings)
 		help_mode			= helpMode;
 	}
 
-	return r.good();
+	return 1;
 }
 //--------- End of function Config::read_file ---------------//
 
@@ -1287,11 +1327,10 @@ int Config::read_file(File* filePtr, int keepSysSettings)
 //
 int Info::write_file(File* filePtr)
 {
-	int writeSize = (char*)(&last_write_offset) - (char*)(this);
-
-	//---------- write the info data -----------//
-
-	return filePtr->file_write( this, writeSize );
+	write_record(&gf_rec.info);
+	if( !filePtr->file_write(&gf_rec, sizeof(InfoGF)) )
+		return 0;
+	return 1;
 }
 //--------- End of function Info::write_file ---------------//
 
@@ -1300,12 +1339,10 @@ int Info::write_file(File* filePtr)
 //
 int Info::read_file(File* filePtr)
 {
-	int readSize = (char*)(&last_write_offset) - (char*)(this);
-
-	//------- read the info data ----------//
-
-	MSG(__FILE__":%d: file_read(this, ...);\n", __LINE__);
-	return filePtr->file_read( this, readSize );
+	if( !filePtr->file_read(&gf_rec, sizeof(InfoGF)) )
+		return 0;
+	read_record(&gf_rec.info);
+	return 1;
 }
 //--------- End of function Info::read_file ---------------//
 
@@ -1315,7 +1352,10 @@ int Info::read_file(File* filePtr)
 //
 int Power::write_file(File* filePtr)
 {
-	return filePtr->file_write( this, sizeof(Power) );
+	write_record(&gf_rec.power);
+	if( !filePtr->file_write(&gf_rec, sizeof(PowerGF)) )
+		return 0;
+	return 1;
 }
 //--------- End of function Power::write_file ---------------//
 
@@ -1324,8 +1364,10 @@ int Power::write_file(File* filePtr)
 //
 int Power::read_file(File* filePtr)
 {
-	MSG(__FILE__":%d: file_read(this, ...);\n", __LINE__);
-	return filePtr->file_read( this, sizeof(Power) );
+	if( !filePtr->file_read(&gf_rec, sizeof(PowerGF)) )
+		return 0;
+	read_record(&gf_rec.power);
+	return 1;
 }
 //--------- End of function Power::read_file ---------------//
 
@@ -1375,7 +1417,10 @@ int Sys::read_file(File* filePtr)
 //
 int Weather::write_file(File* filePtr)
 {
-	return filePtr->file_write( this, sizeof(Weather) );
+	write_record(&gf_rec.weather);
+	if( !filePtr->file_write(&gf_rec, sizeof(WeatherGF)) )
+		return 0;
+	return 1;
 }
 //--------- End of function Weather::write_file ---------------//
 
@@ -1384,8 +1429,10 @@ int Weather::write_file(File* filePtr)
 //
 int Weather::read_file(File* filePtr)
 {
-	MSG(__FILE__":%d: file_read(this, ...);\n", __LINE__);
-	return filePtr->file_read( this, sizeof(Weather) );
+	if( !filePtr->file_read(&gf_rec, sizeof(WeatherGF)) )
+		return 0;
+	read_record(&gf_rec.weather);
+	return 1;
 }
 //--------- End of function Weather::read_file ---------------//
 
@@ -1395,7 +1442,10 @@ int Weather::read_file(File* filePtr)
 //
 int MagicWeather::write_file(File* filePtr)
 {
-	return filePtr->file_write( this, sizeof(MagicWeather) );
+	write_record(&gf_rec.magic_weather);
+	if( !filePtr->file_write(&gf_rec, sizeof(MagicWeatherGF)) )
+		return 0;
+	return 1;
 }
 //--------- End of function MagicWeahter::write_file ---------------//
 
@@ -1404,8 +1454,10 @@ int MagicWeather::write_file(File* filePtr)
 //
 int MagicWeather::read_file(File* filePtr)
 {
-	MSG(__FILE__":%d: file_read(this, ...);\n", __LINE__);
-	return filePtr->file_read( this, sizeof(MagicWeather) );
+	if( !filePtr->file_read(&gf_rec, sizeof(MagicWeatherGF)) )
+		return 0;
+	read_record(&gf_rec.magic_weather);
+	return 1;
 }
 //--------- End of function MagicWeahter::read_file ---------------//
 
@@ -1417,7 +1469,21 @@ int World::write_file(File* filePtr)
 {
 	//--------- save map -------------//
 
-	if( !filePtr->file_write(loc_matrix, max_x_loc*max_y_loc*sizeof(Location) ) )
+	int mapCells = max_x_loc*max_y_loc;
+	size_t writeSize = mapCells*sizeof(LocationGF);
+	LocationGF* locMatrix = (LocationGF*) mem_add(writeSize);
+
+	for( int i=0; i<mapCells; i++ )
+	{
+		Location* locPtr = loc_matrix+i;
+		locPtr->write_record(locMatrix+i);
+	}
+
+	int rc = filePtr->file_write(locMatrix, writeSize);
+
+	mem_del(locMatrix);
+
+	if( !rc )
 		return 0;
 
 	//--------- save vars -----------//
@@ -1456,11 +1522,27 @@ int World::read_file(File* filePtr)
 {
 	//-------- read in the map --------//
 
-	loc_matrix = (Location*) mem_resize( loc_matrix, max_x_loc * max_y_loc
+	int mapCells = max_x_loc*max_y_loc;
+
+	loc_matrix = (Location*) mem_resize( loc_matrix, mapCells
 					  * sizeof(Location) );
 
-	if( !filePtr->file_read(loc_matrix, max_x_loc*max_y_loc*sizeof(Location) ) )
+	size_t readSize = mapCells*sizeof(LocationGF);
+	LocationGF* locMatrix = (LocationGF*) mem_add(readSize);
+
+	if( !filePtr->file_read(locMatrix, readSize) )
+	{
+		mem_del(locMatrix);
 		return 0;
+	}
+
+	for( int i=0; i<mapCells; i++ )
+	{
+		Location* locPtr = loc_matrix+i;
+		locPtr->read_record(locMatrix+i);
+	}
+
+	mem_del(locMatrix);
 
 	assign_map();
 

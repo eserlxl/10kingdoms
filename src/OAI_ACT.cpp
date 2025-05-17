@@ -170,6 +170,8 @@ int Nation::process_action(int priorityActionRecno, int processActionMode)
 		if( nation_array.is_deleted(nationRecno) )		// diplomatic option can result in surrendering 
 			return 0;
 
+		actionNode = get_action(actionRecno);  // in case an action_array resize invalidated the prior ptr copy
+
 		thisSessionProcessCount++;
 
 		//------ check the return result -------//
@@ -727,14 +729,20 @@ void Nation::auto_next_action(ActionNode* actionNode)
 	switch( actionNode->action_mode )
 	{
 		case ACTION_AI_SEA_TRAVEL:
-			actionNode->action_mode = ACTION_AI_SEA_TRAVEL2;
-			actionNode->instance_count = 1;	// only move one ship, it was previously set to the no. units to aboard the ship
-			actionRecno = add_action(actionNode, 1);			// 1-immediate process flag
+			{
+				ActionNode nextAction = *actionNode;
+				nextAction.action_mode = ACTION_AI_SEA_TRAVEL2;
+				nextAction.instance_count = 1;	// only move one ship, it was previously set to the no. units to aboard the ship
+				actionRecno = add_action(&nextAction, 1);			// 1-immediate process flag
+			}
 			break;
 
 		case ACTION_AI_SEA_TRAVEL2:
-			actionNode->action_mode = ACTION_AI_SEA_TRAVEL3;
-			actionRecno = add_action(actionNode, 1);			// 1-immediate process flag
+			{
+				ActionNode nextAction = *actionNode;
+				nextAction.action_mode = ACTION_AI_SEA_TRAVEL3;
+				actionRecno = add_action(&nextAction, 1);			// 1-immediate process flag
+			}
 			break;
 	}
 

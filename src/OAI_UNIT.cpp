@@ -145,23 +145,25 @@ Unit* Nation::find_skilled_unit(int skillId, int raceId, short destX, short dest
 		if( raceId && unitPtr->race_id != raceId )
 			continue;
 
+		if( unitPtr->skill.skill_id!=skillId || unitPtr->skill.skill_level < TRAIN_SKILL_LEVEL )
+			continue;
+
 		//---- if this unit is on a mission ----//
 
 		if( unitPtr->home_camp_firm_recno )
-			continue;
-
-		if( unitPtr->region_id() != destRegionId )
 			continue;
 
 		//----- if this is a mobile unit ------//
 
 		if( unitPtr->is_visible() )
 		{
+			if( unitPtr->region_id() != destRegionId )
+				continue;
+
 			if( !unitPtr->is_ai_all_stop() )
 				continue;
 
-			if( unitPtr->skill.skill_id==skillId &&
-				 unitPtr->cur_action!=SPRITE_ATTACK && !unitPtr->ai_action_id )
+			if( unitPtr->cur_action!=SPRITE_ATTACK && !unitPtr->ai_action_id )
 			{
 				curDist = misc.points_distance(unitPtr->next_x_loc(), unitPtr->next_y_loc(), destX, destY);
 
@@ -198,13 +200,18 @@ Unit* Nation::find_skilled_unit(int skillId, int raceId, short destX, short dest
 		{
 			firmPtr = firm_array[unitPtr->unit_mode_para];
 
-			if( !firmPtr->under_construction )		// only if the unit is repairing instead of constructing the firm
+			if( firmPtr->region_id != destRegionId )
+				continue;
+
+			//--- skip if the unit is constructing or needed to finish repairing ---//
+
+			if( firmPtr->under_construction || (firmPtr->hit_points*100/firmPtr->max_hit_points)<=90 || info.game_date <= firmPtr->last_attacked_date+8 )
+				continue;
+
+			if( firmPtr->set_builder(0) )			// return 1 if the builder is mobilized successfully, 0 if the builder was killed because of out of space on the map
 			{
-				if( firmPtr->set_builder(0) )			// return 1 if the builder is mobilized successfully, 0 if the builder was killed because of out of space on the map
-				{
-					skilledUnit = unitPtr;
-					break;
-				}
+				skilledUnit = unitPtr;
+				break;
 			}
 		}
 	}
@@ -372,6 +379,9 @@ int Nation::hire_unit(int skillId, int raceId, short destX, short destY)
 //
 int Nation::train_unit(int skillId, int raceId, short destX, short destY, int& trainTownRecno, int actionId)
 {
+	if( skillId && cash < EXPENSE_TRAIN_UNIT ) // training costs money
+		return 0;
+
 	//----- locate the best town for training the unit -----//
 
 	int 	 i;
@@ -392,6 +402,9 @@ int Nation::train_unit(int skillId, int raceId, short destX, short destY, int& t
 		}
 
 		if( townPtr->region_id != destRegionId )
+			continue;
+
+		if( raceId && townPtr->jobless_race_pop_array[raceId-1] <= 0 )
 			continue;
 
 		//--------------------------------------//
@@ -415,7 +428,7 @@ int Nation::train_unit(int skillId, int raceId, short destX, short destY, int& t
 	townPtr = town_array[trainTownRecno];
 
 	if( !raceId )
-		raceId = townPtr->pick_random_race(1, 1);		// 1-pick has job units also, 1-pick spy units
+		raceId = townPtr->pick_random_race(0, 1);		// 0-pick jobless units, 1-pick spy units
 
 	if( !raceId )
 		return 0;
@@ -423,6 +436,7 @@ int Nation::train_unit(int skillId, int raceId, short destX, short destY, int& t
 	int unitRecno = townPtr->recruit(skillId, raceId, COMMAND_AI);
 
 	if( !unitRecno )
+		// can happen when training a spy and the selected recruit is an enemy spy
 		return 0;
 
 	townPtr->train_unit_action_id = actionId;		// set train_unit_action_id so the unit can immediately execute the action when he has finished training.

@@ -54,6 +54,8 @@ enum { REPLY_NOT_NEEDED,		// do not need a reply for this messge, it's an inform
 
 //------- Define struct TalkMsg -------//
 
+struct TalkMsgGF;
+
 #pragma pack(1)
 struct TalkMsg
 {
@@ -116,20 +118,29 @@ public:
 	void		clear_ptr();
 	// ###### end Gilbert 10/10 #########//
 
+	void		write_record(TalkMsgGF *r);
+	void		read_record(TalkMsgGF *r);
 };
 #pragma pack()
 
 //------- Define struct TalkChoice -------//
+
+struct TalkChoiceGF;
 
 #pragma pack(1)
 struct TalkChoice
 {
 	const char*	str;
 	short		para;
+
+	void		write_record(TalkChoiceGF *r);
+	void		read_record(TalkChoiceGF *r);
 };
 #pragma pack()
 
 //------ Define class TalkRes --------//
+
+struct TalkResGF;
 
 #pragma pack(1)
 class TalkRes
@@ -208,6 +219,8 @@ private:
 	void			process_talk_msg();
 	void			process_accepted_reply(TalkMsg *talkMsg);
 
+	void		write_record(TalkResGF *r);
+	void		read_record(TalkResGF *r);
 };
 #pragma pack()
 

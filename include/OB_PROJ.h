@@ -27,6 +27,7 @@
 #include <OBULLET.h>
 
 struct ProjectileCrc;
+struct ProjectileGF;
 
 #pragma pack(1)
 class Projectile : public Bullet
@@ -46,6 +47,8 @@ public:
 
 	int	write_derived_file(File *);
 	int	read_derived_file(File *);
+	void	write_derived_record(ProjectileGF *r);
+	void	read_derived_record(ProjectileGF *r);
 
 	//-------------- multiplayer checking codes ---------------//
 	virtual	uint8_t crc8();

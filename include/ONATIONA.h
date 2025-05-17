@@ -42,6 +42,8 @@ struct NewNationPara;
 
 //---------- Define class NationArray -----------//
 
+struct NationArrayGF;
+
 #pragma pack(1)
 class NationArray : public DynArrayB
 {
@@ -121,6 +123,8 @@ public:
 
 	int  		write_file(File*);
 	int  		read_file(File*);
+	void		write_record(NationArrayGF *r);
+	void		read_record(NationArrayGF *r);
 
 	void		set_human_name(int nationRecno, char* nameStr);
 	char*		get_human_name(int nationNameId, int firstWordOnly=0);

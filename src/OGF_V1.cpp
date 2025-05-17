@@ -293,7 +293,7 @@ void Version_1_Nation::convert_to_version_2(Nation *nationPtr)
 {
 	Version_1_NationBase::convert_to_version_2(nationPtr);
 
-	nationPtr->action_array = action_array;
+	// skip action_array
 	nationPtr->last_action_id = last_action_id;
 	nationPtr->ai_town_size = ai_town_size;
 	nationPtr->ai_base_size = ai_base_size;

@@ -42,6 +42,8 @@
 
 //------- define struct InnUnit ---------//
 
+struct InnUnitGF;
+
 #pragma pack(1)
 struct InnUnit
 {
@@ -54,12 +56,16 @@ public:
 
 public:
 	void	set_hire_cost();
+
+	void	write_record(InnUnitGF *r);
+	void	read_record(InnUnitGF *r);
 };
 #pragma pack()
 
-struct FirmInnCrc;
-
 //------- Define class FirmInn --------//
+
+struct FirmInnCrc;
+struct FirmInnGF;
 
 #pragma pack(1)
 class FirmInn : public Firm
@@ -95,6 +101,11 @@ public:
 	virtual	uint8_t crc8();
 	virtual	void	clear_ptr();
 	virtual	void	init_crc(FirmInnCrc *c);
+
+	int		write_derived_file(File *filePtr);
+	int		read_derived_file(File *filePtr);
+	void		write_derived_record(FirmInnGF *r);
+	void		read_derived_record(FirmInnGF *r);
 
 private:
 	int 		should_add_inn_unit();

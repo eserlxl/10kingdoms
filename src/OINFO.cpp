@@ -80,9 +80,8 @@ Info::Info() : report_array(sizeof(short), 50),
 //
 Info::~Info()
 {
+	free_game_scr();
 	deinit();
-
-	err_when( save_buf_1 );
 }
 //--------- End of function Info::~Info ---------//
 
@@ -661,7 +660,7 @@ char* Info::game_duration_str()
 //
 void Info::save_game_scr()
 {
-	err_when( save_buf_1 );
+	err_when( save_buf_1 || save_buf_1b || save_buf_2 || save_buf_3 || save_buf_4 );
 
 	// top and buttom
 	if( 0 < ZOOM_Y1 )
@@ -689,17 +688,30 @@ void Info::rest_game_scr()
 {
 	// restore area outside front buffer
 	if(save_buf_4)
+	{
 		vga_front.rest_area(save_buf_4, 1);
+		save_buf_4 = NULL;
+	}
 	if(save_buf_3)
+	{
 		vga_front.rest_area(save_buf_3, 1);
+		save_buf_3 = NULL;
+	}
 	if(save_buf_2)
+	{
 		vga_front.rest_area(save_buf_2, 1);
+		save_buf_2 = NULL;
+	}
 	if(save_buf_1)
+	{
 		vga_front.rest_area(save_buf_1, 1);
+		save_buf_1 = NULL;
+	}
 	if(save_buf_1b)
+	{
 		vga_back.rest_area(save_buf_1b, 1);
-
-	save_buf_1 = NULL;
+		save_buf_1b = NULL;
+	}
 
 	info.disp();
 	sys.blt_virtual_buf();		// blt the virtual front buffer to the screen
@@ -712,21 +724,34 @@ void Info::rest_game_scr()
 void Info::free_game_scr()
 {
 	if(save_buf_4)
+	{
 		mem_del(save_buf_4);
+		save_buf_4 = NULL;
+	}
 
 	if(save_buf_3)
+	{
 		mem_del(save_buf_3);
+		save_buf_3 = NULL;
+	}
 
 	if(save_buf_2)
+	{
 		mem_del(save_buf_2);
+		save_buf_2 = NULL;
+	}
 
 	if(save_buf_1)
+	{
 		mem_del(save_buf_1);
+		save_buf_1 = NULL;
+	}
 
 	if(save_buf_1b)
+	{
 		mem_del(save_buf_1b);
-
-	save_buf_1 = NULL;
+		save_buf_1b = NULL;
+	}
 }
 //---------- End of function Info::free_game_scr ---------//
 

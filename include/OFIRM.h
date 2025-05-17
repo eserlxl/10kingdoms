@@ -90,6 +90,8 @@ enum { ASSASSINATE_FAIL,
 
 //------------- Define struct Worker ------------//
 
+struct WorkerGF;
+
 #pragma pack(1)
 struct Worker
 {
@@ -127,10 +129,14 @@ public:
 	void  change_loyalty(int loyaltyChange);
 	void	change_hit_points(int changePoints);
 	int	max_attack_range();
+
+	void	write_record(WorkerGF *r);
+	void	read_record(WorkerGF *r);
 };
 #pragma pack()
 
 struct FirmCrc;
+struct FirmGF;
 class FirmBase;
 class FirmMine;
 class FirmFactory;
@@ -278,10 +284,12 @@ public:
 	void		capture_firm(int newNationRecno);
 	virtual void change_nation(int newNationRecno);
 
-	void		setup_link();
+	void		setup_link(int reload=0);
 	void		release_link();
 	void		release_firm_link(int);
 	void		release_town_link(int);
+	int		is_linked_to_firm(short townRecno);
+	int		is_linked_to_town(short townRecno);
 
 	int 		can_toggle_town_link();
 	int 		can_toggle_firm_link(int firmRecno);
@@ -353,6 +361,10 @@ public:
 			  void toggle_firm_link(int linkId, int toggleFlag, char remoteAction, int setBoth=0);
 			  void toggle_town_link(int linkId, int toggleFlag, char remoteAction, int setBoth=0);
 
+	int          write_file(File *filePtr);
+	int          read_file(File *filePtr);
+	void         write_record(FirmGF *r);
+	void         read_record(FirmGF *r);
 	virtual int  write_derived_file(File*); 
 	virtual int  read_derived_file(File*);
 

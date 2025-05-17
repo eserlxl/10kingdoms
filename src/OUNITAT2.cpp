@@ -49,6 +49,10 @@
 #undef DEBUG
 #endif
 
+//--------- Declare static functions ---------//
+static void invalidate_attack_target(Unit *unitPtr);
+
+
 //--------- Begin of function Unit::attack_unit ---------//
 // overloaded function.
 // the unit calling this function is to attack target by (1) default
@@ -255,7 +259,6 @@ void Unit::attack_unit(short targetRecno, int xOffset, int yOffset, int resetBlo
 	{
 		//------------ old order ------------//
 		err_when(action_mode==ACTION_STOP && cur_action==SPRITE_ATTACK);
-		err_when(action_mode==ACTION_ATTACK_UNIT && !action_para);
 
 		if(cur_action!=SPRITE_IDLE)
 		{
@@ -396,6 +399,11 @@ void Unit::process_attack_unit()
 		return;
 	}
 
+	//------- if the targeted unit has been destroyed --------//
+	if(!action_para)
+		return;
+
+
 	err_when(!action_para || action_mode!=ACTION_ATTACK_UNIT ||	!can_attack());	// unable to attack
 
 	// ###### begin Gilbert 17/3 #######//
@@ -409,7 +417,16 @@ void Unit::process_attack_unit()
 	Unit* targetUnit;
 
 	if(unit_array.is_deleted(action_para) || action_para==sprite_recno)
-		clearOrder++;
+	{
+		if(!config_adv.unit_finish_attack_move || cur_action==SPRITE_ATTACK)
+			clearOrder++;
+		else
+		{
+			// keep attack action alive to finish movement before going idle
+			invalidate_attack_target(this);
+			return;
+		}
+	}
 	else
 	{
 		targetUnit = unit_array[action_para];
@@ -1196,6 +1213,9 @@ void Unit::process_attack_firm()
 	}
 
 	//------- if the targeted firm has been destroyed --------//
+	if(!action_para)
+		return;
+
 	err_when(!action_para || action_mode!=ACTION_ATTACK_FIRM || !can_attack());	// unable to attack
 	// ###### begin Gilbert 17/3 #######//
 	//err_when(attack_info_array[cur_attack].attack_range != attack_range);
@@ -1207,7 +1227,16 @@ void Unit::process_attack_firm()
 	// check attack conditions
 	//------------------------------------------------------------//
 	if(firm_array.is_deleted(action_para))
-		clearOrder++;
+	{
+		if(!config_adv.unit_finish_attack_move || cur_action==SPRITE_ATTACK)
+			clearOrder++;
+		else
+		{
+			// keep attack action alive to finish movement before going idle
+			invalidate_attack_target(this);
+			return;
+		}
+	}
 	else
 	{
 		targetFirm = firm_array[action_para];
@@ -1654,6 +1683,10 @@ void Unit::process_attack_town()
 		return;
 	}
 
+	//------- if the targeted town has been destroyed --------//
+	if(!action_para)
+		return;
+
 	err_when(!action_para || action_mode!=ACTION_ATTACK_TOWN || !can_attack());	// unable to attack
 	// ###### begin Gilbert 17/3 #######//
 	//err_when(attack_info_array[cur_attack].attack_range != attack_range);
@@ -1665,7 +1698,16 @@ void Unit::process_attack_town()
 	// check attack conditions
 	//------------------------------------------------------------//
 	if(town_array.is_deleted(action_para))
-		clearOrder++;
+	{
+		if(!config_adv.unit_finish_attack_move || cur_action==SPRITE_ATTACK)
+			clearOrder++;
+		else
+		{
+			// keep attack action alive to finish movement before going idle
+			invalidate_attack_target(this);
+			return;
+		}
+	}
 	else
 	{
 		targetTown = town_array[action_para];
@@ -2102,8 +2144,11 @@ void Unit::process_attack_wall()
 	Location *locPtr = world.get_loc(action_x_loc, action_y_loc);
 	if(!locPtr->is_wall())
 	{
-		stop2(KEEP_DEFENSE_MODE);
-		err_when(cur_action==SPRITE_ATTACK && action_mode==ACTION_STOP);
+		if(!config_adv.unit_finish_attack_move || cur_action==SPRITE_ATTACK)
+		{
+			stop2(KEEP_DEFENSE_MODE);
+			err_when(cur_action==SPRITE_ATTACK && action_mode==ACTION_STOP);
+		}
 		return;
 	}
 
@@ -2256,3 +2301,22 @@ void Unit::process_attack_wall()
 	err_when(action_mode==ACTION_STOP && cur_action==SPRITE_ATTACK);
 }
 //----------- End of function Unit::process_attack_wall -----------//
+
+
+//--------- Begin of static function invalidate_attack_target ---------//
+//
+// Invalidates the attack parameter. If the idle action is the same,
+// invalidate that parameter also.
+//
+static void invalidate_attack_target(Unit *unitPtr)
+{
+	if( unitPtr->action_mode2 == unitPtr->action_mode &&
+		unitPtr->action_para2 == unitPtr->action_para2 &&
+		unitPtr->action_x_loc2 == unitPtr->action_x_loc &&
+		unitPtr->action_y_loc2 == unitPtr->action_y_loc )
+	{
+		unitPtr->action_para2 = 0;
+	}
+	unitPtr->action_para = 0;
+}
+//----------- End of function invalidate_attack_target -----------//

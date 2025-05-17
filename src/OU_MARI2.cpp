@@ -87,6 +87,9 @@ int UnitMarine::is_ai_all_stop()
 
 int UnitMarine::think_resign()
 {
+	if( !can_resign() )
+		return 0;
+
 	//---- only resign when the ship has stopped ----//
 
 	if( !is_ai_all_stop() )

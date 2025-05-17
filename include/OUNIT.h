@@ -188,6 +188,8 @@ enum  {  KEEP_PRESERVE_ACTION = 1,  // used for stop2() to keep preserve action
 
 //----------- Define TeamInfo -------------//
 
+struct TeamInfoGF;
+
 #pragma pack(1)
 struct TeamInfo
 {
@@ -196,12 +198,17 @@ struct TeamInfo
    char  member_count;
    short member_unit_array[MAX_TEAM_MEMBER];
    int   ai_last_request_defense_date;
+
+	void write_record(TeamInfoGF *r);
+	void read_record(TeamInfoGF *r);
 };
 #pragma pack()
 
-struct UnitCrc;
 
 //----------- Define class Unit -----------//
+
+struct UnitCrc;
+struct UnitGF;
 
 #pragma pack(1)
 class Unit : public Sprite
@@ -564,6 +571,8 @@ public:
 
 	int   write_file(File* filePtr);
 	int   read_file(File* filePtr);
+	void  write_record(UnitGF* r);
+	void  read_record(UnitGF* r);
 
 	virtual int write_derived_file(File* filePtr);
 	virtual int read_derived_file(File* filePtr);

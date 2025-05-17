@@ -247,11 +247,14 @@ void ConfigAdv::reset()
 
 	scenario_config = 1;
 
-	town_ai_emerge_nation_pop_limit = 60 * MAX_NATION;
-	town_ai_emerge_town_pop_limit = 100000;
+	town_ai_emerge_nation_pop_limit = 100 * MAX_NATION;
+	town_ai_emerge_town_pop_limit = 10000;
+	town_migration = 1;
 	town_loyalty_qol = 1;
 
 	unit_ai_team_help = 1;
+	unit_allow_path_power_mode = 0;
+	unit_finish_attack_move = 1;
 	unit_loyalty_require_local_leader = 1;
 	unit_spy_fixed_target_loyalty = 0;
 	unit_target_move_range_cycle = 0;
@@ -264,6 +267,8 @@ void ConfigAdv::reset()
 
 	vga_window_width = 0;
 	vga_window_height = 0;
+
+	wall_building_allowed = 0;
 
 	// after applying defaults, checksum is not required
 	checksum = 0;
@@ -285,9 +290,75 @@ int ConfigAdv::set(char *name, char *value)
 		if( !read_key(value, &key, &event) || !mouse.bind_key(event.type, key) )
 			return 0;
 	}
+	else if( !strcmp(name, "firm_ai_enable_think_spy_capture") )
+	{
+		if( !read_bool(value, &firm_ai_enable_think_spy_capture) )
+			return 0;
+		update_check_sum(name, value);
+	}
 	else if( !strcmp(name, "firm_mobilize_civilian_aggressive") )
 	{
 		if( !read_bool(value, &firm_mobilize_civilian_aggressive) )
+			return 0;
+		update_check_sum(name, value);
+	}
+	else if( !strcmp(name, "firm_migrate_stricter_rules") )
+	{
+		if( !read_bool(value, &firm_migrate_stricter_rules) )
+			return 0;
+		update_check_sum(name, value);
+	}
+	else if( !strcmp(name, "fix_ai_consider_trade_treaty") )
+	{
+		if( !read_bool(value, &fix_ai_consider_trade_treaty) )
+			return 0;
+		update_check_sum(name, value);
+	}
+	else if( !strcmp(name, "fix_path_blocked_by_team") )
+	{
+		if( !read_bool(value, &fix_path_blocked_by_team) )
+			return 0;
+		update_check_sum(name, value);
+	}
+	else if( !strcmp(name, "fix_recruit_dec_loyalty") )
+	{
+		if( !read_bool(value, &fix_recruit_dec_loyalty) )
+			return 0;
+		update_check_sum(name, value);
+	}
+	else if( !strcmp(name, "fix_sea_travel_final_move") )
+	{
+		if( !read_bool(value, &fix_sea_travel_final_move) )
+			return 0;
+		update_check_sum(name, value);
+	}
+	else if( !strcmp(name, "fix_town_unjob_worker") )
+	{
+		if( !read_bool(value, &fix_town_unjob_worker) )
+			return 0;
+		update_check_sum(name, value);
+	}
+	else if( !strcmp(name, "fix_world_warp_slop") )
+	{
+		if( !read_int(value, &fix_world_warp_slop) )
+			return 0;
+		update_check_sum(name, value);
+	}
+	else if( !strcmp(name, "game_load_default_frame_speed") )
+	{
+		if( !read_int(value, &game_load_default_frame_speed) )
+			return 0;
+		update_check_sum(name, value);
+	}
+	else if( !strcmp(name, "game_new_default_frame_speed") )
+	{
+		if( !read_int(value, &game_new_default_frame_speed) )
+			return 0;
+		update_check_sum(name, value);
+	}
+	else if( !strcmp(name, "game_file_patching") )
+	{
+		if( !read_bool(value, &game_file_patching) )
 			return 0;
 		update_check_sum(name, value);
 	}
@@ -295,6 +366,12 @@ int ConfigAdv::set(char *name, char *value)
 	{
 		strncpy(locale, value, LOCALE_LEN);
 		locale[LOCALE_LEN] = 0;
+	}
+	else if( !strcmp(name, "mine_unlimited_reserve") )
+	{
+		if( !read_bool(value, &mine_unlimited_reserve) )
+			return 0;
+		update_check_sum(name, value);
 	}
 	else if( !strcmp(name, "monster_alternate_attack_curve") )
 	{
@@ -307,6 +384,18 @@ int ConfigAdv::set(char *name, char *value)
 		if( !read_int(value, &monster_attack_divisor) )
 			return 0;
 		if( CHECK_BOUND(monster_attack_divisor, 1, 6) )
+			return 0;
+		update_check_sum(name, value);
+	}
+	else if( !strcmp(name, "nation_ai_defeat_when_no_towns") )
+	{
+		if( !read_bool(value, &nation_ai_defeat_when_no_towns) )
+			return 0;
+		update_check_sum(name, value);
+	}
+	else if( !strcmp(name, "nation_ai_no_treaty_with_biggest") )
+	{
+		if( !read_bool(value, &nation_ai_no_treaty_with_biggest) )
 			return 0;
 		update_check_sum(name, value);
 	}
@@ -343,6 +432,11 @@ int ConfigAdv::set(char *name, char *value)
 		if( CHECK_BOUND(nation_start_tech_inc_all_level, 0, 2) )
 			return 0;
 		update_check_sum(name, value);
+	}
+	else if( !strcmp(name, "news_notify_complete") )
+	{
+		if( !read_bool(value, &news_notify_complete) )
+			return 0;
 	}
 	else if( !strcmp(name, "race_random_list") )
 	{
@@ -386,6 +480,12 @@ int ConfigAdv::set(char *name, char *value)
 			return 0;
 		update_check_sum(name, value);
 	}
+	else if( !strcmp(name, "town_migration") )
+	{
+		if( !read_bool(value, &town_migration) )
+			return 0;
+		update_check_sum(name, value);
+	}
 	else if( !strcmp(name, "town_loyalty_qol") )
 	{
 		if( !read_bool(value, &town_loyalty_qol) )
@@ -398,9 +498,21 @@ int ConfigAdv::set(char *name, char *value)
 			return 0;
 		update_check_sum(name, value);
 	}
+	else if( !strcmp(name, "unit_finish_attack_move") )
+	{
+		if( !read_bool(value, &unit_finish_attack_move) )
+			return 0;
+		update_check_sum(name, value);
+	}
 	else if( !strcmp(name, "unit_loyalty_require_local_leader") )
 	{
 		if( !read_bool(value, &unit_loyalty_require_local_leader) )
+			return 0;
+		update_check_sum(name, value);
+	}
+	else if( !strcmp(name, "unit_allow_path_power_mode") )
+	{
+		if( !read_bool(value, &unit_allow_path_power_mode) )
 			return 0;
 		update_check_sum(name, value);
 	}
@@ -449,6 +561,11 @@ int ConfigAdv::set(char *name, char *value)
 	else if( !strcmp(name, "vga_window_width") )
 	{
 		if( !read_int(value, &vga_window_width) )
+			return 0;
+	}
+	else if( !strcmp(name, "wall_building_allowed") )
+	{
+		if( !read_bool(value, &wall_building_allowed) )
 			return 0;
 	}
 	else

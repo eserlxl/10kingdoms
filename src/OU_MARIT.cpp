@@ -253,7 +253,7 @@ void UnitMarine::update_stop_list()
 
 			if(dist<minDist)
 			{
-				dist = minDist;
+				minDist = dist;
 				dest_stop_id = i+1;
 			}
 		}
@@ -382,6 +382,8 @@ void UnitMarine::pre_process()
 			if(curXLoc<firmPtr->loc_x1-moveStep || curXLoc>firmPtr->loc_x2+moveStep ||
 				curYLoc<firmPtr->loc_y1-moveStep || curYLoc>firmPtr->loc_y2+moveStep)
 			{
+				if(!is_visible())
+					return; // may get here if player manually ordered ship to dock
 				//### begin alex 6/10 ###//
 				/*if((move_to_x_loc>=firmPtr->loc_x1-moveStep || move_to_x_loc<=firmPtr->loc_x2+moveStep) &&
 					(move_to_y_loc>=firmPtr->loc_y1-moveStep || move_to_y_loc<=firmPtr->loc_y2+moveStep))
@@ -937,7 +939,7 @@ void UnitMarine::harbor_unload_raw()
 		// distribute the stock into each market
 		//----------------------------------------------------------------------//
 		marketNodePtr = linked_market_array;
-		for(j=0; j<linked_market_num; j++, marketNodePtr, firmSelectedPtr++)
+		for(j=0; j<linked_market_num; j++, marketNodePtr++, firmSelectedPtr++)
 		{
 			if(!(*firmSelectedPtr))
 				continue;

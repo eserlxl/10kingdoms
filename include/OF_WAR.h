@@ -32,9 +32,10 @@
 
 #define MAX_BUILD_QUEUE				20
 
-struct FirmWarCrc;
-
 //------- Define class FirmWar --------//
+
+struct FirmWarCrc;
+struct FirmWarGF;
 
 #pragma pack(1)
 class FirmWar : public Firm
@@ -76,6 +77,11 @@ public:
 	virtual	uint8_t	crc8();
 	virtual	void	clear_ptr();
 	virtual	void	init_crc(FirmWarCrc *c);
+
+	int	write_derived_file(File *filePtr);
+	int	read_derived_file(File *filePtr);
+	void	write_derived_record(FirmWarGF *r);
+	void	read_derived_record(FirmWarGF *r);
 
 	enum {FIRMWAR_BUILD_BATCH_COUNT = 10}; // Number of units enqueued when holding shift - ensure this is less than MAX_BUILD_QUEUE
 

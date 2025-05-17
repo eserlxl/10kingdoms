@@ -27,6 +27,7 @@
 #include <OBULLET.h>
 
 struct BulletHomingCrc;
+struct BulletHomingGF;
 
 #pragma pack(1)
 class BulletHoming : public Bullet
@@ -46,8 +47,10 @@ public:
 
 	void	process_move();
 
-	// int	write_derived_file(File *);
-	// int	read_derived_file(File *);
+	int	write_derived_file(File *filePtr);
+	int	read_derived_file(File *filePtr);
+	void	write_derived_record(BulletHomingGF *r);
+	void	read_derived_record(BulletHomingGF *r);
 
 	//-------------- multiplayer checking codes ---------------//
 	virtual	uint8_t crc8();

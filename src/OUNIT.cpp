@@ -692,6 +692,7 @@ void Unit::deinit_unit_mode()
 
 		FirmMonster* firmMonster = (FirmMonster*) firm_array[unit_mode_para];
 
+		err_when( !firmMonster );
 		err_when( firmMonster->firm_id != FIRM_MONSTER );
 
 		firmMonster->reduce_defender_count(rank_id);
@@ -1813,7 +1814,7 @@ void Unit::inc_minor_combat_level(int incLevel)
 
    skill.combat_level_minor += incLevel;
 
-   if( skill.combat_level_minor > 100 )
+   if( skill.combat_level_minor >= 100 )
    {
       if( skill.combat_level < 100 )
          set_combat_level(skill.combat_level+1);
@@ -1832,7 +1833,7 @@ void Unit::inc_minor_skill_level(int incLevel)
 
    skill.skill_level_minor += incLevel;
 
-   if( skill.skill_level_minor > 100 )
+   if( skill.skill_level_minor >= 100 )
    {
       if( skill.skill_level < 100 )
          skill.skill_level++;
@@ -2316,8 +2317,13 @@ int Unit::can_spy_change_nation()
          if( unit_array.is_deleted(unitRecno) )    // the unit is dying, its recno is still in the location
             continue;
 
-         if( unit_array[unitRecno]->true_nation_recno() != trueNationRecno )
+         Unit* unitPtr = unit_array[unitRecno];
+
+         if( unitPtr->true_nation_recno() != trueNationRecno &&
+             unitPtr->nation_recno != trueNationRecno )
+         {
             return 0;
+         }
       }
    }
 
@@ -2395,7 +2401,7 @@ uint8_t Unit::region_id()
 	}
 	else
 	{
-		if( unit_mode == UNIT_MODE_OVERSEE )
+		if( unit_mode == UNIT_MODE_OVERSEE || unit_mode == UNIT_MODE_CONSTRUCT )
 			return firm_array[unit_mode_para]->region_id;
 	}
 
@@ -2444,8 +2450,8 @@ void Unit::del_team_member(int unitRecno)
 // are any units with hit_points <= 0, delete them.
 //
 // Those unit may just be killed, so soon that the Unit's set_die()
-// function hsa been called yet. validate_team() function must
-// be called before all issunig any new team actions.
+// function hasn't been called yet. The validate_team() function must
+// be called before issuing any new team actions.
 //
 void Unit::validate_team()
 {

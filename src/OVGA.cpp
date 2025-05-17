@@ -439,7 +439,7 @@ void Vga::handle_messages()
                   real_x = bound_x1;
                   logical_x = mouse.bound_x1;
                }
-               else if( real_x >= bound_x2 )
+               else if( real_x > bound_x2 )
                {
                   do_warp = 1;
                   real_x = bound_x2;
@@ -451,7 +451,7 @@ void Vga::handle_messages()
                   real_y = bound_y1;
                   logical_y = mouse.bound_y1;
                }
-               else if( real_y >= bound_y2 )
+               else if( real_y > bound_y2 )
                {
                   do_warp = 1;
                   real_y = bound_y2;
@@ -511,9 +511,12 @@ void Vga::handle_messages()
             }
             else if( event.key.keysym.sym == SDLK_TAB )
             {
-               bypass = 1;
-               SDL_Window *window = SDL_GetWindowFromID(event.key.windowID);
-               SDL_MinimizeWindow(window);
+               if( is_full_screen() )
+               {
+                  bypass = 1;
+                  SDL_Window *window = SDL_GetWindowFromID(event.key.windowID);
+                  SDL_MinimizeWindow(window);
+               }
             }
          }
          else if( mod == KMOD_LCTRL || mod == KMOD_RCTRL )
@@ -547,6 +550,9 @@ void Vga::handle_messages()
       case SDL_TEXTINPUT:
          mouse.add_typing_event(event.text.text, misc.get_time());
          break;
+      case SDL_RENDER_TARGETS_RESET:
+         sys.need_redraw_flag = 1;
+         break;
       case SDL_TEXTEDITING:
       case SDL_JOYAXISMOTION:
       case SDL_JOYBALLMOTION:
@@ -554,7 +560,7 @@ void Vga::handle_messages()
       case SDL_JOYBUTTONDOWN:
       case SDL_JOYBUTTONUP:
       default:
-         MSG("unhandled event %d\n", event.type);
+         MSG("unhandled event %x\n", event.type);
          break;
       }
    }
@@ -1057,6 +1063,13 @@ static void init_window_size()
    SDL_Rect rect;
    if( SDL_GetDisplayUsableBounds(display_idx, &rect)<0 )
       goto unknown_display;
+
+   if( rect.w >= 2560 && rect.h >= 1600 )
+   {
+      config_adv.vga_window_width = 2560;
+      config_adv.vga_window_height = 1600;
+      return;
+   }
 
    if( rect.w >= 1920 && rect.h >= 1080 )
    {

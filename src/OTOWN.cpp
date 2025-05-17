@@ -432,12 +432,15 @@ void Town::next_day()
 
 	//------ think town people migration -------//
 
-	LOG_MSG(" think_migrate");
-	think_migrate();
-	LOG_MSG(misc.get_random_seed());
+	if( config_adv.town_migration && info.game_date%15 == town_recno%15 )
+	{
+		LOG_MSG(" think_migrate");
+		think_migrate();
+		LOG_MSG(misc.get_random_seed());
 
-	if( town_array.is_deleted(townRecno) )
-		return;
+		if( town_array.is_deleted(townRecno) )
+			return;
+	}
 
 	//-------- think about rebel -----//
 
@@ -809,7 +812,12 @@ void Town::set_nation(int newNationRecno)
 	//---- if there is unit being trained currently, change its nation ---//
 
 	if( train_unit_recno )
-		unit_array[train_unit_recno]->change_nation(newNationRecno);
+	{
+		if( newNationRecno )
+			unit_array[train_unit_recno]->change_nation(newNationRecno);
+		else // independent nations cannot train units
+			cancel_train_unit();
+	}
 
 	//-------- update loyalty ---------//
 
@@ -1846,16 +1854,37 @@ void Town::think_rebel()
 
 	//--- rebel if 2/3 of the population becomes discontented ---//
 
-	int i, discontentedCount=0, rebelLeaderRaceId=0, largestRebelRace=0;
+	int i, discontentedCount=0, rebelLeaderRaceId=0, largestRebelRace=0, trainRaceId=0;
+	int restrictRebelCount[MAX_RACE];
+
+	if( train_unit_recno )
+		trainRaceId = unit_array[train_unit_recno]->race_id;
 
 	for( i=0 ; i<MAX_RACE ; i++ )
 	{
-		if( race_pop_array[i] <= race_spy_count_array[i] )	// spies do not rebel together with the rebellion
-			continue;
+		restrictRebelCount[i] = race_spy_count_array[i];  // spies do not rebel together with the rebellion
 
-		if( race_loyalty_array[i] <= REBEL_LOYALTY )
+		if( race_pop_array[i]>0 && race_loyalty_array[i] <= REBEL_LOYALTY )
 		{
 			discontentedCount += race_pop_array[i];
+
+			// count firm spies that reside in this town
+			for( int j=0 ; j<linked_firm_count ; j++ )
+			{
+				Firm* firmPtr = firm_array[linked_firm_array[j]];
+				for( int k=0 ; k<firmPtr->worker_count ; k++ )
+				{
+					Worker* workerPtr = firmPtr->worker_array+k;
+					if( workerPtr->spy_recno && workerPtr->town_recno == town_recno )
+						restrictRebelCount[i]++;
+				}
+			}
+
+			if( trainRaceId==i+1 )
+				restrictRebelCount[i]++; // unit under training cannot rebel
+
+			if( race_pop_array[i] <= restrictRebelCount[i] )
+				continue; // no one can lead from this group
 
 			if( race_pop_array[i] > largestRebelRace )
 			{
@@ -1865,10 +1894,11 @@ void Town::think_rebel()
 		}
 	}
 
+	if( !rebelLeaderRaceId ) // no discontention or no one can lead
+		return;
+
 	if( population == 1 )			// if population is 1 only, handle otherwise
 	{
-		if( !rebelLeaderRaceId )
-			return;
 	}
 	else
 	{
@@ -1912,13 +1942,13 @@ void Town::think_rebel()
 
 	for( i=0 ; i<MAX_RACE ; i++ )
 	{
-		if( race_pop_array[i] <= race_spy_count_array[i] || race_loyalty_array[i] > REBEL_LOYALTY )
+		if( race_pop_array[i] <= restrictRebelCount[i] || race_loyalty_array[i] > REBEL_LOYALTY )
 			continue;
 
 		if( population==1 )		// if only one peasant left, break, so not all peasants will rebel 
 			break;
 
-		raceRebelCount = (int) (race_pop_array[i]-race_spy_count_array[i]) * (30+misc.random(30)) / 100;		// 30% - 60% of the unit will rebel.
+		raceRebelCount = (int) (race_pop_array[i]-restrictRebelCount[i]) * (30+misc.random(30)) / 100;		// 30% - 60% of the unit will rebel.
 		err_when(raceRebelCount+1 > MAX_TOWN_POPULATION); // plus 1 for the leader, cannot excess MAX_TOWN_POPULATION, consider the case these units settle immediately
 
 		for( j=0 ; j<raceRebelCount ; j++ )		// no. of rebel units of this race
@@ -2018,7 +2048,7 @@ int Town::create_rebel_unit(int raceId, int isLeader)
 
 	if( recruitable_race_pop(raceId, 0)==0 )	// 0-don't recruit spies as the above code should have handle spies already
 	{
-		if( !unjob_town_people(raceId, 0) )		// 0-don't unjob overseer
+		if( !unjob_town_people(raceId, 0, 0) )		// 0-don't unjob spies, 0-don't unjob overseer
 			return 0;
 
 		if( recruitable_race_pop(raceId,0)==0 )	// if the unjob unit is a spy too, then don't rebel
@@ -2181,7 +2211,6 @@ void Town::assign_unit(int unitRecno)
 //
 void Town::think_migrate()
 {
-	#define MIGRATE_PROCESS_CYCLE	90
 	#define MAX_MIGRATE_PER_DAY	 4			// don't migrate more than 4 units per day
 
 	if( jobless_population==0 )
@@ -2192,22 +2221,30 @@ void Town::think_migrate()
 	int	saveTownNationRecno = nation_recno;
 	Town* townPtr;
 
-	int cycleId = (info.game_date+town_recno)/MIGRATE_PROCESS_CYCLE;
-
 	for( i=town_array.size() ; i>0 ; i-- )
 	{
-		if( i%MIGRATE_PROCESS_CYCLE != cycleId )		// while this function is called every day, it only processes a certain number of towns (not all) once a day
-			continue;
-
 		if( town_array.is_deleted(i) )
 			continue;
 
 		townPtr = town_array[i];
 
+		if( !townPtr->nation_recno )
+			continue;
+
+		if( townPtr->town_recno == town_recno )
+			continue;
+
 		if( townPtr->population>=MAX_TOWN_POPULATION )
 			continue;
 
-		townDistance = misc.points_distance(center_x, center_y, townPtr->center_x, townPtr->center_y);
+		townDistance = misc.rects_distance(loc_x1, loc_y1, loc_x2, loc_y2,
+			townPtr->loc_x1, townPtr->loc_y1,
+			townPtr->loc_x2, townPtr->loc_y2);
+
+#ifndef ENABLE_LONG_DISTANCE_MIGRATION
+		if( townDistance > EFFECTIVE_TOWN_TOWN_DISTANCE )
+			continue;
+#endif
 
 		//---- scan all jobless population, see if any of them want to migrate ----//
 
@@ -2220,7 +2257,7 @@ void Town::think_migrate()
 
 			err_when( race_spy_count_array[raceId-1] < 0 );
 
-			if( recruitable_race_pop(raceId, 0) <= race_spy_count_array[raceId-1] )		// only if there are peasants who are jobless and are not spies
+			if( recruitable_race_pop(raceId, 0)==0 )		// only if there are peasants who are jobless and are not spies
 				continue;
 
 			//--- migrate a number of people of the same race at the same time ---//
@@ -2238,7 +2275,7 @@ void Town::think_migrate()
 				if( townDistance > EFFECTIVE_TOWN_TOWN_DISTANCE )		// don't migrate more than one unit at a time for migrating to non-linked towns
 					break;
 
-				if( migratedCount >= MAX_MIGRATE_PER_DAY )
+				if( migratedCount >= MAX_MIGRATE_PER_DAY || misc.random(4)==0 ) // allow a random and low max number to migrate when this happens
 					break;
 			}
 
@@ -2279,6 +2316,8 @@ void Town::think_migrate()
 //
 int Town::think_migrate_one(Town* targetTown, int raceId, int townDistance)
 {
+	#define MIN_MIGRATE_ATTRACT_LEVEL	30
+
 	//-- only if there are peasants who are jobless and are not spies --//
 
 	if( recruitable_race_pop(raceId,0)==0 )		//0-don't recruit spies
@@ -2294,16 +2333,23 @@ int Town::think_migrate_one(Town* targetTown, int raceId, int townDistance)
 	if( targetTown->race_pop_array[raceId-1] < race_pop_array[raceId-1]/2 )
 		return 0;
 
+	//-- do not migrate if the target town might not be a place this peasant will stay --//
+
+	if( targetTown->race_loyalty_array[raceId-1] < 40 )
+		return 0;
+
 	//--- calculate the attractiveness rating of the current town ---//
 
 	int curAttractLevel = race_harmony(raceId);
 
+#ifdef ENABLE_LONG_DISTANCE_MIGRATION
 	//--- if the target town is not linked to the current town, reduce attractiveness ---//
 
 	if( townDistance > EFFECTIVE_TOWN_TOWN_DISTANCE )
 	{
 		curAttractLevel -= 20 + townDistance/2;		// 20 to 70 negative
 	}
+#endif
 
 	//------- loyalty/resistance affecting the attractivness ------//
 
@@ -2325,10 +2371,14 @@ int Town::think_migrate_one(Town* targetTown, int raceId, int townDistance)
 	if( targetTown->nation_recno )
 		targetAttractLevel += (int) nation_array[targetTown->nation_recno]->reputation;
 
+	if( targetAttractLevel < MIN_MIGRATE_ATTRACT_LEVEL )
+		return 0;
+
 	//--------- compare the attractiveness ratings ---------//
 
-	if( targetAttractLevel > curAttractLevel && targetAttractLevel > 0 )
+	if( targetAttractLevel - curAttractLevel > MIN_MIGRATE_ATTRACT_LEVEL/2 )
 	{
+#ifdef ENABLE_LONG_DISTANCE_MIGRATION
 		//--- if this is non-linked town, there are 50% chance that the migrating units will get lost on their way and never reach the destination ---//
 
 		if( townDistance > EFFECTIVE_TOWN_TOWN_DISTANCE )
@@ -2339,6 +2389,7 @@ int Town::think_migrate_one(Town* targetTown, int raceId, int townDistance)
 				return 1;
 			}
 		}
+#endif
 
 		//---------- migrate now ----------//
 
@@ -2487,8 +2538,8 @@ bool Town::can_migrate(int destTownRecno, bool migrateNow, int raceId)
 
 			//---- if the target town is within the effective range of this firm ----//
 
-			if( misc.points_distance( destTown->center_x, destTown->center_y,
-				 firmPtr->center_x, firmPtr->center_y ) > EFFECTIVE_FIRM_TOWN_DISTANCE )
+			if( misc.rects_distance(destTown->loc_x1, destTown->loc_y1, destTown->loc_x2, destTown->loc_y2,
+				 firmPtr->loc_x1, firmPtr->loc_y1, firmPtr->loc_x2, firmPtr->loc_y2) > EFFECTIVE_FIRM_TOWN_DISTANCE )
 			{
 				continue;
 			}
@@ -2586,7 +2637,7 @@ int Town::mobilize_town_people(int raceId, int decPop, int mobileSpyFlag)
 
 	if( recruitable_race_pop(raceId, mobileSpyFlag)==0 )
 	{
-		if( !unjob_town_people(raceId, 0) )		// 0-don't unjob overseer
+		if( !unjob_town_people(raceId, mobileSpyFlag, 0) )		// 0-don't unjob overseer
 			return 0;
 
 		err_when( recruitable_race_pop(raceId, mobileSpyFlag)==0 );
@@ -2658,8 +2709,9 @@ void Town::being_attacked(int attackerUnitRecno, float attackDamage)
 
 	// only call out defender when the attacking unit is within the effective defending distance
 
-	if( misc.points_distance( attackerUnit->cur_x_loc(), attackerUnit->cur_y_loc(),
-		 center_x, center_y ) <= EFFECTIVE_DEFEND_TOWN_DISTANCE )
+	if( misc.rects_distance(attackerUnit->cur_x_loc(), attackerUnit->cur_y_loc(),
+		attackerUnit->cur_x_loc(), attackerUnit->cur_y_loc(),
+		loc_x1, loc_y1, loc_x2, loc_y2) <= EFFECTIVE_DEFEND_TOWN_DISTANCE )
 	{
 		int loopCount=0;
 
@@ -2980,7 +3032,7 @@ void Town::kill_town_people(int raceId, int attackerNationRecno)
 
 	if( recruitable_race_pop(raceId,1)==0 )
 	{
-		if( !unjob_town_people(raceId, 1) )				// unjob overseer if the only person left is a overseer
+		if( !unjob_town_people(raceId, 1, 1) )				// 1-unjob spies, 1-unjob overseer if the only person left is a overseer
 			return;
 
 		err_when( recruitable_race_pop(raceId,1)==0 );
@@ -2998,10 +3050,10 @@ void Town::kill_town_people(int raceId, int attackerNationRecno)
 	//---- killing civilian people decreases loyalty -----//
 
 	if( nation_recno && attackerNationRecno )					// your people's loyalty decreases because you cannot protect them.
-		nation_array[nation_recno]->civilian_killed(raceId, -1);		// but only when your units are killed by enemies, neutral disasters are not counted
+		nation_array[nation_recno]->civilian_killed(raceId, 0, 2);		// but only when your units are killed by enemies, neutral disasters are not counted
 
 	if( attackerNationRecno )        //	the attacker's people's loyalty decreases because of the killing actions.
-		nation_array[attackerNationRecno]->civilian_killed(raceId, 2);		// the nation is the attacking one
+		nation_array[attackerNationRecno]->civilian_killed(raceId, 1, 2);		// the nation is the attacking one
 
 	// -------- sound effect ---------//
 
@@ -3025,7 +3077,7 @@ void Town::kill_town_people(int raceId, int attackerNationRecno)
 //
 // return: <int> a town person has been made jobless
 //
-int Town::unjob_town_people(int raceId, int unjobOverseer, int killOverseer)
+int Town::unjob_town_people(int raceId, int unjobSpy, int unjobOverseer, int killOverseer)
 {
 	//---- if no jobless people, workers will then get killed -----//
 
@@ -3045,17 +3097,20 @@ int Town::unjob_town_people(int raceId, int unjobOverseer, int killOverseer)
 
 		for( workerId=1 ; workerId<=firmPtr->worker_count ; workerId++, workerPtr++ )
 		{
+			if( config_adv.fix_town_unjob_worker && !unjobSpy && workerPtr->spy_recno )
+				continue;
+
 			//--- if the worker lives in this town ----//
 
 			if( workerPtr->race_id == raceId &&
 				 workerPtr->town_recno == town_recno )
 			{
-				if(!firmPtr->resign_worker(workerId))
+				if( !firmPtr->resign_worker(workerId) && !config_adv.fix_town_unjob_worker )
 					return 0;
 
 				err_when(population>MAX_TOWN_POPULATION);
 				err_when( jobless_race_pop_array[raceId-1] != racePop+1 );
-				return 1;
+				return jobless_race_pop_array[raceId-1] == racePop+1;
 			}
 		}
 	}
@@ -3236,7 +3291,7 @@ void Town::distribute_demand()
 
 //------- Begin of function Town::setup_link ---------//
 //
-void Town::setup_link()
+void Town::setup_link(int reload)
 {
 	//-----------------------------------------------------------------------------//
 	// check the connected firms location and structure if ai_link_checked is true
@@ -3250,7 +3305,8 @@ void Town::setup_link()
 	Firm* firmPtr;
 	FirmInfo* firmInfo;
 
-	linked_firm_count = 0;
+	if( !reload )
+		linked_firm_count = 0;
 
 	for( firmRecno=firm_array.size() ; firmRecno>0 ; firmRecno-- )
 	{
@@ -3260,13 +3316,19 @@ void Town::setup_link()
 		firmPtr  = firm_array[firmRecno];
 		firmInfo = firm_res[firmPtr->firm_id];
 
+		//---- if we are loading make sure it's not linked already ----//
+
+		if( reload && firmPtr->is_linked_to_town(town_recno) )
+			continue;
+
 		if( !firmInfo->is_linkable_to_town )
 			continue;
 
 		//---------- check if the firm is close enough to this firm -------//
 
-		if( misc.points_distance( firmPtr->center_x, firmPtr->center_y,
-			 center_x, center_y ) > EFFECTIVE_FIRM_TOWN_DISTANCE )
+		if( misc.rects_distance(firmPtr->loc_x1, firmPtr->loc_y1,
+			firmPtr->loc_x2, firmPtr->loc_y2,
+			loc_x1, loc_y1, loc_x2, loc_y2) > EFFECTIVE_FIRM_TOWN_DISTANCE )
 		{
 			continue;
 		}
@@ -3329,7 +3391,8 @@ void Town::setup_link()
 
 	//----- build town-to-town link relationship -------//
 
-	linked_town_count = 0;
+	if( !reload )
+		linked_town_count = 0;
 
 	int   townRecno;
 	Town* townPtr;
@@ -3341,10 +3404,16 @@ void Town::setup_link()
 
 		townPtr = town_array[townRecno];
 
-		//------ check if the town is close enough to this firm -------//
+		//---- if we are loading make sure it's not linked already ----//
 
-		if( misc.points_distance( townPtr->center_x, townPtr->center_y,
-			 center_x, center_y ) > EFFECTIVE_TOWN_TOWN_DISTANCE )
+		if( reload && townPtr->is_linked_to_town(town_recno) )
+			continue;
+
+		//------ check if the town is close enough to this town -------//
+
+		if( misc.rects_distance(townPtr->loc_x1, townPtr->loc_y1,
+			townPtr->loc_x2, townPtr->loc_y2,
+			loc_x1, loc_y1, loc_x2, loc_y2) > EFFECTIVE_TOWN_TOWN_DISTANCE )
 		{
 			continue;
 		}
@@ -4143,7 +4212,7 @@ void Town::get_most_populated_race(int& mostRaceId1, int& mostRaceId2)
 			mostRaceId2 = mostRaceId1;
 			mostRaceId1 = i+1;
 		}
-		else if( racePop >= mostRaceId2 )
+		else if( racePop >= mostRacePop2 )
 		{
 			mostRacePop2 = racePop;
 			mostRaceId2  = i+1;
@@ -4539,8 +4608,9 @@ int Town::closest_own_camp()
 			continue;
 		}
 
-		curDistance = misc.points_distance( center_x, center_y,
-						  firmPtr->center_x, firmPtr->center_y );
+		curDistance = misc.rects_distance(loc_x1, loc_y1, loc_x2, loc_y2,
+						  firmPtr->loc_x1, firmPtr->loc_y1,
+						  firmPtr->loc_x2, firmPtr->loc_y2);
 
 		if( curDistance < minDistance )
 		{
@@ -4552,6 +4622,28 @@ int Town::closest_own_camp()
 	return closestFirmRecno;
 }
 //-------- End of function Town::closest_own_camp ---------//
+
+
+//------- Begin of function Town::is_linked_to_firm -------//
+int Town::is_linked_to_firm(short firmRecno)
+{
+	for( int i=0; i<linked_firm_count; i++ )
+		if( linked_firm_array[i] == firmRecno )
+			return 1;
+	return 0;
+}
+//-------- End of function Town::is_linked_to_firm ---------//
+
+
+//------- Begin of function Town::is_linked_to_town -------//
+int Town::is_linked_to_town(short townRecno)
+{
+	for( int i=0; i<linked_town_count; i++ )
+		if( linked_town_array[i] == townRecno )
+			return 1;
+	return 0;
+}
+//-------- End of function Town::is_linked_to_town ---------//
 
 
 //-------- Begin of static function random_race --------//

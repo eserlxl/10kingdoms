@@ -32,7 +32,7 @@ AC_DEFUN([AM_PATH_OPENAL], [
     AS_FOR([], [lib], ["-framework OpenAL" "-lopenal" "-lopenal32" "-lOpenAL32"], [
       LIBS="$lib $ac_save_LIBS"
       AC_MSG_CHECKING([for alGenSources in $lib])
-      AC_TRY_LINK([#include OPENAL_AL_H], [alGenSources (1, 0);], [
+      AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include OPENAL_AL_H]], [[alGenSources (1, 0);]])],[
 	ac_cv_openal_al_libs="$lib"
 	AC_MSG_RESULT([yes])
 	break

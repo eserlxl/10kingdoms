@@ -57,6 +57,9 @@ void Firm::process_common_ai()
 //
 void Firm::think_repair()
 {
+	if( builder_recno )
+		return;
+
 	Nation* ownNation = nation_array[nation_recno];
 
 	//----- check if the damage is serious enough -----//
@@ -468,6 +471,7 @@ int Firm::think_capture()
 
 	//------- capture the firm --------//
 
+	short oldNation = nation_recno;
 	capture_firm(i);
 
 	//------ order troops to attack nearby enemy camps -----//
@@ -484,7 +488,7 @@ int Firm::think_capture()
 
 		//----- only attack enemy camps -----//
 
-		if( firmPtr->nation_recno != nation_recno ||
+		if( firmPtr->nation_recno != oldNation ||
 			 firmPtr->firm_id != FIRM_CAMP )
 		{
 			continue;
@@ -546,7 +550,7 @@ void Firm::ai_firm_captured(int capturerNationRecno)
 	if( ownNation->get_relation(capturerNationRecno)->status >= NATION_FRIENDLY )
 		ownNation->ai_end_treaty(capturerNationRecno);
 
-    ownNation->change_ai_relation_level( capturerNationRecno, -50 );
+	talk_res.ai_send_talk_msg(capturerNationRecno, nation_recno, TALK_DECLARE_WAR);
 }
 //--------- End of function Firm::ai_firm_captured --------//
 

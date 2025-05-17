@@ -32,7 +32,6 @@
 
 //------ Declare static functions --------//
 
-static int get_target_nation_recno(int targetXLoc, int targetYLoc);
 static int sort_attack_camp_function( const void *a, const void *b );
 
 
@@ -66,18 +65,6 @@ static int sort_attack_camp_function( const void *a, const void *b );
 //
 int Nation::ai_attack_target(int targetXLoc, int targetYLoc, int targetCombatLevel, int defenseMode, int justMoveToFlag, int attackerMinCombatLevel, int leadAttackCampRecno, int useAllCamp)
 {
-/*					// this will be called when the AI tries to capture the town and attack the town's defense.
-#ifdef DEBUG	//----- check for attacking own objects error ------//
-	{
-		int targetNationRecno = get_target_nation_recno(targetXLoc, targetYLoc);
-
-		if( targetNationRecno )
-		{
-			err_when( get_relation(targetNationRecno)->status >= NATION_FRIENDLY );
-		}
-	}
-#endif
-*/
 	//--- order nearby mobile units who are on their way to home camps to join this attack mission. ---//
 
 	if( defenseMode )
@@ -122,6 +109,11 @@ int Nation::ai_attack_target(int targetXLoc, int targetYLoc, int targetCombatLev
 	ai_attack_target_x_loc = targetXLoc;
 	ai_attack_target_y_loc = targetYLoc;
 	ai_attack_target_nation_recno = get_target_nation_recno(targetXLoc, targetYLoc);
+
+	//### begin jesse 28/11/2024 ###//
+	err_when( ai_attack_target_nation_recno == nation_recno );
+	err_when( ai_attack_target_nation_recno < 0 );
+	//### end jesse 28/11/2024 ###//
 
 	attack_camp_count=0;
 
@@ -741,20 +733,9 @@ void Nation::enable_should_attack_on_target(int targetXLoc, int targetYLoc)
 {
 	//------ set should attack to 1 --------//
 
-	int targetNationRecno = 0;
+	int targetNationRecno = get_target_nation_recno(targetXLoc, targetYLoc);
 
-	Location* locPtr = world.get_loc(targetXLoc, targetYLoc);
-
-	if( locPtr->has_unit(UNIT_LAND) )
-		targetNationRecno = unit_array[ locPtr->unit_recno(UNIT_LAND) ]->nation_recno;
-
-	else if( locPtr->is_firm() )
-		targetNationRecno = firm_array[locPtr->firm_recno()]->nation_recno;
-
-	else if( locPtr->is_town() )
-		targetNationRecno = town_array[locPtr->town_recno()]->nation_recno;
-
-	if( targetNationRecno )
+	if( targetNationRecno>0 )
 	{
 		set_relation_should_attack(targetNationRecno, 1, COMMAND_AI);
 	}
@@ -762,30 +743,44 @@ void Nation::enable_should_attack_on_target(int targetXLoc, int targetYLoc)
 //--------- End of function Nation::enable_should_attack_on_target --------//
 
 
-//--------- Begin of static function get_target_nation_recno --------//
+//--------- Begin of function Nation::get_target_nation_recno --------//
 //
 // Return the nation recno of the target.
 //
-static int get_target_nation_recno(int targetXLoc, int targetYLoc)
+int Nation::get_target_nation_recno(int targetXLoc, int targetYLoc)
 {
-   Location* locPtr = world.get_loc(targetXLoc, targetYLoc);
+	Location* locPtr = world.get_loc(targetXLoc, targetYLoc);
 
-   if( locPtr->is_firm() )
-   {
+	if( locPtr->has_unit(UNIT_AIR) &&
+		unit_array[locPtr->unit_recno(UNIT_AIR)]->nation_recno != nation_recno )
+	{
+		// BUGHERE : if land unit, not air unit is the intended target
+		return unit_array[locPtr->unit_recno(UNIT_AIR)]->nation_recno;
+	}
+	if( locPtr->is_firm() &&
+		firm_array[locPtr->firm_recno()]->nation_recno != nation_recno )
+	{
 		return firm_array[locPtr->firm_recno()]->nation_recno;
-   }
-   else if( locPtr->is_town() )
-   {
+	}
+	if( locPtr->is_town() &&
+		town_array[locPtr->town_recno()]->nation_recno != nation_recno )
+	{
 		return town_array[locPtr->town_recno()]->nation_recno;
 	}
-   else if( locPtr->has_unit(UNIT_LAND) )
-   {
-      return unit_array[locPtr->unit_recno(UNIT_LAND)]->nation_recno;
-   }
+	if( locPtr->has_unit(UNIT_LAND) &&
+		unit_array[locPtr->unit_recno(UNIT_LAND)]->nation_recno != nation_recno )
+	{
+		return unit_array[locPtr->unit_recno(UNIT_LAND)]->nation_recno;
+	}
+	if( locPtr->has_unit(UNIT_SEA) &&
+		unit_array[locPtr->unit_recno(UNIT_SEA)]->nation_recno != nation_recno )
+	{
+		return unit_array[locPtr->unit_recno(UNIT_SEA)]->nation_recno;
+	}
 
-   return 0;
+	return -1;
 }
-//---------- End of static function get_target_nation_recno --------//
+//---------- End of function Nation::get_target_nation_recno --------//
 
 
 //------ Begin of function sort_attack_camp_function ------//

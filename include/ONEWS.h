@@ -90,9 +90,14 @@ enum { NEWS_DIPLOMACY=1,
 		 NEWS_MULTI_QUIT_GAME,
 		 NEWS_MULTI_SAVE_GAME,
 		 NEWS_MULTI_CONNECTION_LOST,
+		 NEWS_FIRM_CONSTRUCTED,
+		 NEWS_UNIT_TRAINED,
+		 NEWS_WEAPON_SHIP_BUILT,
 	  };
 
 //------- Define struct News ---------//
+
+struct NewsGF;
 
 #pragma pack(1)
 struct News
@@ -177,6 +182,12 @@ public:
 	void  multi_quit_game();
 	void  multi_save_game();
 	void  multi_connection_lost();
+	void  firm_constructed();
+	void  unit_trained();
+	void  weapon_ship_built();
+
+	void  write_record(NewsGF *r);
+	void  read_record(NewsGF *r);
 };
 #pragma pack()
 
@@ -255,6 +266,9 @@ public:
 	void  multi_quit_game(int nationRecno);
 	void  multi_save_game();
 	void  multi_connection_lost(int nationRecno);
+	void  firm_constructed(int firmRecno);
+	void  unit_trained(int unitRecno, int townRecno);
+	void  weapon_ship_built(int unitRecno, int townRecno);
 
 	//--------------------------------------------//
 

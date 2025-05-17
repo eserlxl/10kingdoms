@@ -369,10 +369,13 @@ int Nation::ai_settle_to_other_town(ActionNode* actionNode)
 	if( !raceId )
 		return -1;
 
-	//---- if cannot recruit because the loyalty is too low ---//
+	//---- if cannot recruit because the loyalty is too low, try reward ---//
 
-	if( !townPtr->can_recruit(raceId) && townPtr->has_linked_own_camp )
+	if( !townPtr->can_recruit(raceId) )
 	{
+		if( !townPtr->has_linked_own_camp ) // need overseer to reward
+			return 0;
+
 		int minRecruitLoyalty = MIN_RECRUIT_LOYALTY + townPtr->recruit_dec_loyalty(raceId, 0);
 
 		//--- if cannot recruit because of low loyalty, reward the town people now ---//
@@ -387,8 +390,11 @@ int Nation::ai_settle_to_other_town(ActionNode* actionNode)
 			if( !townPtr->can_recruit(raceId) )	// if still cannot be recruited, return 0 now
 				return 0;
 		}
-
-		return 0;
+		else
+		{
+			// can't recruit for some other reason
+			return 0;
+		}
 	}
 
 	//------------------------------------------------------//
@@ -421,15 +427,19 @@ int Nation::ai_settle_to_other_town(ActionNode* actionNode)
 // action_x_loc, action_y_loc - location of the destination town.
 // ref_x_loc, ref_y_loc 		- location of the origin town.
 //
+// Note: When the action is processed successfully, it will only be
+// cleared via an action_failure() because the unit doesn't have a scout
+// action mode for scout processing. The unit will be placed in the
+// standard move action mode to accomplish the task.
+//
 int Nation::ai_scout(ActionNode* actionNode)
 {
 	if(!seek_path.total_node_avail)
 		return 0;
 
-	//------- check if both towns are ready first --------//
+	//------- check if the town is ready --------//
 
-	if(!check_town_ready(actionNode->action_x_loc, actionNode->action_y_loc) ||
-		!check_town_ready(actionNode->ref_x_loc, actionNode->ref_y_loc))
+	if( !check_town_ready(actionNode->ref_x_loc, actionNode->ref_y_loc) )
 	{
 		return -1;
 	}
@@ -440,8 +450,6 @@ int Nation::ai_scout(ActionNode* actionNode)
 
 	Location* locPtr = world.get_loc(actionNode->ref_x_loc, actionNode->ref_y_loc);
 
-	err_when(!locPtr->is_town() || town_array.is_deleted(locPtr->town_recno()));
-
 	Town* townPtr = town_array[locPtr->town_recno()]; // point to the old town
 
 	int raceId = townPtr->pick_random_race(0, 1);		// 0-don't pick has job unit, 1-pick spies
@@ -451,7 +459,7 @@ int Nation::ai_scout(ActionNode* actionNode)
 
 	//---- if cannot recruit because the loyalty is too low ---//
 
-	if( !townPtr->can_recruit(raceId) && townPtr->has_linked_own_camp )
+	if( !townPtr->can_recruit(raceId) )
 		return 0;
 
 	//------------------------------------------------------//

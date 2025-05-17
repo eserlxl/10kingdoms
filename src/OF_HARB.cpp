@@ -44,7 +44,9 @@
 #include <OBUTTCUS.h>
 #include <OSE.h>
 #include <OSERES.h>
+#include <ONEWS.h>
 #include "gettext.h"
+#include <ConfigAdv.h>
 
 
 //------------- Define coordinations -----------//
@@ -1161,7 +1163,11 @@ void FirmHarbor::process_build()
 		add_hosted_ship(unitRecno);
 
 		if( own_firm() )
+		{
+			if( config_adv.news_notify_complete )
+				news_array.weapon_ship_built(unitRecno, firm_recno);
 			se_res.far_sound(center_x, center_y, 1, 'F', firm_id, "FINS", 'S', unit_res[build_unit_id]->sprite_id);
+		}
 
 		build_unit_id = 0;
 

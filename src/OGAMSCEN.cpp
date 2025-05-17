@@ -26,8 +26,6 @@
 #include <ONEWS.h>
 #include <ODATE.h>
 #include <OGFILE.h>
-#include <OSaveGameArray.h>
-#include <OSaveGameProvider.h>
 #include <OF_MONS.h>
 #include <OMONSRES.h>
 #include <OFILETXT.h>
@@ -163,7 +161,7 @@ int Game::run_scenario(ScenInfo* scenInfo)
 		strcpy(playerName, config.player_name);
 		// ###### end Gilbert 1/11 #########//
 
-		if( SaveGameProvider::load_scenario(str) > 0 )
+		if( game_file.load_game("", str) > 0 )
 		{
 			ConfigAdv backup;
 			if( config_adv.scenario_config )
@@ -197,7 +195,7 @@ int Game::run_scenario(ScenInfo* scenInfo)
 		}
 		else
 		{
-			box.msg(GameFile::status_str());
+			box.msg(game_file.status_str());
 		}
 		game.deinit();
 		return 1;
@@ -221,7 +219,7 @@ static void init_scenario_var(ScenInfo* scenInfo)
 	config.show_all_unit_icon = 0;
 	config.show_unit_path	  = 0;
 
-	sys.set_speed(9, COMMAND_AUTO);
+	sys.set_speed(config_adv.game_load_default_frame_speed, COMMAND_AUTO);
 
 	//------ reset the goal deadline -------//
 

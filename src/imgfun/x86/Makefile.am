@@ -51,6 +51,9 @@ libimgfun_x86_a_SOURCES = \
 	I_SNOW.asm \
 	I_XOR.asm
 
+AM_CPPFLAGS = \
+	-I$(top_srcdir)/include
+
 SUFFIXES = .asm
 .asm.o:
 	$(JWASM_CMD) $(JWASM_FMT) -q -Fo $@ $<

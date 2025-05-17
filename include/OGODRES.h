@@ -68,6 +68,8 @@ struct GodRec
 
 //------------- Define struct GodInfo --------------//
 
+struct GodInfoGF;
+
 #pragma pack(1)
 struct GodInfo
 {
@@ -92,6 +94,9 @@ public:
 
 	void	enable_know(int nationRecno);
 	void	disable_know(int nationRecno);
+
+	void	write_record(GodInfoGF *r);
+	void	read_record(GodInfoGF *r);
 };
 #pragma pack()
 

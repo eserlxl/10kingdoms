@@ -34,6 +34,7 @@
 #include <OF_MINE.h>
 #include <OINFO.h>
 #include <OLOG.h>
+#include <ConfigAdv.h>
 
 //--------- Begin of function Nation::Nation --------//
 

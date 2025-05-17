@@ -36,15 +36,22 @@
 
 //------- Define struct RegionPath -------//
 
+struct RegionPathGF;
+
 #pragma pack(1)
 struct RegionPath
 {
 	uint8_t		sea_region_id;				// region id. of the sea route
 	uint8_t		land_region_stat_id;
+
+	void		write_record(RegionPathGF *r);
+	void		read_record(RegionPathGF *r);
 };
 #pragma pack()
 
 //------- Define class RegionStat --------//
+
+struct RegionStatGF;
 
 #pragma pack(1)
 class RegionStat
@@ -83,6 +90,9 @@ public:
 public:
 	void		init();
 	void		update_stat();
+
+	void		write_record(RegionStatGF *r);
+	void		read_record(RegionStatGF *r);
 };
 #pragma pack()
 

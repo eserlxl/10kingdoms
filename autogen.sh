@@ -1,21 +1,8 @@
-set -e
+#!/bin/bash
 
-echo "Running gettextize..."
-gettextize --force --copy --no-changelog
-
-echo "Running libtoolize..."
-libtoolize
-
-echo "Running aclocal..."
-aclocal
-
-echo "Running autoheader..."
-autoheader
-
-echo "Running automake..."
-automake --add-missing --foreign
-
-echo "Running autoconf..."
-autoconf
-
-echo "Done. Now run ./configure"
+autopoint --force > /dev/null
+rm ABOUT-NLS* po/Makevars.template*
+aclocal --force --install -I m4
+autoconf --force
+autoheader --force
+automake --add-missing --copy --force-missing

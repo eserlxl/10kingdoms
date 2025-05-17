@@ -46,9 +46,10 @@ enum { SPRITE_IDLE=1,
 
 #define GUARD_COUNT_MAX 5
 
-struct SpriteCrc;
-
 //---------- Define class Sprite -----------//
+
+struct SpriteCrc;
+struct SpriteGF;
 
 #pragma pack(1)
 class Sprite
@@ -154,6 +155,9 @@ public:
 	virtual	uint8_t crc8();
 	virtual	void	clear_ptr();
 	virtual void    init_crc(SpriteCrc *c);
+
+	void write_record(SpriteGF *r);
+	void read_record(SpriteGF *r);
 };
 #pragma pack()
 

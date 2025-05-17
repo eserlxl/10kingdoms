@@ -206,14 +206,12 @@ void Unit::process_idle()
 	}
 
    err_when(action_mode==ACTION_STOP && cur_action==SPRITE_ATTACK);
-   err_when(action_mode==ACTION_ATTACK_UNIT && action_para==0);
 
 	//--------- reactivate action -----------//
 
 	if(reactivate_idle_action())
    {
       err_when(action_mode==ACTION_STOP && cur_action==SPRITE_ATTACK);
-      err_when(action_mode==ACTION_ATTACK_UNIT && action_para==0);
       return; // true if an action is reactivated
    }
 
@@ -239,7 +237,6 @@ void Unit::process_idle()
 	//-**************** simulate aat ********************-//
 
    err_when(action_mode==ACTION_STOP && cur_action==SPRITE_ATTACK);
-   err_when(action_mode==ACTION_ATTACK_UNIT && action_para==0);
 
 	//----------- for ai unit idle -----------//
 
@@ -251,7 +248,6 @@ void Unit::process_idle()
 
 	err_when(!can_attack());
 	err_when(action_mode==ACTION_STOP && cur_action==SPRITE_ATTACK);
-	err_when(action_mode==ACTION_ATTACK_UNIT && action_para==0);
 
 	//--- only detect attack if in aggressive mode or the unit is a monster ---//
 
@@ -264,12 +260,10 @@ void Unit::process_idle()
 		if( idle_detect_attack() )
 		{
 			err_when(action_mode==ACTION_STOP && cur_action==SPRITE_ATTACK);
-			err_when(action_mode==ACTION_ATTACK_UNIT && action_para==0);
 			return; // target detected
 		}
 
 		err_when(action_mode==ACTION_STOP && cur_action==SPRITE_ATTACK);
-		err_when(action_mode==ACTION_ATTACK_UNIT && action_para==0);
 	}
 
 	//------------------------------------------------------------------//
@@ -338,7 +332,7 @@ int Unit::reactivate_idle_action()
                return 0; // do nothing
 
       case ACTION_ATTACK_UNIT:
-               if(unit_array.is_deleted(action_para2))
+               if(!action_para2 || unit_array.is_deleted(action_para2))
                   stop2();
                else
                {
@@ -358,7 +352,7 @@ int Unit::reactivate_idle_action()
 
       case ACTION_ATTACK_FIRM:
                locPtr = world.get_loc(action_x_loc2, action_y_loc2);
-               if(!locPtr->is_firm())
+               if(!action_para2 || !locPtr->is_firm())
                   stop2(); // stop since target is already destroyed
                else
                {
@@ -378,7 +372,7 @@ int Unit::reactivate_idle_action()
 
       case ACTION_ATTACK_TOWN:
                locPtr = world.get_loc(action_x_loc2, action_y_loc2);
-               if(!locPtr->is_town())
+               if(!action_para2 || !locPtr->is_town())
                   stop2(); // stop since target is deleted
                else if(space_for_attack(action_x_loc2, action_y_loc2, UNIT_LAND, STD_TOWN_LOC_WIDTH, STD_TOWN_LOC_HEIGHT))
                {

@@ -182,6 +182,8 @@ void Town::process_ai()
 			LOG_MSG(misc.get_random_seed());
 			return;
 		}
+		if( population==0 ) // if last pop was a foreign spy, town will be deleted
+			return;
 	}
 
 	//---- think about anti-spies activities ----//
@@ -194,6 +196,8 @@ void Town::process_ai()
 			LOG_MSG(misc.get_random_seed());
 			return;
 		}
+		if( population==0 ) // if last pop was a foreign spy, town will be deleted
+			return;
 	}
 
 	//--- think about setting up firms next to this town ---//
@@ -726,7 +730,7 @@ int Town::think_build_market()
 		//------ if this market is our own one ------//
 
 		if( firmPtr->nation_recno == nation_recno &&
-			 ((FirmMarket*)firmPtr)->is_retail_market )
+			 ((FirmMarket*)firmPtr)->is_retail_market() )
 		{
 			return 0;
 		}
@@ -1253,8 +1257,8 @@ int Town::ai_settle_new(int raceId)
 
 	//------- it must be within the effective town-to-town distance ---//
 
-	if( misc.points_distance( center_x, center_y, xLoc+1+(STD_TOWN_LOC_WIDTH-1)/2,
-		yLoc+1+(STD_TOWN_LOC_HEIGHT-1)/2 ) > EFFECTIVE_TOWN_TOWN_DISTANCE )
+	if( misc.rects_distance(loc_x1, loc_y1, loc_x2, loc_y2, xLoc, yLoc, xLoc+STD_TOWN_LOC_WIDTH-1,
+		yLoc+STD_TOWN_LOC_HEIGHT-1) > EFFECTIVE_TOWN_TOWN_DISTANCE )
 	{
 		return 0;
 	}
@@ -1778,23 +1782,45 @@ int Town::think_scout()
 
 	//-------------------------------------------//
 
-	int destX, destY;
+	int destX, destY, dir;
 
-	if( misc.random(2)==0 )
-		destX = center_x + 50 + misc.random(50);
-	else
-		destX = center_x - 50 - misc.random(50);
+	dir = misc.random(4);
 
-	if( misc.random(2)==0 )
-		destY = center_y + 50 + misc.random(50);
-	else
-		destY = center_y - 50 - misc.random(50);
-
-	destX = MAX(0, destX);
-	destX = MIN(MAX_WORLD_X_LOC-1, destX);
-
-	destY = MAX(0, destY);
-	destY = MIN(MAX_WORLD_Y_LOC-1, destY);
+	switch(dir)
+	{
+	case 0:
+		destX = misc.random(MAX_WORLD_X_LOC-1-20) + 10;
+		if( center_x - destX > 100 )
+			destX = center_x - (center_x - destX) % 100;
+		if( destX - center_x > 100 )
+			destX = center_x + (destX - center_x) % 100;
+		destY = MAX(center_y-100,10);
+		break;
+	case 1:
+		destX = MIN(center_x+100,MAX_WORLD_X_LOC-1-10);
+		destY = misc.random(MAX_WORLD_Y_LOC-1-20) + 10;
+		if( center_y - destY > 100 )
+			destY = center_y - (center_y - destY) % 100;
+		if( destY - center_y > 100 )
+			destY = center_y + (destY - center_y) % 100;
+		break;
+	case 2:
+		destX = misc.random(MAX_WORLD_X_LOC-1-20) + 10;
+		if( center_x - destX > 100 )
+			destX = center_x - (center_x - destX) % 100;
+		if( destX - center_x > 100 )
+			destX = center_x + (destX - center_x) % 100;
+		destY = MIN(center_y+100,MAX_WORLD_Y_LOC-1-10);
+		break;
+	case 3:
+		destX = MAX(center_x-100,10);
+		destY = misc.random(MAX_WORLD_Y_LOC-1-20) + 10;
+		if( center_y - destY > 100 )
+			destY = center_y - (center_y - destY) % 100;
+		if( destY - center_y > 100 )
+			destY = center_y + (destY - center_y) % 100;
+		break;
+	}
 
 	ownNation->add_action( destX, destY, loc_x1, loc_y1, ACTION_AI_SCOUT, 0);
 

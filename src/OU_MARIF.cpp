@@ -492,7 +492,8 @@ void UnitMarine::disp_unit_info(int dispY1, int refreshFlag)
 		if( lastSelected != selected_unit_id > 0 )
 		{
 			lastSelected = selected_unit_id > 0;
-			vga_util.blt_buf( INFO_X1, dispY1, INFO_X2, dispY1+71, 0 );
+			info.disp();			// redisplay the interface
+			return;
 		}
 	}
 
@@ -1157,7 +1158,7 @@ void UnitMarine::set_stop(int stopId, int stopXLoc, int stopYLoc, char remoteAct
 		case FIRM_MARKET:
 			goodsPtr = ((FirmMarket*) firmPtr)->market_goods_array;
 
-			for(int j=0; j<MAX_MARKET_GOODS; ++j && goodsNum<2, goodsPtr++)
+			for(int j=0; j<MAX_MARKET_GOODS && goodsNum<2; ++j, goodsPtr++)
 			{
 				if(goodsPtr->raw_id)
 				{

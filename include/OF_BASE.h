@@ -41,9 +41,10 @@
 #define  	MAX_BASE_PRAYER		30
 #define		MAX_PRAY_POINTS		400
 
-struct FirmBaseCrc;
-
 //------- Define class FirmBase --------//
+
+struct FirmBaseCrc;
+struct FirmBaseGF;
 
 #pragma pack(1)
 class FirmBase : public Firm
@@ -80,6 +81,11 @@ public:
 	virtual	uint8_t crc8();
 	virtual	void	clear_ptr();
 	virtual	void	init_crc(FirmBaseCrc *c);
+
+	int		write_derived_file(File *filePtr);
+	int		read_derived_file(File *filePtr);
+	void		write_derived_record(FirmBaseGF *r);
+	void		read_derived_record(FirmBaseGF *r);
 
 private:
 	void 		disp_base_info(int dispY1, int refreshFlag);

@@ -36,6 +36,7 @@
 //------- Define class FirmHarbor --------//
 
 struct FirmHarborCrc;
+struct FirmHarborGF;
 class UnitMarine;
 
 #pragma pack(1)
@@ -115,6 +116,11 @@ public:
 	virtual	uint8_t crc8();
 	virtual	void	clear_ptr();
 	virtual	void	init_crc(FirmHarborCrc *c);
+
+	int	write_derived_file(File *filePtr);
+	int	read_derived_file(File *filePtr);
+	void	write_derived_record(FirmHarborGF *r);
+	void	read_derived_record(FirmHarborGF *r);
 
 private:
 	int 	should_show_harbor_info();

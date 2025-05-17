@@ -21,6 +21,7 @@
 //Filename    : LocaleRes.cpp
 //Description : Locale Resources
 
+#include <stdlib.h>
 #ifdef ENABLE_NLS
 #include <libintl.h>
 #include <locale.h>
@@ -28,8 +29,23 @@
 
 #include <ALL.h>
 #include <ODB.h>
-#include <ConfigAdv.h>
 #include <LocaleRes.h>
+
+
+#ifndef HAVE_SETENV
+static String lc_all_str;
+int setenv(const char *name, const char *value, int overwrite)
+{
+	if( !value )
+		return putenv(name);
+
+	lc_all_str = name;
+	lc_all_str += "=";
+	lc_all_str += value;
+	return putenv(lc_all_str);
+}
+#endif
+
 
 //------------- End of function Constructor -------//
 //
@@ -65,16 +81,15 @@ LocaleRes::~LocaleRes()
 void LocaleRes::init()
 {
 #ifdef ENABLE_NLS
-	const char *env_locale_dir;
-	if( misc.is_file_exist("locale") )
-		bindtextdomain(PACKAGE, "locale");
-	else if( env_locale_dir = getenv("SKLOCALE") )
-		bindtextdomain(PACKAGE, env_locale_dir);
-	else
-		bindtextdomain(PACKAGE, LOCALE_DIR);
+	const char *locale_dir;
+	locale_dir = get_locale_dir();
+	if( locale_dir )
+	{
+		bindtextdomain(PACKAGE, locale_dir);
+	}
 	textdomain(PACKAGE);
-
-	load();
+	setlocale(LC_ALL, "");
+	load(getenv("SKMESSAGES"));
 
 	in_buf = mem_add(INIT_BUF_SIZE+1);
 	in_buf_size = INIT_BUF_SIZE;
@@ -110,15 +125,23 @@ void LocaleRes::deinit()
 //------------- End of function LocaleRes::deinit ---------//
 
 
-//----------- Start of function LocaleRes::change_locale ---------//
+//----------- Start of function LocaleRes::load ---------//
 //
-void LocaleRes::load()
+// Performs setlocale and initializes codeset conversion.
+//
+void LocaleRes::load(const char *locale)
 {
 #ifdef ENABLE_NLS
-	setlocale(LC_ALL, config_adv.locale);
-	char *ctype = setlocale(LC_CTYPE, NULL);
-	if( !ctype )
-		return;
+	if( !locale || !locale[0] )
+	{
+		// Try some recognizable language
+		locale = get_messages_locale();
+		if( !locale )
+			locale = "en_US";
+	}
+
+	setlocale(LC_ALL, locale); // for LC_MESSAGES and LC_CTYPE
+	setenv("LANGUAGE", locale, 1); // if setlocale is not supported
 
 	LocaleRec *localeRec;
 	String localeDbName;
@@ -137,7 +160,7 @@ void LocaleRes::load()
 		localeRec = (LocaleRec*) dbLocale->read(i+1);
 
 		misc.rtrim_fld( lang, localeRec->lang, localeRec->LANG_LEN );
-		if( !misc.str_icmpx(ctype, lang) )
+		if( !misc.str_icmpx(locale, lang) )
 			continue;
 
 		misc.rtrim_fld( fontset, localeRec->fontset, localeRec->FONTSET_LEN );
@@ -163,7 +186,7 @@ void LocaleRes::load()
 	cd_from_sdl = iconv_open("ISO-8859-1//TRANSLIT//IGNORE", "UTF-8");
 #endif
 }
-//------------- End of function LocaleRes::change_locale ---------//
+//------------- End of function LocaleRes::load ---------//
 
 
 #ifdef ENABLE_NLS
@@ -206,3 +229,57 @@ const char *LocaleRes::conv_str(iconv_t cd, const char *s)
 	return out_buf;
 }
 #endif
+
+
+//-------- Begin of function LocaleRes::get_locale_dir -----------//
+//
+const char *LocaleRes::get_locale_dir()
+{
+	if( misc.is_file_exist("locale") )
+		return "locale";
+	if( misc.is_file_exist(getenv("SKLOCALE")) )
+		return getenv("SKLOCALE");
+#ifdef LOCALE_DIR
+	if( misc.is_file_exist(LOCALE_DIR) )
+		return LOCALE_DIR;
+#endif
+	return NULL;
+}
+//---------- End of function LocaleRes::get_locale_dir ----------//
+
+
+//-------- Begin of function LocaleRes::get_messages_locale -----------//
+//
+const char *LocaleRes::get_messages_locale()
+{
+	const char *locale;
+
+	locale = getenv("LANGUAGE");
+	if( locale && locale[0] )
+		return locale;
+
+	locale = getenv("LC_ALL");
+	if( locale && locale[0] )
+		return locale;
+
+	locale = getenv("LC_MESSAGES");
+	if( locale && locale[0] )
+		return locale;
+
+	locale = getenv("LANG");
+	if( locale && locale[0] )
+		return locale;
+
+#if defined ENABLE_NLS && defined HAVE_LC_MESSAGES
+	locale = setlocale(LC_MESSAGES, NULL);
+	if( locale && locale[0] )
+		return locale;
+#endif
+
+	// We don't spend the time to map what Windows uses for locales. And
+	// some platforms don't have a POSIX setlocale, so if the user does not
+	// manually set an option in this case, we don't know the locale.
+
+	return NULL;
+}
+//---------- End of function LocaleRes::get_messages_locale ----------//

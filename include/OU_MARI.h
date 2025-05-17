@@ -57,17 +57,24 @@ enum	{	NO_EXTRA_MOVE = 0,
 		};
 
 //-------- Define struct ShipStop ----------//
+
+struct ShipStopGF;
+
 #pragma pack(1)
 struct ShipStop : public TradeStop
 {
 public:
 	int	update_pick_up(char *enableFlag=NULL);
+
+	void	write_record(ShipStopGF *r);
+	void	read_record(ShipStopGF *r);
 };
 #pragma pack()
 
-struct UnitMarineCrc;
-
 //------- Define class UnitMarine -------//
+
+struct UnitMarineCrc;
+struct UnitMarineGF;
 
 #pragma pack(1)
 class UnitMarine : public Unit
@@ -176,6 +183,8 @@ public:
 
 	int   read_derived_file(File *);
 	int   write_derived_file(File *);
+	void  write_derived_record(UnitMarineGF *r);
+	void  read_derived_record(UnitMarineGF *r);
 	virtual void fix_attack_info();         // set attack_info_array appropriately
 
 	void    copy_route(short copyUnitRecno, int remoteAction);

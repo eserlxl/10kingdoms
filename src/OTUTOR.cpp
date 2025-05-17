@@ -33,8 +33,6 @@
 #include <OBUTTON.h>
 #include <OBUTT3D.h>
 #include <OGFILE.h>
-#include <OSaveGameArray.h>
-#include <OSaveGameProvider.h>
 #include <OGAME.h>
 #include <OGAMESET.h>
 #include <OWORLD.h>
@@ -388,7 +386,7 @@ void Tutor::run(int tutorId, int inGameCall)
 		int rc = 0;
 		if( misc.is_file_exist(str) )
 		{
-			rc = SaveGameProvider::load_scenario(str);
+			rc = game_file.load_game("", str);
 		}
 		if (rc <= 0)
 		{
@@ -396,14 +394,16 @@ void Tutor::run(int tutorId, int inGameCall)
 			str += "STANDARD.TUT";
 
 			if( misc.is_file_exist(str) )
-				rc = SaveGameProvider::load_scenario(str);
+				rc = game_file.load_game("", str);
 		}
 
 		if (rc <= 0)
 		{
-			box.msg(GameFile::status_str());
+			box.msg(game_file.status_str());
 			return;
 		}
+
+		misc.extract_file_name(scenario_file_name, str);
 
 		//------ fix firm_build_id problem -----//
 
@@ -426,7 +426,7 @@ void Tutor::run(int tutorId, int inGameCall)
 
 		//----- set the gaming speed to normal -----//
 
-		sys.set_speed(9, COMMAND_AUTO);
+		sys.set_speed(config_adv.game_load_default_frame_speed, COMMAND_AUTO);
 	}
 
 	//--------- load the tutorial text ------------//

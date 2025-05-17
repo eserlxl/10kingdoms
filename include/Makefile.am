@@ -62,6 +62,7 @@ noinst_HEADERS = \
 	OGET.h \
 	OGETA.h \
 	OGFILE.h \
+	OGF_REC.h \
 	OGF_V1.h \
 	OGODRES.h \
 	OGRPSEL.h \
@@ -125,9 +126,6 @@ noinst_HEADERS = \
 	OSPY.h \
 	OSTR.h \
 	OSYS.h \
-	OSaveGameArray.h \
-	OSaveGameInfo.h \
-	OSaveGameProvider.h \
 	OTALKMSG.h \
 	OTALKRES.h \
 	OTARRAY.h \

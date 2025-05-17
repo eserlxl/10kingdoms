@@ -24,7 +24,8 @@
 //Filename    : OGAMHALL.H
 //Description : Hall of Fame
 
-#include <OSaveGameInfo.h>
+#include <FilePath.h>
+#include <ONATIONA.h>
 
 
 //-------- Define struct HallFameEntry ----------//
@@ -68,7 +69,7 @@ private:
 private:
 	HallFameEntry hall_fame_array[HALL_FAME_NUM];
 	// In a slight (historical) abuse of responsibility, HALLFAME.DAT contains the last savegame name. SaveGameArray maintains it during runtime, however.
-	char     last_savegame_file_name[SaveGameInfo::MAX_FILE_PATH+1];
+	char     last_savegame_file_name[FilePath::MAX_FILE_PATH+1];
 };
 
 extern HallOfFame hall_of_fame;

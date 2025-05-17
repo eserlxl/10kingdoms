@@ -30,6 +30,7 @@
 #include <OVGA.h>
 #include <OVGABUF.h>
 #include <gettext.h>
+#include <CmdLine.h>
 
 //-------- Begin of function VgaBuf::VgaBuf ----------//
 
@@ -137,7 +138,11 @@ void VgaBuf::unlock_buf()
 	err_when( !buf_locked );
 
 	if( 1 )
+	{
 		buf_locked = 0;
+		if( cmd_line.enable_if && is_front )
+			vga.flip();
+	}
 	else
 	{
 		if( is_front )
@@ -421,7 +426,7 @@ void VgaBuf::put_large_bitmap(int x1, int y1, File* filePtr)
 	int x2 = x1 + pictWidth  - 1;
 	int y2 = y1 + pictHeight - 1;
 
-	long pictSize = (long) x2 * y2;
+	long pictSize = (long) pictWidth * pictHeight;
 
 	err_when( x1>x2 || y1>y2 || x1<0 || y1<0 || x2>=VGA_WIDTH || y2>=VGA_HEIGHT );
 

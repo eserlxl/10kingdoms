@@ -1,8 +1,9 @@
 Seven Kingdoms: Ancient Adversaries
 -----------------------------------
 
-Release version 2.15.5-dev
+Release version 2.15.7
 Project website: www.7kfans.com
+Downloads and source repo: sourceforge.net/projects/skfans
 
 This is a GPL release of the Seven Kingdoms: Ancient Adversaries thanks to
 Enlight Software which granted the ability to license the game under a
@@ -11,7 +12,7 @@ details of the license. We are indebted to Enlight for making the 7kfans
 project possible and giving a new chance to build a community for fans
 of the game.
 
-Summary of changes from 2.15.4 to 2.15.5
+Summary of changes from 2.15.6 to 2.15.7
 ---------
 
 
@@ -30,20 +31,36 @@ Supported architectures for multiplayer
 Building the game
 ---------
 
+The build process is based on autotools, as this easily runs on all typical
+Windows, Linux and Unix-like systems with minimal requirements. Below are the
+additional things that you are expected to provide in your build environment.
+
+For building for Windows, the environment we use is mingw-w64 with a cross-
+compiler under Linux. The same mingw-w64 is available from MSYS native to
+Windows. There are other similar environments, but we cannot help people
+configure their system -- you are expected to know how to use your tools.
+
 Required dependencies
 * GCC 4.6+ C++11 compliant compiler
-* SDL 2.0.8
+* SDL 2.24.0+
 * enet 1.3.xx Reliable UDP networking library
 * OpenAL-soft or equivalent driver
 
 Optional dependencies
-* Autoconf 2.65 (when using git snapshot)
 * libcurl for full 7kfans multiplayer integration (website requires TLS1.2)
 * gettext 0.19
 * Game music: 7kaa-music-2.15
   -> Packagers: Copy music into program data folder or PACKAGE_DATA_DIR
   -> Make sure the file names are in upper-case
 * NSIS for building a Windows installer
+* TeX Live with latexmk, fontaxes, accanthis, universalis, and yfonts for
+  generating the game manual in pdf
+
+Autoconf 2.65+ and autoconf-archive is required when generating a configure
+script. You do not need to generate a configure script when you are building
+an officially released version of the game as it is already provided in the
+source archive. Compiling and using git snapshots for general use is dis-
+couraged and instead use the latest officially released version of the game.
 
 
 Running locally from source build

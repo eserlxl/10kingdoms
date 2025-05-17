@@ -1025,7 +1025,7 @@ void Game::load_mp_game(char *fileName, int lobbied, char *game_host)
 
 	sys.signal_exit_flag = 0; // Richard 24-12-2013: If player tried to exit just as the game loaded, cancel the exit request
 
-	sys.set_speed(9, COMMAND_AUTO);	// set load game speed
+	sys.set_speed(config_adv.game_load_default_frame_speed, COMMAND_AUTO);	// set load game speed
 
 	battle.run_loaded();		// 1-multiplayer game
 
@@ -1105,7 +1105,6 @@ int Game::mp_select_service()
 		vga_front.lock_buf();
 
 		sys.yield();
-		vga.flip();
 		mouse.get_event();
 
 		if (sys.signal_exit_flag == 1)
@@ -1297,7 +1296,6 @@ int Game::mp_select_mode(char *defSaveFileName, int service_mode)
 		vga_front.lock_buf();
 
 		sys.yield();
-		vga.flip();
 		mouse.get_event();
 
 		if( sys.signal_exit_flag == 1 )
@@ -1563,7 +1561,6 @@ int Game::input_box(const char *tell_string, char *buf, int len, char hide_input
 		input_box.paint();
 
 		sys.yield();
-		vga.flip();
 		mouse.get_event();
 
 		if( sys.signal_exit_flag == 1 )
@@ -1698,7 +1695,6 @@ int Game::input_name_pass(const char *txt[], char *name, int name_len, char *pas
 		getGroup.paint();
 
 		sys.yield();
-		vga.flip();
 		mouse.get_event();
 
 		if( sys.signal_exit_flag == 1 )
@@ -1820,7 +1816,6 @@ int Game::mp_select_session()
 		vga_front.lock_buf();
 
 		sys.yield();
-		vga.flip();
 		mouse.get_event();
 
 		if( sys.signal_exit_flag == 1 )
@@ -2103,7 +2098,6 @@ int Game::mp_join_session(int session_id)
 		vga_front.lock_buf();
 
 		sys.yield();
-		vga.flip();
 		mouse.get_event();
 
 		if (buttonCancel.detect(buttonCancel.str_buf[0], KEY_ESC) ||
@@ -2196,7 +2190,6 @@ void Game::mp_close_session()
 		vga_front.lock_buf();
 
 		sys.yield();
-		vga.flip();
 		mouse.get_event();
 
 		if (buttonCancel.detect(buttonCancel.str_buf[0], KEY_ESC) ||
@@ -2252,7 +2245,6 @@ int Game::mp_get_leader_board()
 		break;
 
 		sys.yield();
-		vga.flip();
 		mouse.get_event();
 		
 		if( sys.signal_exit_flag == 1 )
@@ -2762,7 +2754,6 @@ int Game::mp_select_option(NewNationPara *nationPara, int *mpPlayerCount)
 		// ####### end Gilbert 23/10 #######//
 
 		sys.yield();
-		vga.flip();
 		mouse.get_event();
 
 		// Note: sys.signal_exit_flag is detected at the same point as the cancel/abort button
@@ -3654,16 +3645,16 @@ int Game::mp_select_option(NewNationPara *nationPara, int *mpPlayerCount)
 			{
 				if( rawSiteInc.detect() )
 				{
-					if( ++tempConfig.start_up_raw_site > 7 )
-						tempConfig.start_up_raw_site = 7;
+					if( ++tempConfig.start_up_raw_site > MAX_RAW_RES_SITE )
+						tempConfig.start_up_raw_site = MAX_RAW_RES_SITE;
 					tempConfig.difficulty_level = OPTION_CUSTOM;
 					configChange = 1;
 					refreshFlag |= SGOPTION_RAW | SGOPTION_DIFFICULTY;
 				}
 				else if( rawSiteDec.detect() )
 				{
-					if( --tempConfig.start_up_raw_site < 1 )
-						tempConfig.start_up_raw_site = 1;
+					if( --tempConfig.start_up_raw_site < MIN_RAW_RES_SITE )
+						tempConfig.start_up_raw_site = MIN_RAW_RES_SITE;
 					tempConfig.difficulty_level = OPTION_CUSTOM;
 					configChange = 1;
 					refreshFlag |= SGOPTION_RAW | SGOPTION_DIFFICULTY;
@@ -4670,7 +4661,6 @@ int Game::mp_select_load_option(char *fileName)
 		// ####### begin Gilbert 24/10 ########//
 
 		sys.yield();
-		vga.flip();
 		mouse.get_event();
 
 		// Note: sys.signal_exit_flag is detected at the same point as the cancel/abort button

@@ -28,9 +28,10 @@
 #include <OFIRM.h>
 #endif
 
-struct FirmFactoryCrc;
-
 //------- Define class FirmFactory --------//
+
+struct FirmFactoryCrc;
+struct FirmFactoryGF;
 
 #pragma pack(1)
 class FirmFactory : public Firm
@@ -76,6 +77,11 @@ public:
 	virtual	uint8_t crc8();
 	virtual	void	clear_ptr();
 	virtual	void	init_crc(FirmFactoryCrc *c);
+
+	int		write_derived_file(File *filePtr);
+	int		read_derived_file(File *filePtr);
+	void		write_derived_record(FirmFactoryGF *r);
+	void		read_derived_record(FirmFactoryGF *r);
 
 private:
 	void		auto_set_product();

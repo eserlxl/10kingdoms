@@ -42,6 +42,7 @@
 //
 // Monster generals who live in monster firms.
 //
+struct MonsterInFirmGF;
 #pragma pack(1)
 struct MonsterInFirm
 {
@@ -59,12 +60,16 @@ public:
 
 public:
 	void	set_combat_level(int combatLevel);
+
+	void	write_record(MonsterInFirmGF *r);
+	void	read_record(MonsterInFirmGF *r);
 };
 #pragma pack()
 
-struct FirmMonsterCrc;
-
 //------- Define class FirmMonster --------//
+
+struct FirmMonsterCrc;
+struct FirmMonsterGF;
 
 #pragma pack(1)
 class FirmMonster : public Firm
@@ -135,6 +140,11 @@ public:
 	virtual	uint8_t crc8();
 	virtual	void	clear_ptr();
 	virtual	void	init_crc(FirmMonsterCrc *c);
+
+	int		write_derived_file(File *filePtr);
+	int		read_derived_file(File *filePtr);
+	void		write_derived_record(FirmMonsterGF *r);
+	void		read_derived_record(FirmMonsterGF *r);
 
 private:
 	void	disp_monster_info(int dispY1, int refreshFlag);

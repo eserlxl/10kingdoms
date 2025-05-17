@@ -2,6 +2,7 @@
  * Seven Kingdoms: Ancient Adversaries
  *
  * Copyright 1997,1998 Enlight Software Ltd.
+ * Copyright 2023 P. J. McDermott
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -88,6 +89,9 @@ static NewsInfo news_info_array[] =
 	{ &News::multi_quit_game, 1 },
 	{ &News::multi_save_game, 1 },
 	{ &News::multi_connection_lost, 1 },
+	{ &News::firm_constructed, 0 },
+	{ &News::unit_trained, 0 },
+	{ &News::weapon_ship_built, 0 },
 };
 
 //------- Define static variables --------//
@@ -1728,6 +1732,113 @@ void News::multi_connection_lost()
 	snprintf(str, MAX_STR_LEN+1, _("The connection with %s's Kingdom%s has been lost."), king_name1(), nation_color_str1());
 }
 //------- End of function News::multi_connection_lost -----//
+
+
+const char *firm_constructed_msg[MAX_FIRM_TYPE] =
+{
+	// TRANSLATORS: Your <Firm> has been built.
+	N_("Your Seat of Power has been built."),
+	N_("Your Factory has been built."),
+	N_("Your Inn has been built."),
+	N_("Your Market has been built."),
+	N_("Your Fort has been built."),
+	N_("Your Mine has been built."),
+	N_("Your Tower of Science has been built."),
+	N_("Your War Factory has been built."),
+	N_("Your Harbor has been built."),
+	("Your Fryhtan Lair has been built."),
+};
+//------ Begin of function News::firm_constructed -----//
+//
+// short_para1 - id. of the firm constructed.
+//
+void News::firm_constructed()
+{
+	//---------------- Text Format -----------------//
+	//
+	// Your <firm name> has been built.
+	//
+	//----------------------------------------------//
+
+	snprintf(str, MAX_STR_LEN+1, _(firm_constructed_msg[short_para1-1]));
+}
+//------- End of function News::firm_constructed -----//
+
+
+const char *unit_trained_in_town_msg[MAX_TRAINABLE_SKILL] =
+{
+	// TRANSLATORS: Your <Skill> has been trained in <Town>.
+	N_("Your Construction Worker has been trained in %s."),
+	N_("Your Soldier has been trained in %s."),
+	N_("Your Miner has been trained in %s."),
+	N_("Your Worker has been trained in %s."),
+	N_("Your Scientist has been trained in %s."),
+	N_("Your Spy has been trained in %s."),
+};
+//------ Begin of function News::unit_trained -----//
+//
+// short_para1 - skill id. of trained unit
+// short_para2 - id of the town where the unit is located.
+//
+void News::unit_trained()
+{
+	//---------------- Text Format -----------------//
+	//
+	// Your <unit skill> has been trained in <town name>.
+	//
+	//----------------------------------------------//
+
+	snprintf(str, MAX_STR_LEN+1, _(unit_trained_in_town_msg[short_para1-1]), town_res.get_name(short_para2));
+}
+//------- End of function News::unit_trained -----//
+
+
+const char *weapon_ship_built_msg[UNIT_GALLEON-UNIT_CATAPULT+1] =
+{
+	// TRANSLATORS: Your <Weapon> <Tech Level Number> has been built near <Town>.
+	N_("Your Catapult %s has been built near %s."),
+	N_("Your Ballista %s has been built near %s."),
+	N_("Your Spitfire %s has been built near %s."),
+	N_("Your Cannon %s has been built near %s."),
+	N_("Your Porcupine %s has been built near %s."),
+	// TRANSLATORS: Your <Ship> has been built.
+	N_("Your Trader has been built."),
+	N_("Your Transport has been built."),
+	N_("Your Caravel has been built."),
+	N_("Your Galleon has been built."),
+};
+const char *unicorn_built_msg = N_("Your Unicorn %s has been built near %s.");
+//------ Begin of function News::weapon_ship_built -----//
+//
+// short_para1 - unit id. of the weapon
+// short_para2 - level of the weapon
+// short_para3 - id of the town where the weapon is located.
+//
+void News::weapon_ship_built()
+{
+	//---------------- Text Format -----------------//
+	//
+	// Your <weapon name> <weapon level> has been built near <town name>.
+	//
+	//----------------------------------------------//
+
+	if( short_para1 == UNIT_F_BALLISTA )
+	{
+		// unicorn is separate in the dbf, handle directly
+		snprintf(str, MAX_STR_LEN+1, _(unicorn_built_msg), misc.roman_number(short_para2), town_res.get_name(short_para3));
+	}
+	else if( short_para2 && short_para3 )
+	{
+		// weapons have tech levels, and functioning war factories are linked to towns
+		snprintf(str, MAX_STR_LEN+1, _(weapon_ship_built_msg[short_para1-UNIT_CATAPULT]), misc.roman_number(short_para2), town_res.get_name(short_para3));
+	}
+	else
+	{
+		// ships don't have tech levels, and harbors aren't always near towns
+		snprintf(str, MAX_STR_LEN+1, _(weapon_ship_built_msg[short_para1-UNIT_CATAPULT]));
+	}
+}
+//------- End of function News::weapon_ship_built -----//
 
 
 //------ Begin of function News::nation_name1 -----//

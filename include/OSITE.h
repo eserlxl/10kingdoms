@@ -42,6 +42,8 @@ enum { SITE_RAW=1,
 
 //--------- Define class Site ----------//
 
+struct SiteGF;
+
 #pragma pack(1)
 class Site
 {
@@ -71,6 +73,9 @@ public:
 
 	int   get_site_object(int unitRecno);
 	int  	ai_get_site_object();
+
+	void	write_record(SiteGF *r);
+	void	read_record(SiteGF *r);
 };
 #pragma pack()
 

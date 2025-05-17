@@ -36,17 +36,23 @@ enum	{	INSIDE_CAMP=0,
 
 //-------- Define struct DefenseUnit ----------//
 
+struct DefenseUnitGF;
+
 #pragma pack(1)
 struct DefenseUnit
 {
 	short	unit_recno;
 	char	status;	// inside / outside the camp
+
+	void	write_record(DefenseUnitGF *r);
+	void	read_record(DefenseUnitGF *r);
 };
 #pragma pack()
 
 //------- Define class FirmCamp --------//
 
 struct FirmCampCrc;
+struct FirmCampGF;
 class Town;
 class Unit;
 
@@ -127,6 +133,11 @@ public:
 	virtual	uint8_t crc8();
 	virtual	void	clear_ptr();
 	virtual	void	init_crc(FirmCampCrc *c);
+
+	int		write_derived_file(File *filePtr);
+	int		read_derived_file(File *filePtr);
+	void		write_derived_record(FirmCampGF *r);
+	void		read_derived_record(FirmCampGF *r);
 
 private:
 	void 		reset_unit_home_camp(int firmRecno);

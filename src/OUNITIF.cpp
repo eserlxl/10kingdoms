@@ -361,7 +361,8 @@ int Unit::detect_basic_info()
 {
 	//--- detect pressing on the name to center the unit on the screen ---//
 
-	if( is_visible() && mouse.single_click( INFO_X1, INFO_Y1, INFO_X2, INFO_Y1+21 ) )
+	if( is_visible() && ( ISKEY(KEYEVENT_GOTO_SELECTED) ||
+		mouse.single_click(INFO_X1, INFO_Y1, INFO_X2, INFO_Y1+21) ) )
 	{
 		world.go_loc( next_x_loc(), next_y_loc() );
 		return 1;
@@ -1049,7 +1050,7 @@ void Unit::disp_build(int refreshFlag)
 //
 void Unit::detect_build()
 {
-	if( button_cancel2.detect() )
+	if( button_cancel2.detect(GETKEY(KEYEVENT_UNIT_CANCEL)) )
 	{
 		// ###### begin Gilbert 26/9 ######//
 		se_ctrl.immediate_sound("TURN_OFF");
@@ -1085,7 +1086,7 @@ void Unit::disp_settle(int refreshFlag)
 //
 void Unit::detect_settle()
 {
-	if( button_cancel2.detect() )
+	if( button_cancel2.detect(GETKEY(KEYEVENT_UNIT_CANCEL)) )
 	{
 		// ###### begin Gilbert 26/9 ######//
 		se_ctrl.immediate_sound("TURN_OFF");

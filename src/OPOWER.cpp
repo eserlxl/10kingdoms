@@ -716,12 +716,12 @@ int Power::detect_action()
 			//-------- if this firm does not belong to the player -------//
 			int assignedFlag=0;
 
-			if( ( ( nationPtr && nationPtr->get_relation_should_attack(targetFirm->nation_recno) )
+			if( nation_array.player_recno==nation_divide_order[natCount] &&			// Unit with color of player can attack
+				( ( nationPtr && nationPtr->get_relation_should_attack(targetFirm->nation_recno) )
 				  || shiftPressed ) && activeUnit->attack_count > 0 )			// Units like Phoenix that can't attack will call move_to() instead of calling attack()
 			{
 				//------------ attack the firm -------------//
-				if(nation_array.player_recno==nation_divide_order[natCount])
-					unit_array.attack(targetFirm->loc_x1, targetFirm->loc_y1, 0, nationSelectedArray, nationSelectedCount, COMMAND_PLAYER, 0);
+				unit_array.attack(targetFirm->loc_x1, targetFirm->loc_y1, 0, nationSelectedArray, nationSelectedCount, COMMAND_PLAYER, 0);
 			}
 			else
 			{

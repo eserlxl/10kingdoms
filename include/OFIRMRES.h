@@ -147,6 +147,8 @@ struct FirmBitmapRec
 
 //------------- Define struct FirmInfo --------------//
 
+struct FirmInfoGF;
+
 #pragma pack(1)
 struct FirmInfo
 {
@@ -201,6 +203,9 @@ public:
 
 	void	inc_nation_firm_count(int nationRecno);
 	void	dec_nation_firm_count(int nationRecno);
+
+	void	write_record(FirmInfoGF *r);
+	void	read_record(FirmInfoGF *r);
 };
 #pragma pack()
 

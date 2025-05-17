@@ -547,16 +547,17 @@ int Unit::think_leader_action()
 	{
 		validate_team();
 
-		unit_array.assign( bestCamp->loc_x1, bestCamp->loc_y1, 0, COMMAND_AI,
+		if( team_info->member_count > 0 )
+		{
+			unit_array.assign( bestCamp->loc_x1, bestCamp->loc_y1, 0, COMMAND_AI,
 								 team_info->member_unit_array, team_info->member_count );
-		return 1;
-	}
-	else  //--- otherwise assign the general only ---//
-	{
-		return nationPtr->add_action(bestCamp->loc_x1, bestCamp->loc_y1, -1, -1, ACTION_AI_ASSIGN_OVERSEER, FIRM_CAMP, 1, sprite_recno);
+			return 1;
+		}
 	}
 
-	return 0;
+	//--- otherwise assign the general only ---//
+
+	return nationPtr->add_action(bestCamp->loc_x1, bestCamp->loc_y1, -1, -1, ACTION_AI_ASSIGN_OVERSEER, FIRM_CAMP, 1, sprite_recno);
 }
 //---------- End of function Unit::think_leader_action --------//
 
@@ -583,7 +584,7 @@ int Unit::think_normal_human_action()
 	Firm *firmPtr, *bestFirm=NULL;
 	int  regionId = world.get_region_id( next_x_loc(), next_y_loc() );
 	int  skillId  = skill.skill_id;
-	int  skillLevel = skill.skill_level;
+	int  skillLevel = skillId == SKILL_LEADING ? skill.combat_level : skill.skill_level;
 	int  i, curRating, bestRating=0;
 	int  curXLoc = next_x_loc(), curYLoc = next_y_loc();
 
@@ -628,20 +629,21 @@ int Unit::think_normal_human_action()
 
 					for( int j=0 ; j<firmPtr->worker_count ; j++, workerPtr++ )
 					{
-						if( workerPtr->skill_level < minSkill )
-							minSkill = workerPtr->skill_level;
+						int workerSkillLevel = skillId == SKILL_LEADING ? workerPtr->combat_level : workerPtr->skill_level;
+						if( workerSkillLevel < minSkill )
+							minSkill = workerSkillLevel;
 					}
 
 					//------------------------------//
 
 					if( firmPtr->majority_race() == race_id )
 					{
-						if( skill.skill_level < minSkill+10 )
+						if( skillLevel < minSkill+10 )
 							continue;
 					}
 					else //-- for different race, only assign if the skill is significantly higher than the existing ones --//
 					{
-						if( skill.skill_level < minSkill+30 )
+						if( skillLevel < minSkill+30 )
 							continue;
 					}
 				}

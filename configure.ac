@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.65])
-AC_INIT([7kaa], [2.15.5], [the3dfxdude@gmail.com], [],
+AC_INIT([7kaa], [2.15.7], [the3dfxdude@gmail.com], [],
 	[http://7kfans.com/])
 AC_CONFIG_SRCDIR([src/AM.cpp])
 AC_CONFIG_HEADERS([include/config.h])
@@ -60,7 +60,7 @@ AC_COMPILE_IFELSE([AC_LANG_SOURCE(
     GLOBAL_CFLAGS="$GLOBAL_CFLAGS -fsigned-char"
   ],[
     AC_MSG_RESULT(no)
-    AC_ERROR([The compiler must interpret char as signed])
+    AC_MSG_ERROR(The compiler must interpret char as signed)
   ]
 )
 CXXFLAGS="$save_CXXFLAGS"
@@ -79,8 +79,24 @@ AC_COMPILE_IFELSE([AC_LANG_SOURCE(
 )
 CXXFLAGS="$save_CXXFLAGS"
 
+AC_MSG_CHECKING(checking for register keyword)
+AC_COMPILE_IFELSE([AC_LANG_SOURCE(
+int main()
+{
+  register int x;
+  return 0;
+}
+  )],[
+    AC_MSG_RESULT(yes)
+    have_register=yes
+  ],[
+    AC_MSG_RESULT(no)
+  ]
+)
+
 # Checks for header files.
 dnl AC_CHECK_HEADERS([])
+gt_LC_MESSAGES
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_CANONICAL_HOST
@@ -95,7 +111,7 @@ AC_TYPE_UINT64_T
 AC_TYPE_UINT8_T
 
 # Checks for library functions.
-AC_CHECK_FUNCS([_NSGetExecutablePath])
+AC_CHECK_FUNCS_ONCE([_NSGetExecutablePath setenv])
 
 AX_STRING_STRCASECMP
 if test x"$ac_cv_string_strcasecmp" = "xno" ; then
@@ -103,7 +119,7 @@ if test x"$ac_cv_string_strcasecmp" = "xno" ; then
 fi
 
 AM_GNU_GETTEXT([external])
-AM_GNU_GETTEXT_VERSION([0.24])
+AM_GNU_GETTEXT_VERSION([0.19])
 
 # Configuration variables
 
@@ -112,13 +128,14 @@ input_backend=sdl    # sdl
 video_backend=sdl    # sdl
 platform=posix
 jwasm_fmt="-elf -zt0"
-enable_enet=yes
 
 # Set in argument handlers:
 # enable_asm=no
 # enable_curl=yes
 # enable_debug=no
 # enable_dynamic_support_libs=no
+# enable_enet=yes
+# enable_multiplayer=yes
 
 # Configuration options
 
@@ -138,13 +155,18 @@ AC_ARG_ENABLE([debug],
 )
 
 AC_ARG_ENABLE([multiplayer],
-  AS_HELP_STRING([--enable-multiplayer], [enable multiplayer support in menu]),
-  [enable_multiplayer=yes], [enable_multiplayer=auto]
+  AS_HELP_STRING([--disable-multiplayer], [disable multiplayer support in menu]),
+  [], [enable_multiplayer=yes]
 )
 
 AC_ARG_ENABLE([dynamic-mingw-gnulibs],
   AS_HELP_STRING([--enable-dynamic-mingw-gnulibs], [enable dynamic linking to gnu libs on mingw]),
   [], [enable_dynamic_mingw_gnulibs=no]
+)
+
+AC_ARG_ENABLE([enet],
+  AS_HELP_STRING([--disable-enet], [disable enet support]),
+  [], [enable_enet=yes]
 )
 
 
@@ -164,13 +186,31 @@ AM_CONDITIONAL([VIDEO_SDL],    [test "$video_backend" = sdl])
 AM_CONDITIONAL([USE_WINDOWS],  [test "$platform"      = windows])
 AM_CONDITIONAL([USE_ASM],      [test "$enable_asm"    = yes])
 AM_CONDITIONAL([USE_CURL],     [test "$enable_curl"   = yes])
+AM_CONDITIONAL([USE_ENET],     [test "$enable_enet"   = yes])
+
+# Sync multiplayer support options
+AS_IF([test "$enable_multiplayer" = yes], [
+  AS_IF([test "$fpu_type" != 387], [
+    enable_multiplayer=no
+  ])
+  AS_IF([test "$enable_enet" != yes], [
+    enable_multiplayer=no
+  ])
+  AS_IF([test "$enable_enet" != yes], [
+    AC_MSG_NOTICE([Disabled: Multiplayer requires enet and 387 support])
+  ])
+])
+AS_IF([test "$enable_multiplayer" != yes], [
+  enable_curl=no
+  enable_enet=no
+])
 
 
 # Jwasm assembler set-up
 AS_IF([test "$enable_asm" = yes], [
   JWASM_CMD=$(which jwasm)
   AS_IF([test -z "$JWASM_CMD"], [
-    AC_ERROR([jwasm not found])
+    AC_MSG_ERROR(jwasm not found)
   ])
   AC_ARG_VAR([JWASM_CMD],[jwasm command])
   AC_SUBST([JWASM_FMT],["$jwasm_fmt"])
@@ -215,7 +255,7 @@ AS_IF([test "$audio_backend" = openal], [
       [Define to the equivalent of <AL/alc.h> on your system])
   ], [
     AM_PATH_OPENAL([], [
-      AC_ERROR([OpenAL not found])
+      AC_MSG_ERROR(OpenAL not found)
     ])
   ])
 
@@ -223,7 +263,7 @@ AS_IF([test "$audio_backend" = openal], [
 ])
 
 AM_PATH_SDL2([2.0.4], [], [
-  AC_ERROR([SDL not found])
+  AC_MSG_ERROR(SDL not found)
 ])
 dnl FIXME: SDLmain can screw up some autoconf macros
 LIBS="$SDL_LIBS $LIBS"
@@ -231,7 +271,7 @@ LIBS="$SDL_LIBS $LIBS"
 AS_IF([test "$enable_enet" = yes], [
   PKG_CHECK_MODULES([ENET], [libenet], [], [
     SEARCH_LIB_FLAGS([enet_initialize], ["-lenet -lws2_32 -lwinmm" -lenet],, [
-      AC_ERROR([enet not found])
+      AC_MSG_ERROR(enet not found)
     ])
   ])
 
@@ -240,7 +280,7 @@ AS_IF([test "$enable_enet" = yes], [
 
 AS_IF([test "$enable_curl" = yes], [
   PKG_CHECK_MODULES([CURL], [libcurl], [], [
-    AC_ERROR([curl not found])
+    AC_MSG_ERROR(curl not found)
   ])
 
   LIBS="$LIBS $CURL_LIBS"
@@ -287,7 +327,7 @@ AS_CASE(["$video_backend"],
   [sdl], [
     # Define later
   ], [
-    AC_ERROR([Unknown video backend: $video_backend])
+    AC_MSG_ERROR(Unknown video backend: $video_backend)
 ])
 
 AS_CASE(["$audio_backend"],
@@ -296,14 +336,14 @@ AS_CASE(["$audio_backend"],
       Define to 1 if using OpenAL as the audio backend
     ])
   ], [
-    AC_ERROR([Unknown audio backend: $audio_backend])
+    AC_MSG_ERROR(Unknown audio backend: $audio_backend)
 ])
 
 AS_CASE(["$input_backend"],
   [sdl], [
     # Define later
   ], [
-    AC_ERROR([Unknown input backend: $input_backend])
+    AC_MSG_ERROR(Unknown input backend: $input_backend)
 ])
 
 AS_IF([test "$input_backend" = sdl || test "$video_backend" = sdl], [
@@ -311,12 +351,6 @@ AS_IF([test "$input_backend" = sdl || test "$video_backend" = sdl], [
 	    [Define to 1 if using SDL as the video/input backend])
 ])
 
-AS_IF([test "$enable_multiplayer" = auto], [
-  enable_multiplayer=yes
-  AS_IF([test "$fpu_type" != 387], [
-    enable_multiplayer=no
-  ])
-])
 AS_IF([test "$enable_multiplayer" != yes], [
   AC_DEFINE([DISABLE_MULTI_PLAYER], [1], [Define to 1 if the multiplayer menu option is disabled])
 ])
@@ -341,10 +375,26 @@ AS_IF([test "$enable_asm" = yes], [
   ])
 ])
 
+AS_IF([test "$enable_enet" = yes], [
+  AC_DEFINE([USE_ENET], [1], [
+    Define to 1 if using enet support
+  ])
+])
+
+AS_IF([test "$have_register" = yes], [
+  AC_DEFINE([REGISTER], [register], [
+    Define to the register keyword your compiler allows
+  ])
+],[
+  AC_DEFINE([REGISTER], [], [
+    Define to the register keyword your compiler allows
+  ])
+])
+
 AC_SUBST([GLOBAL_LDFLAGS])
 AC_SUBST([GLOBAL_CFLAGS])
 
-AC_CONFIG_FILES([ po/Makefile.in
+AC_CONFIG_FILES([
   Makefile
   data/Makefile
   include/Makefile
@@ -355,6 +405,7 @@ AC_CONFIG_FILES([ po/Makefile.in
   src/imgfun/generic/Makefile
   src/imgfun/x86/Makefile
   src/openal/Makefile
+  po/Makefile.in
 ])
 
 AC_OUTPUT
@@ -364,5 +415,5 @@ AC_MSG_NOTICE([video backend: $video_backend])
 AC_MSG_NOTICE([input backend: $input_backend])
 echo
 AC_MSG_NOTICE([x86 asm: $enable_asm])
-AC_MSG_NOTICE([multiplayer: $enable_multiplayer])
+AC_MSG_NOTICE([multiplayer: menu=$enable_multiplayer curl=$enable_curl enet=$enable_enet fpu=$fpu_type])
 AC_MSG_NOTICE([debugging features: $enable_debug])

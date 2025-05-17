@@ -91,15 +91,22 @@ int Nation::ai_settle_to_region(int destXLoc, int destYLoc, int seaActionId)
 
 	short recruitedUnitArray[SETTLE_REGION_UNIT_COUNT];
 	int recruitedCount=0;
+	int raceCount=0;
 	int raceId = bestTown->majority_race();
 	int unitRecno;
 	int loopCount=0;
 
-	while( recruitedCount < SETTLE_REGION_UNIT_COUNT )
+	for( int i=0; i<MAX_RACE; i++ )
+	{
+		if( bestTown->can_recruit(i+1) )
+			raceCount++;
+	}
+
+	while( raceCount && recruitedCount < SETTLE_REGION_UNIT_COUNT )
 	{
 		err_when( ++loopCount > 100 );
 
-		if( bestTown->recruitable_race_pop( raceId, 1 ) )
+		if( bestTown->can_recruit(raceId) )
 		{
 			unitRecno = bestTown->recruit(-1, raceId, COMMAND_AI);
 
@@ -117,6 +124,13 @@ int Nation::ai_settle_to_region(int destXLoc, int destYLoc, int seaActionId)
 
 			if( !raceId )
 				break;
+
+			int cnt = 0;
+			while( cnt++ < MAX_RACE && !bestTown->can_recruit(raceId) )
+				if( ++raceId > MAX_RACE )
+					raceId = 1;
+
+			raceCount--;
 		}
 	}
 

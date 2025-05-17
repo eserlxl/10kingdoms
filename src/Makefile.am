@@ -108,6 +108,8 @@ bin_PROGRAMS = 7kaa
 	OGFILE.cpp \
 	OGFILE2.cpp \
 	OGFILE3.cpp \
+	OGFILEA.cpp \
+	OGF_REC.cpp \
 	OGF_V1.cpp \
 	OGODRES.cpp \
 	OGRPSEL.cpp \
@@ -165,9 +167,6 @@ bin_PROGRAMS = 7kaa
 	OR_TECH.cpp \
 	OR_TOWN.cpp \
 	OR_TRADE.cpp \
-	OSaveGameArray.cpp \
-	OSaveGameInfo.cpp \
-	OSaveGameProvider.cpp \
 	OSCROLL.cpp \
 	OSE.cpp \
 	OSERES.cpp \
@@ -291,6 +290,7 @@ bin_PROGRAMS = 7kaa
 	vgautil2.cpp
 
 AM_CPPFLAGS = \
+	-I$(top_srcdir)/include \
 	-DPACKAGE_DATA_DIR=\"$(pkgdatadir)\" \
 	-DLOCALE_DIR=\"$(localedir)\"
 

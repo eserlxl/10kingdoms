@@ -49,6 +49,8 @@ enum { SMALL_STARTUP_RESOURCE  = 4000,
 
 //---------- Define class Config -----------//
 
+struct ConfigGF;
+
 #pragma pack(1)
 class Config
 {
@@ -71,6 +73,8 @@ public:
 	int			read_file(File* filePtr, int keepSysSettings=0);
 	int			save(const char *);		// save to file
 	int			load(const char *);		// load from file
+	void			write_record(ConfigGF *r);
+	void			read_record(ConfigGF *r);
 
 	void			reset_cheat_setting();
 	void			enable_weather_visual();

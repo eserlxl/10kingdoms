@@ -306,6 +306,8 @@ public:
 
 //--------- Define struct AttackInfo ----------//
 
+struct AttackInfoGF;
+
 #pragma pack(1)
 struct AttackInfo
 {
@@ -329,6 +331,9 @@ struct AttackInfo
 	short	consume_power;
 	char	fire_radius;
 	short	effect_id;
+
+	void	write_record(AttackInfoGF *r);
+	void	read_record(AttackInfoGF *r);
 };
 #pragma pack()
 

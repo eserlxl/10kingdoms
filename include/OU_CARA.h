@@ -97,6 +97,9 @@ public:
 #pragma pack()
 
 //-------- Define struct CaravanStop ----------//
+
+struct CaravanStopGF;
+
 #pragma pack(1)
 struct CaravanStop : public TradeStop
 {
@@ -105,12 +108,17 @@ public:
 
 public:
 	int	update_pick_up(char *enableFlag=NULL);
+
+	void	write_record(CaravanStopGF *r);
+	void	read_record(CaravanStopGF *r);
 };
 #pragma pack()
 
-struct UnitCaravanCrc;
 
 //----------- Define class Caravan -----------//
+
+struct UnitCaravanCrc;
+struct UnitCaravanGF;
 
 #pragma pack(1)
 class UnitCaravan : public Unit
@@ -172,6 +180,11 @@ public:
 	virtual	uint8_t crc8();
 	virtual	void	clear_ptr();
 	virtual	void	init_crc(UnitCaravanCrc *c);
+
+	int	write_derived_file(File *filePtr);
+	int	read_derived_file(File *filePtr);
+	void	write_derived_record(UnitCaravanGF *r);
+	void	read_derived_record(UnitCaravanGF *r);
 
 private:
 	void 	disp_stop(int dispY1, int refreshFlag);

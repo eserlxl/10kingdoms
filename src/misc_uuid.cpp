@@ -115,7 +115,7 @@ static int get_random_fd(void)
 }
 
 
-void uuid_pack(const struct uuid *uu, guuid_t ptr)
+static void uuid_pack(const struct uuid *uu, guuid_t ptr)
 {
 	uint32_t	tmp;
 	unsigned char	*out = ptr;
@@ -148,7 +148,7 @@ void uuid_pack(const struct uuid *uu, guuid_t ptr)
 }
 
 
-void uuid_unpack(const guuid_t in, struct uuid *uu)
+static void uuid_unpack(const guuid_t in, struct uuid *uu)
 {
 	const uint8_t	*ptr = in;
 	uint32_t		tmp;

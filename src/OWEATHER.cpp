@@ -87,13 +87,16 @@ void Weather::init_date(short year, short month, short day, short latitude, int 
 
 //---------- Begin of function Weather::next_day ----------//
 //
+// Earthquake frequency is defined to be 800 to 1900.
+// Days to quake is rolled to be 800 to 3800 days.
+#define EARTHQUAKE_MAX_DAYS 4000
 void Weather::next_day()
 {
 
 	season_phase = (season_phase + 1 )% 365;
 
 	//---------- update/determine earthquake day ---------//
-	if( day_to_quake)
+	if( quake_frequency<EARTHQUAKE_MAX_DAYS && day_to_quake )
 	{
 		day_to_quake--;
 		if ( is_quake() )
@@ -103,7 +106,7 @@ void Weather::next_day()
 			quake_y = rand_seed(0x10000) * MAX_MAP_HEIGHT / 0x10000;
 		}
 	}
-	else
+	else if( day_to_quake == 0 )
 		day_to_quake = quake_frequency + rand_seed(quake_frequency);
 
 	//---------- update wind ----------//

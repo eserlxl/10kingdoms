@@ -539,13 +539,7 @@ void FirmBase::train_unit()
 					  * (int) overseerUnit->hit_points / overseerUnit->max_hit_points
 					  * (100+overseerUnit->skill.skill_potential*2) / 100;
 
-		overseerUnit->skill.skill_level_minor += incValue;
-
-		if( overseerUnit->skill.skill_level_minor >= 100 )
-		{
-			overseerUnit->skill.skill_level_minor -= 100;
-			overseerUnit->skill.skill_level++;
-		}
+		overseerUnit->inc_minor_skill_level(incValue);
 	}
 
 	//------- increase the prayer's skill level ------//

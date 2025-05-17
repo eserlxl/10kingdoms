@@ -177,8 +177,19 @@ int Spy::get_loc(int& xLoc, int& yLoc)
 		case SPY_MOBILE:
 			if( !unit_array.is_deleted(spy_place_para) )
 			{
-				xLoc = unit_array[spy_place_para]->next_x_loc();
-				yLoc = unit_array[spy_place_para]->next_y_loc();
+				Unit* unitPtr = unit_array[spy_place_para];
+
+				if( unitPtr->unit_mode == UNIT_MODE_ON_SHIP )
+				{
+					Unit* shipPtr = unit_array[unitPtr->unit_mode_para];
+					xLoc = shipPtr->next_x_loc();
+					yLoc = shipPtr->next_y_loc();
+				}
+				else
+				{
+					xLoc = unitPtr->next_x_loc();
+					yLoc = unitPtr->next_y_loc();
+				}
 				return 1;
 			}
 			break;
@@ -276,6 +287,39 @@ void Spy::next_day()
 		{
 			Firm* firmPtr = firm_array[spy_place_para];
 			world.visit( firmPtr->loc_x1, firmPtr->loc_y1, firmPtr->loc_x2, firmPtr->loc_y2, EXPLORE_RANGE-1 );
+		}
+		else if( spy_place == SPY_MOBILE )
+		{
+			Unit* unitPtr = unit_array[spy_place_para];
+			if( unitPtr->unit_mode == UNIT_MODE_CONSTRUCT )
+			{
+				Firm* firmPtr = firm_array[unitPtr->unit_mode_para];
+				world.visit( firmPtr->loc_x1, firmPtr->loc_y1, firmPtr->loc_x2, firmPtr->loc_y2, EXPLORE_RANGE-1 );
+			}
+			else if( unitPtr->unit_mode == UNIT_MODE_ON_SHIP )
+			{
+				Unit* shipPtr = unit_array[unitPtr->unit_mode_para];
+				if( shipPtr->unit_mode == UNIT_MODE_IN_HARBOR )
+				{
+					Firm* firmPtr = firm_array[shipPtr->unit_mode_para];
+					world.visit( firmPtr->loc_x1, firmPtr->loc_y1, firmPtr->loc_x2, firmPtr->loc_y2, EXPLORE_RANGE-1 );
+				}
+				else
+				{
+					int xloc1 = shipPtr->next_x_loc();
+					int yloc1 = shipPtr->next_y_loc();
+					int xloc2 = xloc1+shipPtr->sprite_info->loc_width-1;
+					int yloc2 = yloc1+shipPtr->sprite_info->loc_height-1;
+					int range = unit_res[shipPtr->unit_id]->visual_range;
+
+					world.unveil(xloc1, yloc1, xloc2, yloc2);
+					world.visit(xloc1, yloc1, xloc2, yloc2, range);
+				}
+			}
+		}
+		else
+		{
+			err_here();
 		}
 	}
 
@@ -885,25 +929,15 @@ int Spy::capture_firm()
 	if( spy_place != SPY_FIRM )
 		return 0;
 
+	if( !can_capture_firm() )
+		return 0;
+
 	Firm* firmPtr = firm_array[spy_place_para];
 
 	//------- if the spy is the overseer of the firm --------//
 
 	if( firm_res[firmPtr->firm_id]->need_overseer )
 	{
-		//-----------------------------------------------------//
-		//
-		// If the firm needs an overseer, the firm can only be
-		// captured if the spy is the overseer of the firm.
-		//
-		//-----------------------------------------------------//
-
-		if( !firmPtr->overseer_recno ||
-			 unit_array[firmPtr->overseer_recno]->spy_recno != spy_recno )
-		{
-			return 0;
-		}
-
 		//---------------------------------------------------//
 		//
 		// For those soldiers who disagree with the spy general will
@@ -969,19 +1003,6 @@ int Spy::capture_firm()
 	{
 		//------ otherwise the spy is a worker of the firm -------//
 
-		//---- check whether it's true that the only units in the firms are our spies ---//
-
-		Worker* workerPtr = firmPtr->worker_array;
-
-		for( int i=0 ; i<firmPtr->worker_count ; i++, workerPtr++ )
-		{
-			if( !workerPtr->spy_recno )		// this worker is not a spy
-				return 0;
-
-			if( spy_array[workerPtr->spy_recno]->true_nation_recno != true_nation_recno )
-				return 0;							// this worker is a spy, but not belong to the same nation
-		}
-
 		//--------- add news message --------//
 
 		if( firmPtr->nation_recno == nation_array.player_recno )
@@ -1000,6 +1021,57 @@ int Spy::capture_firm()
 	return 1;
 }
 //---------- End of function Spy::capture_firm ----------//
+
+
+//--------- Begin of function Spy::can_capture_firm ----------//
+//
+// Report if the spy can capture the firm.
+//
+int Spy::can_capture_firm()
+{
+	if( spy_place != SPY_FIRM )
+		return 0;
+
+	Firm* firmPtr = firm_array[spy_place_para];
+
+	//------- if the spy is the overseer of the firm --------//
+
+	if( firm_res[firmPtr->firm_id]->need_overseer )
+	{
+		//-----------------------------------------------------//
+		//
+		// If the firm needs an overseer, the firm can only be
+		// captured if the spy is the overseer of the firm.
+		//
+		//-----------------------------------------------------//
+
+		if( !firmPtr->overseer_recno ||
+			 unit_array[firmPtr->overseer_recno]->spy_recno != spy_recno )
+		{
+			return 0;
+		}
+
+		return 1;
+	}
+
+	//------ otherwise the spy is a worker of the firm -------//
+
+	//---- check whether it's true that the only units in the firms are our spies ---//
+
+	Worker* workerPtr = firmPtr->worker_array;
+
+	for( int i=0 ; i<firmPtr->worker_count ; i++, workerPtr++ )
+	{
+		if( !workerPtr->spy_recno )		// this worker is not a spy
+			return 0;
+
+		if( spy_array[workerPtr->spy_recno]->true_nation_recno != true_nation_recno )
+			return 0;							// this worker is a spy, but not belong to the same nation
+	}
+
+	return 1;
+}
+//---------- End of function Spy::can_capture_firm ----------//
 
 
 //-------- Begin of function Spy::mobilize_spy ------//

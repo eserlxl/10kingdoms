@@ -673,8 +673,6 @@ void UnitCaravan::set_stop(int stopId, int stopXLoc, int stopYLoc, char remoteAc
 //--------- Begin of function UnitCaravan::del_stop ---------//
 void UnitCaravan::del_stop(int stopId, char remoteAction)
 {
-	err_when(action_para || action_para2);
-
 	if(!remoteAction && remote.is_enable())
 	{
 		// packet structure : <unit recno> <stop id>
@@ -891,7 +889,7 @@ void UnitCaravan::update_stop_list()
 
 			if(dist<minDist)
 			{
-				dist = minDist;
+				minDist = dist;
 				dest_stop_id = i+1;
 			}
 		}
@@ -1236,7 +1234,7 @@ void UnitCaravan::caravan_on_way()
 
 		if(stop_defined_num) // move to next stop
 		{
-			Firm *firmPtr = firm_array[stop_array[stop_defined_num-1].firm_recno];
+			Firm *firmPtr = firm_array[stop_array[dest_stop_id-1].firm_recno];
 			move_to_firm_surround(firmPtr->loc_x1, firmPtr->loc_y1, sprite_info->loc_width, sprite_info->loc_height, firmPtr->firm_id);
 		}
 		return;

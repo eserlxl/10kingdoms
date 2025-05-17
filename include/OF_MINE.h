@@ -36,9 +36,10 @@
 
 #define DEFAULT_MINE_MAX_STOCK_QTY 	500
 
-struct FirmMineCrc;
-
 //------- Define class FirmMine --------//
+
+struct FirmMineCrc;
+struct FirmMineGF;
 
 #pragma pack(1)
 class FirmMine : public Firm
@@ -88,6 +89,11 @@ public:
 	virtual	uint8_t crc8();
 	virtual	void	clear_ptr();
 	virtual	void	init_crc(FirmMineCrc *c);
+
+	int		write_derived_file(File *filePtr);
+	int		read_derived_file(File *filePtr);
+	void		write_derived_record(FirmMineGF *r);
+	void		read_derived_record(FirmMineGF *r);
 
 private:
 	void 		 produce_raw();

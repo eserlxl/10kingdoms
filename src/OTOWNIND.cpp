@@ -231,69 +231,58 @@ int Town::form_new_nation()
 
 	//--- random extra beginning advantages -----//
 
-	int mobileCount, mobileCountSum = 0;
+	int mobileCount;
 	Nation* nationPtr = nation_array[nationRecno];
 
-	int j;
-	for( j=0; j<5; j++)
-    {
-	    int randomChoice =  misc.random(10);
+	switch( misc.random(10) )
+	{
+		case 1:		// knowledge of weapon in the beginning.
+			tech_res[ misc.random(tech_res.tech_count)+1 ]->set_nation_tech_level(nationRecno, 1);
+			break;
 
-	    if( mobileCountSum < 10 )
-        {
-            randomChoice = 4;
-        }
+		case 2:		// random additional cash
+			nationPtr->cash += misc.random(5000);
+			break;
 
-        switch( randomChoice )
-        {
-            case 1:		// knowledge of weapon in the beginning.
-                tech_res[ misc.random(tech_res.tech_count)+1 ]->set_nation_tech_level(nationRecno, 1);
-                break;
+		case 3:		// random additional food
+			nationPtr->food += misc.random(5000);
+			break;
 
-            case 2:		// random additional cash
-                nationPtr->cash += misc.random(5000);
-                break;
+		case 4:		// random additional skilled units
+			mobileCount = misc.random(5)+1;
 
-            case 3:		// random additional food
-                nationPtr->food += misc.random(5000);
-                break;
+			for( i=0 ; i<mobileCount && recruitable_race_pop(raceId,0)>0 ; i++ )		// 0-don't recruit spies
+			{
+				int unitRecno = mobilize_town_people(raceId, 1, 0);		// 1-dec pop, 0-don't mobilize spies
 
-            case 4:		// random additional skilled units
-                mobileCount = misc.random(10)+1;
+				if( unitRecno )
+				{
+					Unit* unitPtr = unit_array[unitRecno];
 
-                for( i=0 ; i<mobileCount && recruitable_race_pop(raceId,0)>0 ; i++ )		// 0-don't recruit spies
-                {
-                    int unitRecno = mobilize_town_people(raceId, 1, 0);		// 1-dec pop, 0-don't mobilize spies
+					//------- randomly set a skill -------//
 
-                    if( unitRecno )
-                    {
-                        Unit* unitPtr = unit_array[unitRecno];
+					int skillId = misc.random(MAX_TRAINABLE_SKILL)+1;
+					int loopCount=0;		// no spying skill
 
-                        //------- randomly set a skill -------//
+					while( skillId==SKILL_SPYING )		// no spy skill as skill_id can't be set as SKILL_SPY, for spies, spy_recno must be set instead
+					{
+						if( ++skillId > MAX_TRAINABLE_SKILL )
+							skillId = 1;
 
-                        int skillId = misc.random(MAX_TRAINABLE_SKILL)+1;
-                        int loopCount=0;		// no spying skill
+						err_when( ++loopCount > 100 );
+					}
 
-                        while( skillId==SKILL_SPYING )		// no spy skill as skill_id can't be set as SKILL_SPY, for spies, spy_recno must be set instead
-                        {
-                            if( ++skillId > MAX_TRAINABLE_SKILL )
-                                skillId = 1;
+					unitPtr->skill.skill_id    = skillId;
+					unitPtr->skill.skill_level = 50 + misc.random(50);
+					unitPtr->set_combat_level( 50 + misc.random(50) );
+				}
+				else
+					break;
+			}
+			break;
+	}
 
-                            err_when( ++loopCount > 100 );
-                        }
-
-                        unitPtr->skill.skill_id    = skillId;
-                        unitPtr->skill.skill_level = 50 + misc.random(50);
-                        unitPtr->set_combat_level( 50 + misc.random(50) );
-
-                        mobileCountSum++;
-                    }
-                    else
-                        break;
-                }
-                break;
-        }
-    }
+	nation_array.update_statistic();
 
 	return nationRecno;
 }

@@ -123,11 +123,16 @@ public:
 
 //------- Define struct ResultNode --------//
 
+struct ResultNodeGF;
+
 #pragma pack(1)
 struct ResultNode
 {
 public:
 	short node_x, node_y;
+
+	void write_record(ResultNodeGF *r);
+	void read_record(ResultNodeGF *r);
 };
 #pragma pack()
 

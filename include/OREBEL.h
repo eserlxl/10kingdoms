@@ -40,6 +40,8 @@ enum { REBEL_IDLE=1,
 
 //---------- Define class Rebel ---------//
 
+struct RebelGF;
+
 #pragma pack(1)
 class Rebel
 {
@@ -91,6 +93,9 @@ public:
 	uint8_t crc8();
 	void	clear_ptr();
 	// #### patch end Gilbert 20/1 ######//
+
+	void	write_record(RebelGF *r);
+	void	read_record(RebelGF *r);
 };
 #pragma pack()
 

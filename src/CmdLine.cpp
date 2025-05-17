@@ -29,7 +29,9 @@
 
 CmdLine::CmdLine()
 {
+	enable_audio = 1;
 	enable_if = 1;
+	rnd = 0;
 	game_speed = -1;
 	startup_mode = STARTUP_NORMAL;
 	join_host = NULL;
@@ -77,7 +79,9 @@ int CmdLine::init(int argc, char **argv)
 	const char *lobbyHostOption = "-host";
 	const char *lobbyNameOption = "-name";
 	const char *demoOption = "-demo";
+	const char *noAudioOption = "-noaudio";
 	const char *noIfOption = "-noif";
+	const char *rndOption = "-rnd";
 	const char *speedOption = "-speed";
 	const char *windowOption = "-win";
 	for( int i = 1; i < argc; i++ )
@@ -104,10 +108,23 @@ int CmdLine::init(int argc, char **argv)
 		{
 			set_startup_mode(STARTUP_DEMO);
 		}
+		else if( !strcmp(argv[i], noAudioOption) )
+		{
+			enable_audio = 0;
+		}
 		else if( !strcmp(argv[i], noIfOption) )
 		{
 			if( cmd_line.startup_mode == STARTUP_DEMO )
+			{
+				enable_audio = 0;
 				enable_if = 0;
+			}
+		}
+		else if( !strcmp(argv[i], rndOption) )
+		{
+			if( !have_arg(i, argc, rndOption) )
+				return 0;
+			rnd = atoi(argv[++i]);
 		}
 		else if( !strcmp(argv[i], speedOption) )
 		{

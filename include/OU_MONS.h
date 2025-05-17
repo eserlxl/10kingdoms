@@ -34,9 +34,10 @@ enum	{	MONSTER_ACTION_STOP = 0,
 			MONSTER_ACTION_EXPAND,
 		};
 
-struct UnitMonsterCrc;
-
 //----------- Define class Monster -----------//
+
+struct UnitMonsterCrc;
+struct UnitMonsterGF;
 
 #pragma pack(1)
 class UnitMonster : public Unit
@@ -58,6 +59,11 @@ public:
 	virtual	uint8_t crc8();
 	virtual	void	clear_ptr();
 	virtual	void	init_crc(UnitMonsterCrc *c);
+
+	int	write_derived_file(File *filePtr);
+	int	read_derived_file(File *filePtr);
+	void	write_derived_record(UnitMonsterGF *r);
+	void	read_derived_record(UnitMonsterGF *r);
 
 private:
 	int 	random_attack();

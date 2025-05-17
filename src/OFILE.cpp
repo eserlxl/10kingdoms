@@ -22,6 +22,7 @@
 //Description : Object File
 
 #include <ALL.h>
+#include <SDL.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <ctype.h>
@@ -175,9 +176,9 @@ int File::file_write(void* dataBuf, unsigned dataSize)
 	if (ferror(file_handle))
 	{
 		if (handle_error)
-			err.run("[File::file_write] error occured while writing file: %s\n", file_name);
+			err.run("[File::file_write] error occurred while writing file: %s\n", file_name);
 		else
-			ERR("[File::file_write] error occured while writing file: %s\n", file_name);
+			ERR("[File::file_write] error occurred while writing file: %s\n", file_name);
 		return 0;
 	}
 
@@ -226,9 +227,9 @@ int File::file_read(void* dataBuf, unsigned dataSize)
 	{
 		// This used to prompt for a retry -- was this necessary?
 		if (handle_error)
-			err.run("[File::file_read] error occured while reading file: %s\n", file_name);
+			err.run("[File::file_read] error occurred while reading file: %s\n", file_name);
 		else
-			ERR("[File::file_read] error occured while reading file: %s\n", file_name);
+			ERR("[File::file_read] error occurred while reading file: %s\n", file_name);
 		return 0;
 	}
 
@@ -246,9 +247,9 @@ int File::file_put_char(int8_t value)
 	if (ferror(file_handle))
 	{
 		if (handle_error)
-			err.run("[File::file_put_short] error occured while writing file: %s\n", file_name);
+			err.run("[File::file_put_short] error occurred while writing file: %s\n", file_name);
 		else
-			ERR("[File::file_put_short] error occured while writing file: %s\n", file_name);
+			ERR("[File::file_put_short] error occurred while writing file: %s\n", file_name);
 		return 0;
 	}
 
@@ -265,9 +266,9 @@ int8_t File::file_get_char()
 	if (ferror(file_handle))
 	{
 		if (handle_error)
-			err.run("[File::file_get_char] error occured while reading file: %s\n", file_name);
+			err.run("[File::file_get_char] error occurred while reading file: %s\n", file_name);
 		else
-			ERR("[File::file_get_char] error occured while reading file: %s\n", file_name);
+			ERR("[File::file_get_char] error occurred while reading file: %s\n", file_name);
 		return 0;
 	}
 
@@ -278,14 +279,15 @@ int File::file_put_short(int16_t value)
 {
 	err_when(!file_handle);
 
+	value = SDL_SwapLE16(value);
 	fwrite(&value, 1, sizeof(int16_t), file_handle);
 
 	if (ferror(file_handle))
 	{
 		if (handle_error)
-			err.run("[File::file_put_char] error occured while writing file: %s\n", file_name);
+			err.run("[File::file_put_char] error occurred while writing file: %s\n", file_name);
 		else
-			ERR("[File::file_put_char] error occured while writing file: %s\n", file_name);
+			ERR("[File::file_put_char] error occurred while writing file: %s\n", file_name);
 		return 0;
 	}
 
@@ -296,33 +298,115 @@ int16_t File::file_get_short()
 {
     	err_when(!file_handle);
 
-    int16_t value;
-    fread(&value, 1, sizeof(int16_t), file_handle);
+	int16_t value;
+	fread(&value, 1, sizeof(int16_t), file_handle);
 
 	if (ferror(file_handle))
 	{
 		if (handle_error)
-			err.run("[File::file_get_short] error occured while reading file: %s\n", file_name);
+			err.run("[File::file_get_short] error occurred while reading file: %s\n", file_name);
 		else
-			ERR("[File::file_get_short] error occured while reading file: %s\n", file_name);
+			ERR("[File::file_get_short] error occurred while reading file: %s\n", file_name);
 		return 0;
 	}
 
-	return value;
+	return SDL_SwapLE16(value);
 }
+
+//-------- Begin of function File::file_put_short_array ----------//
+//
+// Put a short array that has count elements.
+//
+// return : 1-success, 0-fail
+//
+int File::file_put_short_array(int16_t *out, int count)
+{
+	err_when( !file_handle );
+
+	unsigned dataSize = count*sizeof(int16_t);
+	if( file_type == File::STRUCTURED )
+	{
+		if( dataSize > 0xFFFF )
+			file_put_unsigned_short(0);
+		else
+			file_put_unsigned_short(dataSize);
+	}
+
+	for( int i=0; i<count; i++ )
+		file_put_short(out[i]);
+
+	if( ferror(file_handle) )
+	{
+		if( handle_error )
+			err.run("error occurred while writing file: %s\n", file_name);
+		return 0;
+	}
+
+	return 1;
+}
+//---------- End of function File::file_put_short_array ----------//
+
+
+//-------- Begin of function File::file_get_short_array ----------//
+//
+// Get a short array that has count elements, and returns the data in out. No
+// allocation is performed, so the user provides the appropriate space at the
+// address provided.
+//
+// return : 1-success, 0-fail
+//
+int File::file_get_short_array(int16_t *in, int count)
+{
+	err_when( !file_handle );
+
+	unsigned arrayBytes = count*sizeof(int16_t);
+	unsigned bytesToRead = arrayBytes;
+	unsigned recordBytes = arrayBytes;
+	if( file_type == File::STRUCTURED )
+	{
+		recordBytes = file_get_unsigned_short();
+		bytesToRead = MIN(arrayBytes, recordBytes);
+	}
+
+	for( int i=0; i<bytesToRead/sizeof(int16_t); i++ )
+		in[i] = file_get_short();
+
+	//-------- if the data size has been reduced ----------//
+
+	if( bytesToRead < recordBytes )
+		file_seek(recordBytes - bytesToRead, SEEK_CUR);
+
+	//---- if the data size has been increased, reset the unread area ---//
+
+	if( recordBytes < arrayBytes )
+		memset((char*)in + recordBytes, 0, arrayBytes - recordBytes);
+
+	if( ferror(file_handle) )
+	{
+		if( handle_error )
+			err.run("error occurred while reading file: %s\n", file_name);
+
+		return 0;
+	}
+
+	return 1;
+}
+//---------- End of function File::file_get_short_array ----------//
+
 
 int File::file_put_unsigned_short(uint16_t value)
 {
     	err_when(!file_handle);
 
-    fwrite(&value, 1, sizeof(uint16_t), file_handle);
+	value = SDL_SwapLE16(value);
+	fwrite(&value, 1, sizeof(uint16_t), file_handle);
 
 	if (ferror(file_handle))
 	{
 		if (handle_error)
-			err.run("[File::file_put_unsigned_short] error occured while writing file: %s\n", file_name);
+			err.run("[File::file_put_unsigned_short] error occurred while writing file: %s\n", file_name);
 		else
-			ERR("[File::file_put_unsigned_short] error occured while writing file: %s\n", file_name);
+			ERR("[File::file_put_unsigned_short] error occurred while writing file: %s\n", file_name);
 		return 0;
 	}
 
@@ -333,33 +417,34 @@ uint16_t File::file_get_unsigned_short()
 {
     	err_when(!file_handle);
 
-    uint16_t value;
-    fread(&value, 1, sizeof(uint16_t), file_handle);
+	uint16_t value;
+	fread(&value, 1, sizeof(uint16_t), file_handle);
 
 	if (ferror(file_handle))
 	{
 		if (handle_error)
-			err.run("[File::file_get_unsigned_short] error occured while reading file: %s\n", file_name);
+			err.run("[File::file_get_unsigned_short] error occurred while reading file: %s\n", file_name);
 		else
-			ERR("[File::file_get_unsigned_short] error occured while reading file: %s\n", file_name);
+			ERR("[File::file_get_unsigned_short] error occurred while reading file: %s\n", file_name);
 		return 0;
 	}
 
-	return value;
+	return SDL_SwapLE16(value);
 }
 
 int File::file_put_long(int32_t value)
 {
     	err_when(!file_handle);
 
-    fwrite(&value, 1, sizeof(int32_t), file_handle);
+	value = SDL_SwapLE32(value);
+	fwrite(&value, 1, sizeof(int32_t), file_handle);
 
 	if (ferror(file_handle))
 	{
 		if (handle_error)
-			err.run("[File::file_put_long] error occured while writing file: %s\n", file_name);
+			err.run("[File::file_put_long] error occurred while writing file: %s\n", file_name);
 		else
-			ERR("[File::file_put_long] error occured while writing file: %s\n", file_name);
+			ERR("[File::file_put_long] error occurred while writing file: %s\n", file_name);
 		return 0;
 	}
 
@@ -370,19 +455,19 @@ int32_t File::file_get_long()
 {
     	err_when(!file_handle);
 
-    int32_t value;
-    fread(&value, 1, sizeof(int32_t), file_handle);
+	int32_t value;
+	fread(&value, 1, sizeof(int32_t), file_handle);
 
 	if (ferror(file_handle))
 	{
 		if (handle_error)
-			err.run("[File::file_get_long] error occured while reading file: %s\n", file_name);
+			err.run("[File::file_get_long] error occurred while reading file: %s\n", file_name);
 		else
-			ERR("[File::file_get_long] error occured while reading file: %s\n", file_name);
+			ERR("[File::file_get_long] error occurred while reading file: %s\n", file_name);
 		return 0;
 	}
 
-	return value;
+	return SDL_SwapLE32(value);
 }
 
 //---------- Start of function File::file_seek ---------//

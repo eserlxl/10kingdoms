@@ -48,6 +48,8 @@ enum RegionType
 
 //------- Define struct RegionInfo ----------//
 
+struct RegionInfoGF;
+
 #pragma pack(1)
 struct RegionInfo
 {
@@ -59,12 +61,16 @@ struct RegionInfo
 	int				region_size;
 
 	short				center_x, center_y;		// the center locatino of the region
+
+	void				write_record(RegionInfoGF *r);
+	void				read_record(RegionInfoGF *r);
 };
 #pragma pack()
 
 //------- Define class RegionArray ----------//
 
 class RegionStat;
+struct RegionArrayGF;
 
 #pragma pack(1)
 class RegionArray
@@ -104,6 +110,8 @@ public:
 
 	int 	write_file(File* filePtr);
 	int	read_file(File* filePtr);
+	void	write_record(RegionArrayGF *r);
+	void	read_record(RegionArrayGF *r);
 
 	//--------------------------------------//
 

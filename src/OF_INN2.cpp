@@ -81,8 +81,9 @@ int FirmInn::think_del()
 
 		if( townPtr->nation_recno == nation_recno )
 		{
-			if( misc.points_distance( townPtr->center_x, townPtr->center_y,
-				 center_x, center_y ) <= EFFECTIVE_FIRM_TOWN_DISTANCE )
+			if( misc.rects_distance(townPtr->loc_x1, townPtr->loc_y1,
+				townPtr->loc_x2, townPtr->loc_y2,
+				loc_x1, loc_y1, loc_x2, loc_y2) <= EFFECTIVE_FIRM_TOWN_DISTANCE )
 			{
 				return 0;
 			}
@@ -100,6 +101,9 @@ int FirmInn::think_del()
 int FirmInn::think_hire_spy()
 {
 	Nation* ownNation = nation_array[nation_recno];
+
+	if( ownNation->total_spy_count > ownNation->total_population * (10+ownNation->pref_spy/5) / 100 )
+		return 0;
 
 	if( !ownNation->ai_should_spend(ownNation->pref_spy/2) )
 		return 0;

@@ -49,7 +49,15 @@
 
 #define  MAX_MARKET_STOCK 		500
 
+enum { RESTOCK_ANY = 0,
+	RESTOCK_PRODUCT,
+	RESTOCK_RAW,
+	RESTOCK_NONE,
+};
+
 //------- Define class MarketInfo --------//
+
+struct MarketGoodsGF;
 
 #pragma pack(1)
 struct MarketGoods
@@ -74,12 +82,16 @@ struct MarketGoods
 	float		last_year_sales;
 	float		sales_365days()		{ return last_year_sales*(365-info.year_day)/365 +
 											  cur_year_sales; }
+
+	void		write_record(MarketGoodsGF *r);
+	void		read_record(MarketGoodsGF *r);
 };
 #pragma pack()
 
-struct FirmMarketCrc;
-
 //------- Define class FirmMarket --------//
+
+struct FirmMarketCrc;
+struct FirmMarketGF;
 
 #pragma pack(1)
 class FirmMarket : public Firm
@@ -101,7 +113,10 @@ public:
 
 	int			 no_linked_town_since_date;
 	int			 last_import_new_goods_date;
-	char			 is_retail_market;					// if 1, then it sells consumer products only, if 0, it sells raw materials only
+
+	//--------------------------------//
+
+	char			 restock_type;
 
 public:
 	FirmMarket();
@@ -131,12 +146,19 @@ public:
 
 	void		process_ai();	// ai process entry point
 
-	int		read_derived_file(File* filePtr);
+	int		is_raw_market();
+	int		is_retail_market();
+	void		switch_restock();
 
 	//-------------- multiplayer checking codes ---------------//
 	virtual	uint8_t crc8();
 	virtual	void	clear_ptr();
 	virtual	void	init_crc(FirmMarketCrc *c);
+
+	int		write_derived_file(File *filePtr);
+	int		read_derived_file(File *filePtr);
+	void		write_derived_record(FirmMarketGF *r);
+	void		read_derived_record(FirmMarketGF *r);
 
 private:
 	void		put_market_info(int dispY1, int refreshFlag);

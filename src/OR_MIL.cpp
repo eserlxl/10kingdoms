@@ -199,11 +199,15 @@ static void disp_troop_total()
 		if( unitPtr->nation_recno != info.viewing_nation_recno )
 			continue;
 
-		if( unitPtr->rank_id == RANK_SOLDIER )
-			totalSoldier++;
-		else
+		if( unitPtr->skill.skill_id != SKILL_LEADING )
+			continue;
+
+		if( unitPtr->rank_id > RANK_SOLDIER )
 			totalCommandedSoldier += unitPtr->commanded_soldier_count();
+		else if( !unitPtr->leader_unit_recno )
+			totalSoldier++;
 	}
+	totalSoldier += totalCommandedSoldier;
 
 	Nation* viewingNation = nation_array[info.viewing_nation_recno];
 

@@ -48,6 +48,8 @@ enum { SKILL_CONSTRUCTION=1,
 
 //-------- Define struct Skill ----------//
 
+struct SkillGF;
+
 #pragma pack(1)
 class Skill
 {
@@ -71,6 +73,9 @@ public:
 	const char* skill_des(int shortWord=0);
 	int 	get_skill(int skillId);
 	void	set_skill(int skillId)		{ skill_id = skillId; }
+
+	void read_record(SkillGF *r);
+	void write_record(SkillGF *r);
 };
 #pragma pack()
 

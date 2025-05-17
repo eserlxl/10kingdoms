@@ -58,6 +58,8 @@ public:
 #define HEIGHT_IN_ZONE ((MAX_MAP_HEIGHT+SNOW_ZONE_SIZE-1)/SNOW_ZONE_SIZE)
 */
 
+struct SnowGroundArrayGF;
+
 #pragma pack(1)
 class SnowGroundArray
 {
@@ -77,6 +79,8 @@ public:
 
 	int 	write_file(File* filePtr);
 	int	read_file(File* filePtr);
+	void	write_record(SnowGroundArrayGF *r);
+	void	read_record(SnowGroundArrayGF *r);
 
 private:
 	unsigned rand_seed();

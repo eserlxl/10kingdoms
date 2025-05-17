@@ -24,9 +24,7 @@
 #include <OINFO.h>
 #include <ODYNARRB.h>
 #include <dbglog.h>
-#include <file_io_visitor.h>
-
-using namespace FileIOVisitor;
+#include <OGF_REC.h>
 
 DBGLOG_DEFAULT_CHANNEL(DynArray);
 
@@ -178,23 +176,6 @@ void DynArrayB::linkout(int delPos)
 }
 //------------ END OF FUNCTION DynArrayB::linkout ----------//
 
-template <typename Visitor>
-static void visit_dyn_array_b(Visitor *v, DynArrayB *dab)
-{
-	/* DynArray */
-   visit<int32_t>(v, &dab->ele_num);
-   visit<int32_t>(v, &dab->block_num);
-   visit<int32_t>(v, &dab->cur_pos);
-   visit<int32_t>(v, &dab->last_ele);
-   visit<int32_t>(v, &dab->ele_size);
-   visit<int32_t>(v, &dab->sort_offset);
-   visit<int8_t>(v, &dab->sort_type);
-	v->skip(4); /* dab->body_buf */
-
-	/* Not reading DynArrayB members */
-}
-
-enum { DYN_ARRAY_B_RECORD_SIZE = 29 };
 
 //---------- Begin of function DynArrayB::write_file -------------//
 //
@@ -208,9 +189,9 @@ enum { DYN_ARRAY_B_RECORD_SIZE = 29 };
 //
 int DynArrayB::write_file(File* filePtr)
 {
-	if (!write_with_record_size(filePtr, this, &visit_dyn_array_b<FileWriterVisitor>,
-										 DYN_ARRAY_B_RECORD_SIZE))
-		return 0;
+	write_record(&gf_rec.dyn_array);
+	if( !filePtr->file_write(&gf_rec, sizeof(DynArrayGF)) )
+ 		return 0;
 
 	//---------- write body_buf ---------//
 
@@ -240,21 +221,21 @@ int DynArrayB::write_file(File* filePtr)
 //
 int DynArrayB::read_file(File* filePtr)
 {
-	if (!read_with_record_size(filePtr, this, &visit_dyn_array_b<FileReaderVisitor>,
-										DYN_ARRAY_B_RECORD_SIZE))
-		return 0;
+	if( !filePtr->file_read(&gf_rec, sizeof(DynArrayGF)) )
+ 		return 0;
+	read_record(&gf_rec.dyn_array);
 
-   //---------- read body_buf ---------//
+	//---------- read body_buf ---------//
 
-   this->body_buf = mem_resize(this->body_buf, this->ele_num*this->ele_size);
+	body_buf = mem_resize( body_buf, ele_num*ele_size );
 
-   if( last_ele > 0 )
+	if( last_ele > 0 )
 	{
-      if( !filePtr->file_read( body_buf, ele_size*last_ele ) )
-         return 0;
-   }
+		if( !filePtr->file_read( body_buf, ele_size*last_ele ) )
+			return 0;
+	}
 
-   //---------- read empty_room_array ---------//
+	//---------- read empty_room_array ---------//
 
 	read_empty_room(filePtr);
 

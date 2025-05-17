@@ -190,7 +190,7 @@ void OptionMenu::enter(char untilExitFlag)
 
 	if( untilExitFlag )
 	{
-		while( is_active() )
+		while( is_active() && !sys.signal_exit_flag )
 		{
 			sys.yield();
 			vga.flip();

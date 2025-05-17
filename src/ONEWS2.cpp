@@ -2,6 +2,7 @@
  * Seven Kingdoms: Ancient Adversaries
  *
  * Copyright 1997,1998 Enlight Software Ltd.
+ * Copyright 2023 P. J. McDermott
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -993,6 +994,117 @@ void NewsArray::multi_connection_lost(int nationRecno)
 	add_news( NEWS_MULTI_CONNECTION_LOST, NEWS_NORMAL, nationRecno, nation_array.player_recno, 1 );		// add player recno as the 2nd parameter so this message is always displayed even if the player doesn't yet have contact with this nation
 }
 //------- End of function NewsArray::multi_connection_lost -----//
+
+
+//------ Begin of function NewsArray::firm_constructed -----//
+//
+// <int> firmRecno - recno of the firm constructed.
+//
+// short_para1 - id. of the firm constructed.
+//
+void NewsArray::firm_constructed(int firmRecno)
+{
+	Firm* firmPtr = firm_array[firmRecno];
+
+	err_when( firmPtr->nation_recno != nation_array.player_recno );
+
+	News* newsPtr = add_news( NEWS_FIRM_CONSTRUCTED, NEWS_NORMAL, firmPtr->nation_recno);
+
+	if( !newsPtr )		// only news of nations that have contact with the player are added
+		return;
+
+	newsPtr->short_para1 = firmPtr->firm_id;
+
+	//--------- set location ---------//
+
+	newsPtr->set_loc( firmPtr->center_x, firmPtr->center_y, NEWS_LOC_FIRM, firmRecno );
+}
+//------- End of function NewsArray::firm_constructed -----//
+
+
+//------ Begin of function NewsArray::unit_trained -----//
+//
+// <int> unitRecno - recno of the unit that has been trained.
+// <int> townRecno - the recno of the town where the unit was trained.
+//
+// short_para1 - skill id. of trained unit
+// short_para2 - name id of the town where the unit is located.
+//
+void NewsArray::unit_trained(int unitRecno, int townRecno)
+{
+	Unit* unitPtr = unit_array[unitRecno];
+	Town* townPtr = town_array[townRecno];
+
+	err_when( unitPtr->nation_recno != nation_array.player_recno );
+	err_when( townPtr->nation_recno != nation_array.player_recno );
+
+	News* newsPtr = add_news( NEWS_UNIT_TRAINED, NEWS_NORMAL, unitPtr->nation_recno );
+
+	if( !newsPtr )		// only news of nations that have contact with the player are added
+		return;
+
+	if( unitPtr->spy_recno )
+		newsPtr->short_para1 = SKILL_SPYING;
+	else
+		newsPtr->short_para1 = unitPtr->skill.skill_id;
+	newsPtr->short_para2 = townPtr->town_name_id;
+
+	//------- set location --------//
+
+	short xLoc, yLoc;
+
+	unitPtr->get_cur_loc(xLoc, yLoc);
+
+	newsPtr->set_loc( xLoc, yLoc, NEWS_LOC_ANY );
+}
+//------- End of function NewsArray::unit_trained -----//
+
+
+//------ Begin of function NewsArray::weapon_ship_built -----//
+//
+// <int> unitRecno - recno of the weapon that has been built.
+// <int> firmRecno - recno of the firm where the weapon was built.
+//
+// short_para1 - unit id. of the weapon
+// short_para2 - level of the weapon
+// short_para2 - name id of the town where the weapon is located.
+//
+void NewsArray::weapon_ship_built(int unitRecno, int firmRecno)
+{
+	Unit* unitPtr = unit_array[unitRecno];
+	Firm* firmPtr = firm_array[firmRecno];
+	int unitId = unitPtr->unit_id;
+
+	err_when( unitPtr->nation_recno != nation_array.player_recno );
+	err_when( unit_res[unitId]->unit_class != UNIT_CLASS_WEAPON &&
+				 unit_res[unitId]->unit_class != UNIT_CLASS_SHIP );
+
+	News* newsPtr = add_news( NEWS_WEAPON_SHIP_BUILT, NEWS_NORMAL, unitPtr->nation_recno );
+
+	if( !newsPtr )		// only news of nations that have contact with the player are added
+		return;
+
+	newsPtr->short_para1 = unitId;
+	newsPtr->short_para2 = unitPtr->nation_contribution;
+	if( firmPtr->firm_id == FIRM_WAR_FACTORY )
+	{
+		if( firmPtr->closest_town_name_id )
+			newsPtr->short_para3 = firmPtr->closest_town_name_id;
+		else
+			newsPtr->short_para3 = firmPtr->get_closest_town_name_id();
+	}
+	else
+		newsPtr->short_para3 = 0;
+
+	//------- set location --------//
+
+	short xLoc, yLoc;
+
+	unitPtr->get_cur_loc(xLoc, yLoc);
+
+	newsPtr->set_loc( xLoc, yLoc, NEWS_LOC_ANY );
+}
+//------- End of function NewsArray::weapon_ship_built -----//
 
 
 //------ Begin of function NewsArray::add_news -----//

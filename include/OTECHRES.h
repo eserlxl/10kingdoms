@@ -82,6 +82,8 @@ struct TechRec
 
 //-------- define struct TechClass ----------//
 
+struct TechClassGF;
+
 #pragma pack(1)
 class TechClass
 {
@@ -101,10 +103,15 @@ public:
 	void   set_nation_research_firm_recno(int nationRecno, int firmRecno)	{ nation_research_firm_recno_array[nationRecno-1] = firmRecno; }
 	int    get_nation_research_firm_recno(int nationRecno)						{ return nation_research_firm_recno_array[nationRecno-1]; }
 	int	 is_nation_researching(int nationRecno)								   { return nation_research_firm_recno_array[nationRecno-1]; }
+
+	void   write_record(TechClassGF *r);
+	void   read_record(TechClassGF *r);
 };
 #pragma pack()
 
 //-------- define struct TechInfo ----------//
+
+struct TechInfoGF;
 
 #pragma pack(1)
 class TechInfo
@@ -145,6 +152,9 @@ public:
 	int 	 can_research(int nationRecno);
 	int  	 progress(int nationRecno, float progressPoint);
 	float	 get_progress(int nationRecno);
+
+	void   write_record(TechInfoGF *r);
+	void   read_record(TechInfoGF *r);
 };
 #pragma pack()
 

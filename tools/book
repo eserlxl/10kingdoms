@@ -1,0 +1,76 @@
+#!/bin/sh
+#
+# Seven Kingdoms: Ancient Adversaries
+#
+# Copyright 2023 P. J. McDermott
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+set -eu
+
+if ! PDFINFO="$(command -v pdfinfo)"; then
+	cat 1>&2 0<<EOF
+Error: Missing "pdfinfo"
+Try installing Poppler, for example the "poppler-utils" package on Debian and
+derivatives.
+EOF
+	exit 1
+fi
+if ! PDFJAM="$(command -v pdfjam)"; then
+	cat 1>&2 0<<EOF
+Error: Missing "pdfjam"
+Try installing TeX Live, for example the "texlive-extra-utils" package on Debian
+and derivatives.
+EOF
+	exit 1
+fi
+
+if [ ${#} -ne 2 ]; then
+	cat 1>&2 0<<EOF
+Usage: ${0} input output
+Arranges manual pages 2-up into a book that can be printed short-edge duplexed
+on US letter paper and then bound.
+Example: ${0} doc/main.pdf doc/book.pdf
+EOF
+	exit 1
+fi
+input="${1}"
+output="${2}"
+
+# Poppler's message strings aren't internationalized, so "Pages" is locale-safe.
+pages=$("${PDFINFO}" "${input}" | sed -n 's/^Pages: *//p')
+i=0
+sheets=$(((pages + 3) / 4))
+sel=''
+while [ ${i} -lt ${sheets} ]; do
+	a=$(((sheets * 2 - i) * 2 - 0))
+	b=$((i * 2 + 1))
+	c=$((i * 2 + 2))
+	d=$(((sheets * 2 - i) * 2 - 1))
+	[ ${a} -gt ${pages} ] && a='{}'
+	[ ${d} -gt ${pages} ] && d='{}'
+	sel="${sel}${a},${b},${c},${d},"
+	: $((i += 1))
+done
+
+"${PDFJAM}" --outfile "${output}" --landscape --paper letterpaper --nup 2x1 \
+	"${input}" "${sel%,}"
+
+output="$(printf '%s\n' "${output}" | sed "s/'/\\'/g")"
+cat 0<<EOF
+
+Ready to print, for example by running:
+  lp -o media=letter -o sides=two-sided-short-edge '${output}'
+EOF

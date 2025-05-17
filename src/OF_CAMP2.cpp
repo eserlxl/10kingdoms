@@ -450,7 +450,10 @@ int FirmCamp::ai_recruit(int recruitCombatLevel)
 			if( townPtr->jobless_race_pop_array[raceId-1] > 0 &&
 				 townPtr->race_loyalty_array[raceId-1] < 40 )
 			{
-				if( townPtr->accumulated_reward_penalty > 30 )		// if the reward penalty is too high, do reward
+				if( townPtr->accumulated_reward_penalty > 30 )		// if the reward penalty is too high, don't reward
+					break;
+
+				if( nation_array[nation_recno]->cash <= 0 )		// must have cash to reward
 					break;
 
 				townPtr->reward(COMMAND_AI);
@@ -867,6 +870,12 @@ int FirmCamp::think_capture_return()
 //
 int FirmCamp::think_assign_better_overseer(Town* targetTown)
 {
+	if( !overseer_recno )
+		return 1;		// overseer to be assigned, but handled elsewhere
+
+	if( patrol_unit_count )
+		return 1;		// need finish mission first
+
 	//----- check if there is already a queued action -----//
 
 	Nation* ownNation = nation_array[nation_recno];
@@ -877,34 +886,51 @@ int FirmCamp::think_assign_better_overseer(Town* targetTown)
 		return 1;		// there is a queued action being processed already
 	}
 
+	//----- check how the current overseer is doing the job -----//
+
+	Unit* unitPtr = unit_array[overseer_recno];
+	int raceId = unitPtr->race_id;
+
+	if( targetTown->race_pop_array[raceId-1] > 0 )
+	{
+		if( targetTown->race_target_resistance_array[raceId-1][nation_recno-1] == -1 ||
+			targetTown->race_resistance_array[raceId-1][nation_recno-1] >
+			(float) (targetTown->race_target_resistance_array[raceId-1][nation_recno-1]+1) )
+		{
+			// keep the current overseer that is making progress
+			return 0;
+		}
+
+		//-- if resistance is no longer dropping, check if we can get a better overseer --//
+
+		if( targetTown->race_resistance_array[raceId-1][nation_recno-1] > 30 )
+		{
+			return think_assign_better_overseer2(targetTown->town_recno, raceId);
+		}
+	}
+
 	//------ get the two most populated races of the town ----//
 
 	int mostRaceId1, mostRaceId2;
 
 	targetTown->get_most_populated_race(mostRaceId1, mostRaceId2);
 
-	//-- if the resistance of the majority race has already dropped to its lowest possible --//
+	//-- if the majority race is not being worked on and could use an overseer --//
 
-	if( targetTown->race_resistance_array[mostRaceId1-1][nation_recno-1] <=
-		 (float) (targetTown->race_target_resistance_array[mostRaceId1-1][nation_recno-1]+1) )
+	raceId = mostRaceId1;
+	if( targetTown->race_target_resistance_array[raceId-1][nation_recno-1] == -1 &&
+		 targetTown->race_resistance_array[raceId-1][nation_recno-1] > 30 )
 	{
-		if( targetTown->race_resistance_array[mostRaceId1-1][nation_recno-1] > 30 )
-		{
-			if( think_assign_better_overseer2(targetTown->town_recno, mostRaceId1) )
-				return 1;
-		}
+		return think_assign_better_overseer2(targetTown->town_recno, raceId);
 	}
 
-	//-- if the resistance of the 2nd majority race has already dropped to its lowest possible --//
+	//-- if the 2nd majority race is not being worked on and could use an overseer --//
 
-	if( targetTown->race_resistance_array[mostRaceId2-1][nation_recno-1] <=
-		 (float) (targetTown->race_target_resistance_array[mostRaceId2-1][nation_recno-1]+1) )
+	raceId = mostRaceId2;
+	if( targetTown->race_target_resistance_array[raceId-1][nation_recno-1] == -1 &&
+		 targetTown->race_resistance_array[raceId-1][nation_recno-1] > 30 )
 	{
-		if( targetTown->race_resistance_array[mostRaceId2-1][nation_recno-1] > 30 )
-		{
-			if( think_assign_better_overseer2(targetTown->town_recno, mostRaceId2) )
-				return 1;
-		}
+		return think_assign_better_overseer2(targetTown->town_recno, raceId);
 	}
 
 	return 0;
@@ -1196,6 +1222,23 @@ void FirmCamp::think_linked_town_change_nation(int linkedTownRecno, int oldNatio
 
 		if( townPtr->protection_available()==0 )
 			return;
+
+		//--- if there is another town we can capture, then don't remove this camp ---//
+
+		if( think_capture_target_town() )
+			return;
+
+		//--- if this links to one of our towns, then don't remove this camp ---//
+
+		for( int i=0; i<linked_town_count; i++ )
+		{
+			townPtr = town_array[linked_town_array[i]];
+
+			if( townPtr->nation_recno == nation_recno )
+				return;
+		}
+
+		//--- otherwise missed out on capturing, can close this camp ---//
 
 		should_close_flag = 1;
 		ownNation->firm_should_close_array[firm_id-1]++;

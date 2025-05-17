@@ -91,6 +91,8 @@ enum { EXPENSE_GENERAL,
 
 //----- Define struct NationRelation -------//
 
+struct NationRelationGF;
+
 #pragma pack(1)
 struct NationRelation			// many-to-many relationships between nations
 {
@@ -130,6 +132,9 @@ struct NationRelation			// many-to-many relationships between nations
 
 	static const char* relation_status_str_array[5];
 	static const char* duration_of_status_str_array[5];
+
+	void	write_record(NationRelationGF *r);
+	void	read_record(NationRelationGF *r);
 };
 #pragma pack()
 
@@ -416,8 +421,8 @@ public:
 	int		has_people();		// whether the nation has any people (but not counting the king). If no, then the nation is going to end.
 
 	void		being_attacked(int attackNationRecno);
-	void		civilian_killed(int civilianRaceId, int penaltyLevel);
-	void 		change_all_people_loyalty(int loyaltyChange, int raceId=0);
+	void		civilian_killed(int civilianRaceId, int isAttacker, int penaltyType);
+	void 		change_all_people_loyalty(float loyaltyChange, int raceId=0);
 
 	void 		form_friendly_treaty(int nationRecno);
 	void 		form_alliance_treaty(int nationRecno);

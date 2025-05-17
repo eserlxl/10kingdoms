@@ -32,9 +32,10 @@
 #include <OFIRM.h>
 #endif
 
-struct UnitGodCrc;
-
 //----------- Define class God -----------//
+
+struct UnitGodCrc;
+struct UnitGodGF;
 
 #pragma pack(1)
 class UnitGod : public Unit
@@ -62,8 +63,13 @@ public:
 	virtual	void	clear_ptr();
 	virtual void    init_crc(UnitGodCrc *c);
 
+	int  write_derived_file(File *filePtr);
+	int  read_derived_file(File *filePtr);
+	void write_derived_record(UnitGodGF *r);
+	void read_derived_record(UnitGodGF *r);
+
 private:
-	void consume_power_pray_points();
+	int consume_power_pray_points();
 
 	void cast_on_loc(int castXLoc, int castYLoc);
 	void cast_on_unit(int unitRecno, int divider);

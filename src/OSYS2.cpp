@@ -395,7 +395,6 @@ void Sys::detect_button()
 	if( button_menu.detect() )
 	{
 		// ##### begin Gilbert 5/11 #######//
-		// game.in_game_menu();
 		in_game_menu.enter(!remote.is_enable());
 		// ##### end Gilbert 5/11 #######//
 		return;

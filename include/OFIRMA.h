@@ -78,6 +78,8 @@ public:
 			{ return get_ptr(recNo) == NULL; }
 
 	void  disp_next(int seekDir, int sameNation);
+
+	void  update_firm_links();
 };
 
 //---------------------------------------------//

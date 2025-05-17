@@ -39,6 +39,8 @@ static int update_x1, update_y1, update_x2, update_y2;          // coordination 
 
 static unsigned any_key_code_map[KEYEVENT_MAX];
 static unsigned shift_key_code_map[KEYEVENT_MAX];
+static unsigned ctrl_key_code_map[KEYEVENT_MAX];
+static unsigned alt_key_code_map[KEYEVENT_MAX];
 
 static void reset_key(KeyEventType key_event);
 
@@ -135,6 +137,7 @@ void Mouse::init_key()
 	bind_key(KEYEVENT_UNIT_RETURN, "R");
 	bind_key(KEYEVENT_UNIT_SETTLE, "T");
 	bind_key(KEYEVENT_UNIT_UNLOAD, "R");
+	reset_key(KEYEVENT_UNIT_CANCEL);
 
 #ifdef BUILD_HOTKEYS
 	bind_key(KEYEVENT_BUILD_BASE, "P");
@@ -148,7 +151,21 @@ void Mouse::init_key()
 	bind_key(KEYEVENT_BUILD_WAR_FACTORY, "W");
 
 	bind_key(KEYEVENT_MAP_MODE_CYCLE, "E");
+	reset_key(KEYEVENT_MAP_MODE0);
+	reset_key(KEYEVENT_MAP_MODE1);
+	reset_key(KEYEVENT_MAP_MODE2);
 #else
+	reset_key(KEYEVENT_BUILD_BASE);
+	reset_key(KEYEVENT_BUILD_CAMP);
+	reset_key(KEYEVENT_BUILD_FACTORY);
+	reset_key(KEYEVENT_BUILD_HARBOR);
+	reset_key(KEYEVENT_BUILD_INN);
+	reset_key(KEYEVENT_BUILD_MARKET);
+	reset_key(KEYEVENT_BUILD_MINE);
+	reset_key(KEYEVENT_BUILD_RESEARCH);
+	reset_key(KEYEVENT_BUILD_WAR_FACTORY);
+
+	reset_key(KEYEVENT_MAP_MODE_CYCLE);
 	bind_key(KEYEVENT_MAP_MODE0, "Q");
 	bind_key(KEYEVENT_MAP_MODE1, "W");
 	bind_key(KEYEVENT_MAP_MODE2, "E");
@@ -175,6 +192,7 @@ void Mouse::init_key()
 	bind_key(KEYEVENT_GOTO_SPY, "Y");
 	bind_key(KEYEVENT_GOTO_SHIP, "H");
 	bind_key(KEYEVENT_GOTO_CAMP, "F");
+	reset_key(KEYEVENT_GOTO_SELECTED);
 
 	bind_key(KEYEVENT_CHEAT_ENABLE1, "shift+1");
 	bind_key(KEYEVENT_CHEAT_ENABLE2, "shift+2");
@@ -186,6 +204,26 @@ void Mouse::init_key()
 	bind_key(KEYEVENT_MANUF_QUEUE_ADD_BATCH, "shift+=");
 	bind_key(KEYEVENT_MANUF_QUEUE_REMOVE, "-");
 	bind_key(KEYEVENT_MANUF_QUEUE_REMOVE_BATCH, "shift+-");
+
+	bind_key(KEYEVENT_SEL_GROUP_1, "alt+1");
+	bind_key(KEYEVENT_SEL_GROUP_2, "alt+2");
+	bind_key(KEYEVENT_SEL_GROUP_3, "alt+3");
+	bind_key(KEYEVENT_SEL_GROUP_4, "alt+4");
+	bind_key(KEYEVENT_SEL_GROUP_5, "alt+5");
+	bind_key(KEYEVENT_SEL_GROUP_6, "alt+6");
+	bind_key(KEYEVENT_SEL_GROUP_7, "alt+7");
+	bind_key(KEYEVENT_SEL_GROUP_8, "alt+8");
+	bind_key(KEYEVENT_SEL_GROUP_9, "alt+9");
+
+	bind_key(KEYEVENT_SET_GROUP_1, "ctrl+1");
+	bind_key(KEYEVENT_SET_GROUP_2, "ctrl+2");
+	bind_key(KEYEVENT_SET_GROUP_3, "ctrl+3");
+	bind_key(KEYEVENT_SET_GROUP_4, "ctrl+4");
+	bind_key(KEYEVENT_SET_GROUP_5, "ctrl+5");
+	bind_key(KEYEVENT_SET_GROUP_6, "ctrl+6");
+	bind_key(KEYEVENT_SET_GROUP_7, "ctrl+7");
+	bind_key(KEYEVENT_SET_GROUP_8, "ctrl+8");
+	bind_key(KEYEVENT_SET_GROUP_9, "ctrl+9");
 }
 //------------- End of Mouse::init_key -------------//
 
@@ -923,8 +961,8 @@ void Mouse::process_scroll(double x, double y)
 //--------- Begin of Mouse::process_scroll ---------//
 void Mouse::process_scroll(int x, int y)
 {
-	scroll_y = y;
-	scroll_x = x;
+	scroll_y += y;
+	scroll_x += x;
 }
 //--------- End of Mouse::process_scroll ---------//
 
@@ -1607,6 +1645,10 @@ int Mouse::bind_key(KeyEventType key_event, const char *key)
 		kc = SDL_GetKeyFromName(key2+1);
 		if( !memcmp(key, "shift", 5) )
 			ke = &shift_key_code_map[key_event];
+		else if( !memcmp(key, "ctrl", 4) )
+			ke = &ctrl_key_code_map[key_event];
+		else if( !memcmp(key, "alt", 3) )
+			ke = &alt_key_code_map[key_event];
 		else
 			return 0;
 	}
@@ -1630,6 +1672,11 @@ int Mouse::is_key_event(KeyEventType key_event)
 	kc = any_key_code_map[key_event];
 	if( skey_state & SHIFT_KEY_MASK )
 		kc = shift_key_code_map[key_event];
+	if( skey_state & CONTROL_KEY_MASK )
+		kc = ctrl_key_code_map[key_event];
+	if( skey_state & ALT_KEY_MASK )
+		kc = alt_key_code_map[key_event];
+
 	return kc ? kc == unique_key_code : 0;
 }
 // ------ End of Mouse::is_key_event -------//
@@ -1643,6 +1690,10 @@ unsigned Mouse::get_key_code(KeyEventType key_event)
 		return any_key_code_map[key_event];
 	if( skey_state & SHIFT_KEY_MASK )
 		return shift_key_code_map[key_event];
+	if( skey_state & CONTROL_KEY_MASK )
+		return ctrl_key_code_map[key_event];
+	if( skey_state & ALT_KEY_MASK )
+		return alt_key_code_map[key_event];
 	return SDLK_UNKNOWN;
 }
 // ------ End of Mouse::get_key_code -------//
@@ -1691,5 +1742,7 @@ static void reset_key(KeyEventType key_event)
 {
 	any_key_code_map[key_event] = SDLK_UNKNOWN;
 	shift_key_code_map[key_event] = SDLK_UNKNOWN;
+	ctrl_key_code_map[key_event] = SDLK_UNKNOWN;
+	alt_key_code_map[key_event] = SDLK_UNKNOWN;
 }
 // ------ End of static function reset_key -------//

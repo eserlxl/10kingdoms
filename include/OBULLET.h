@@ -46,6 +46,7 @@ enum	{	BULLET_BY_UNIT = 1,
 
 class Unit;
 struct BulletCrc;
+struct BulletGF;
 
 #pragma pack(1)
 class Bullet : public Sprite
@@ -81,6 +82,8 @@ public:
 
 	int 	write_file(File* filePtr);
 	int	read_file(File* filePtr);
+	void	write_record(BulletGF *r);
+	void	read_record(BulletGF *r);
 
 	virtual int	write_derived_file(File* filePtr);
 	virtual int	read_derived_file(File* filePtr);

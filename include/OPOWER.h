@@ -71,6 +71,7 @@ enum { MAX_KEY_STR = 5 };       // Maximum 5 different key string
 //--------- Define class Power ----------//
 
 struct Location;
+struct PowerGF;
 
 #pragma pack(1)
 class Power
@@ -103,6 +104,8 @@ public:
 
 	int 			write_file(File* filePtr);
 	int			read_file(File* filePtr);
+	void			write_record(PowerGF *r);
+	void			read_record(PowerGF *r);
 
 	//------- cursor related functions ------//
 

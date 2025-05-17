@@ -66,6 +66,8 @@ const unsigned char MAX_VISIT_LEVEL = FULL_VISIBILITY;
 
 //------- Define structure Location -------//
 
+struct LocationGF;
+
 #pragma pack(1)
 struct Location
 {
@@ -290,6 +292,9 @@ public:
 	void	set_harbor_bit()         { loc_flag |= LOCATE_HARBOR_BIT; }
 	void	clear_harbor_bit()       { loc_flag &= ~LOCATE_HARBOR_BIT; }
 	int	can_build_whole_harbor() { return loc_flag & LOCATE_HARBOR_BIT; }
+
+	void	write_record(LocationGF *r);
+	void	read_record(LocationGF *r);
 };
 #pragma pack()
 

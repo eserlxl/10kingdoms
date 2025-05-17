@@ -48,6 +48,8 @@ enum { SORT_INT=1,
 
 //-------- BEGIN OF CLASS DynArrary ---------//
 
+struct DynArrayGF;
+
 #pragma pack(1)
 class DynArray
 {
@@ -121,6 +123,8 @@ public :
 
    int   write_file(File*);    // Write current dynamic array to file
    int   read_file(File*);     // Read dynamic array from file
+   void  write_record(DynArrayGF *r);
+   void  read_record(DynArrayGF *r);
 };
 #pragma pack()
 

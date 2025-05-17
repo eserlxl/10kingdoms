@@ -110,16 +110,23 @@ enum  {  SEA_ACTION_SETTLE=1, 			// for AI marine actions
 
 //--------- define AIRegion ---------//
 
+struct AIRegionGF;
+
 #pragma pack(1)
 struct AIRegion
 {
 	uint8_t	region_id;
 	char  town_count;
 	char  base_town_count;
+
+	void write_record(AIRegionGF *r);
+	void read_record(AIRegionGF *r);
 };
 #pragma pack()
 
 //-------- define ActionNode structure -------//
+
+struct ActionNodeGF;
 
 #pragma pack(1)
 struct ActionNode
@@ -149,12 +156,16 @@ struct ActionNode
 	char  processed_instance_count;
 
 	int32_t next_retry_date; 				// continue processing this action after this date, this is used when training a unit for construction
+
+	void write_record(ActionNodeGF *r);
+	void read_record(ActionNodeGF *r);
 };
 #pragma pack()
 
 //------- Define struct AttackCamp --------//
 
 #define MAX_SUITABLE_ATTACK_CAMP    30    // total no. of useful camps
+struct AttackCampGF;
 
 #pragma pack(1)
 struct AttackCamp
@@ -163,6 +174,9 @@ struct AttackCamp
 	short combat_level;
 	short distance;
 	int   patrol_date;
+
+	void  write_record(AttackCampGF *r);
+	void  read_record(AttackCampGF *r);
 };
 #pragma pack()
 
@@ -172,6 +186,7 @@ class  Firm;
 class  Town;
 class  Spy;
 struct TalkMsg;
+struct NationGF;
 
 #pragma pack(1)
 class Nation : public NationBase
@@ -459,6 +474,7 @@ public:
 	int 			ai_should_attack_friendly(int friendlyNationRecno, int attackTemptation);
 
 	void			enable_should_attack_on_target(int targetXLoc, int targetYLoc);
+	int			get_target_nation_recno(int targetXLoc, int targetYLoc);
 
 	//------------------------------------------------------------//
 	// economic related functions
@@ -626,6 +642,8 @@ public:
 
 	int 			write_file(File* filePtr);
 	int			read_file(File* filePtr);
+	void			write_record(NationGF *r);
+	void			read_record(NationGF *r);
 };
 #pragma pack()
 

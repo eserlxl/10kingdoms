@@ -40,4 +40,6 @@ libimgfun_generic_a_SOURCES = \
 	I_READ.cpp \
 	I_SNOW.cpp
 
+AM_CPPFLAGS = \
+	-I$(top_srcdir)/include
 AM_CXXFLAGS = $(GLOBAL_CFLAGS)

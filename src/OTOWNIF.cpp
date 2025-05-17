@@ -45,7 +45,9 @@
 #include <OSE.h>
 #include <OSERES.h>
 #include <OBUTTCUS.h>
+#include <ONEWS.h>
 #include "gettext.h"
+#include <ConfigAdv.h>
 
 
 //------------- Define coordinations -----------//
@@ -109,6 +111,7 @@ short  Town::if_town_recno = 0;
 
 static int  race_filter(int recNo=0);
 static int  spy_filter(int recNo=0);
+static int  ceilf_int(float f);
 static void put_race_rec(int recNo, int x, int y, int refreshFlag);
 static void put_spy_rec(int recNo, int x, int y, int refreshFlag);
 // ###### begin Gilbert 12/9 ########//
@@ -1711,10 +1714,11 @@ int Town::recruit(int trainSkillId, int raceId, char remoteAction)
 	if( !remoteAction && remote.is_enable() )
 	{
 		// packet structure : <town recno> <skill id> <race id>
-		short *shortPtr = (short *)remote.new_send_queue_msg(MSG_TOWN_RECRUIT, 3*sizeof(short));
+		short *shortPtr = (short *)remote.new_send_queue_msg(MSG_TOWN_RECRUIT, 4*sizeof(short));
 		shortPtr[0] = town_recno;
 		shortPtr[1] = trainSkillId;
 		shortPtr[2] = raceId;
+		shortPtr[3] = 1;
 		return 0;
 	}
 
@@ -1896,6 +1900,24 @@ int Town::recruit(int trainSkillId, int raceId, char remoteAction)
 //----------- End of function Town::recruit -----------//
 
 
+//--------- Begin of function ceilf_int ---------//
+//
+// Similar to ceilf, but with int return. Does not use the standard library
+// because different platforms may use incompatible internal fp implemenations.
+// MS Visual C++ says they might use sse2. We depend on the compiler flags
+// to locally emit the fp code we expect to use.
+//
+static int ceilf_int(float f)
+{
+	int x = f;
+	float d = f - x;
+	if( d>0 )
+		x++;
+	return x;
+}
+//----------- End of function ceilf_filter -----------//
+
+
 //--------- Begin of function Town::recruit_dec_loyalty ---------//
 //
 // Decrease loyalty when an unit is recruited.
@@ -1912,13 +1934,22 @@ int Town::recruit_dec_loyalty(int raceId, int decNow)
 {
 	float loyaltyDec = MIN( 5, (float) MAX_TOWN_POPULATION / race_pop_array[raceId-1] );
 
+	if( config_adv.fix_recruit_dec_loyalty )
+	{
+		loyaltyDec += accumulated_recruit_penalty/5;
+		loyaltyDec = MIN(loyaltyDec, 10);
+	}
+
 	//------ recruitment without training decreases loyalty --------//
 
 	if( decNow )
 	{
-		loyaltyDec += accumulated_recruit_penalty/5;
+		if( !config_adv.fix_recruit_dec_loyalty )
+		{
+			loyaltyDec += accumulated_recruit_penalty/5;
 
-		loyaltyDec = MIN(loyaltyDec, 10);
+			loyaltyDec = MIN(loyaltyDec, 10);
+		}
 
 		accumulated_recruit_penalty += 5;
 
@@ -1928,6 +1959,12 @@ int Town::recruit_dec_loyalty(int raceId, int decNow)
 
 		if( race_loyalty_array[raceId-1] < 0 )
 			race_loyalty_array[raceId-1] = (float) 0;
+	}
+
+	if( config_adv.fix_recruit_dec_loyalty )
+	{
+		// for ai estimating, round integer conversion up, do not truncate
+		return ceilf_int(loyaltyDec);
 	}
 
 	return (int) loyaltyDec;
@@ -2007,7 +2044,11 @@ void Town::finish_train(Unit* unitPtr)
 	unitPtr->init_sprite(xLoc, yLoc);
 
 	if( unitPtr->is_own() )
+	{
+		if( config_adv.news_notify_complete )
+			news_array.unit_trained(unitPtr->sprite_recno, town_recno);
 		se_res.far_sound( xLoc, yLoc, 1, 'S', unitPtr->sprite_id, "RDY");
+	}
 
 	unitPtr->unit_mode = 0;		// reset it to 0 from UNIT_MODE_UNDER_TRAINING
 	train_unit_recno   = 0;

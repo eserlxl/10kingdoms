@@ -28,9 +28,10 @@
 #include <OUNIT.h>
 #endif
 
-struct UnitVehicleCrc;
-
 //----------- Define class UnitVehicle -----------//
+
+struct UnitVehicleCrc;
+struct UnitVehicleGF;
 
 #pragma pack(1)
 class UnitVehicle : public Unit
@@ -47,6 +48,11 @@ public:
 	virtual	uint8_t crc8();
 	virtual	void	clear_ptr();
 	virtual	void	init_crc(UnitVehicleCrc *c);
+
+	int	write_derived_file(File *filePtr);
+	int	read_derived_file(File *filePtr);
+	void	write_derived_record(UnitVehicleGF *r);
+	void	read_derived_record(UnitVehicleGF *r);
 };
 #pragma pack()
 
