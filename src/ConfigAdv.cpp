@@ -53,6 +53,7 @@ static const char *keyevent_map[] = {
 	"KEYEVENT_UNIT_RETURN",
 	"KEYEVENT_UNIT_SETTLE",
 	"KEYEVENT_UNIT_UNLOAD",
+	"KEYEVENT_UNIT_CANCEL",
 
 	"KEYEVENT_BUILD_BASE",
 	"KEYEVENT_BUILD_CAMP",
@@ -91,6 +92,7 @@ static const char *keyevent_map[] = {
 	"KEYEVENT_GOTO_SPY",
 	"KEYEVENT_GOTO_SHIP",
 	"KEYEVENT_GOTO_CAMP",
+	"KEYEVENT_GOTO_SELECTED",
 
 	"KEYEVENT_CHEAT_ENABLE1",
 	"KEYEVENT_CHEAT_ENABLE2",
@@ -102,6 +104,26 @@ static const char *keyevent_map[] = {
 	"KEYEVENT_MANUF_QUEUE_ADD_BATCH",
 	"KEYEVENT_MANUF_QUEUE_REMOVE",
 	"KEYEVENT_MANUF_QUEUE_REMOVE_BATCH",
+
+	"KEYEVENT_SEL_GROUP_1",
+	"KEYEVENT_SEL_GROUP_2",
+	"KEYEVENT_SEL_GROUP_3",
+	"KEYEVENT_SEL_GROUP_4",
+	"KEYEVENT_SEL_GROUP_5",
+	"KEYEVENT_SEL_GROUP_6",
+	"KEYEVENT_SEL_GROUP_7",
+	"KEYEVENT_SEL_GROUP_8",
+	"KEYEVENT_SEL_GROUP_9",
+
+	"KEYEVENT_SET_GROUP_1",
+	"KEYEVENT_SET_GROUP_2",
+	"KEYEVENT_SET_GROUP_3",
+	"KEYEVENT_SET_GROUP_4",
+	"KEYEVENT_SET_GROUP_5",
+	"KEYEVENT_SET_GROUP_6",
+	"KEYEVENT_SET_GROUP_7",
+	"KEYEVENT_SET_GROUP_8",
+	"KEYEVENT_SET_GROUP_9",
 
 	"KEYEVENT_MAX"
 };
@@ -181,6 +203,11 @@ int ConfigAdv::load(char *filename)
 		line++;
 
 		fileTxt.match_chars(" \t");
+		if(fileTxt.match_chars("#"))
+		{
+			fileTxt.next_line();
+			continue;
+		}
 		name = fileTxt.data_ptr;
 		if( !fileTxt.match_chars_ex("= \t\r\n\x1a") )
 		{
@@ -227,16 +254,36 @@ err_out:
 //
 void ConfigAdv::reset()
 {
+	firm_ai_enable_think_spy_capture = 0;
 	firm_mobilize_civilian_aggressive = 0;
+	firm_migrate_stricter_rules = 1;
+
+	fix_ai_consider_trade_treaty = 1;
+	fix_path_blocked_by_team = 1;
+	fix_recruit_dec_loyalty = 1;
+	fix_sea_travel_final_move = 1;
+	fix_town_unjob_worker = 1;
+	fix_world_warp_slop = 2;
+
+	game_load_default_frame_speed = 9;
+	game_new_default_frame_speed = 12;
+
+	game_file_patching = 1;
 
 	locale[0] = 0;
+
+	mine_unlimited_reserve = 0;
 
 	monster_alternate_attack_curve = 0;
 	monster_attack_divisor = 4;
 
+	nation_ai_defeat_when_no_towns = 0;
+	nation_ai_no_treaty_with_biggest = 1;
 	nation_ai_unite_min_relation_level = NATION_NEUTRAL;
 	nation_start_god_level = 0;
 	nation_start_tech_inc_all_level = 0;
+
+	news_notify_complete = 0;
 
 	race_random_list_max = MAX_RACE;
 	for (int i = 0; i < race_random_list_max; i++)
