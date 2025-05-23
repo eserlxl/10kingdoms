@@ -34,8 +34,8 @@
 
 //-------- World matrix size ------------//
 
-#define WORLD_WIDTH 1920
-#define WORLD_HEIGHT 1080
+#define WORLD_WIDTH 2560
+#define WORLD_HEIGHT 1600
 
 #define MAX_WORLD_X_LOC  (World::max_x_loc)
 #define MAX_WORLD_Y_LOC  (World::max_y_loc)

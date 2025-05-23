@@ -106,14 +106,14 @@ enum { COMMAND_PLAYER=0, COMMAND_REMOTE=1, COMMAND_AI, COMMAND_AUTO };
 
 #define PROCESS_GOODS_INTERVAL      3     // Process goods in mines, factories and market places once 3 days
 
-#define PEASANT_FOOD_YEAR_PRODUCTION  30  // A peasant produce 2 units of food per month
-#define PERSON_FOOD_YEAR_CONSUMPTION  10  // consume one unit of food per person per month
+#define PEASANT_FOOD_YEAR_PRODUCTION  2  // A peasant produce 2 units of food per year
+#define PERSON_FOOD_YEAR_CONSUMPTION  1  // consume one unit of food per person per year
 
 #define NO_FOOD_LOYALTY_DECREASE_INTERVAL	 5  // When your kingdom runs out of food, the loyalty of all your units will decrease 1 point every 5 days.
 
-#define RAW_PRICE       1           // Cost per raw material
-#define PRODUCT_PRICE   2           // Cost per product
-#define CONSUMER_PRICE  4           // Cost per product for consumers
+#define RAW_PRICE       0.25          // Cost per raw material
+#define PRODUCT_PRICE   0.4           // Cost per product
+#define CONSUMER_PRICE  0.5           // Cost per product for consumers
 
 #define REWARD_COST                 30
 #define REWARD_LOYALTY_INCREASE     10

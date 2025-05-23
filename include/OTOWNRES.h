@@ -39,7 +39,7 @@
 //--------- define game constants --------//
 
 #define MAX_TOWN_LAYOUT_SLOT           25
-#define POPULATION_PER_HOUSE            10     // no. of people per building
+#define POPULATION_PER_HOUSE            100     // no. of people per building
 
 #define EFFECTIVE_TOWN_TOWN_DISTANCE   8     // The minimum distance between 2 towns
 #define EFFECTIVE_FIRM_TOWN_DISTANCE   8     // maximum distance between the town and the base until it's no longer considered as command base of the town

@@ -46,8 +46,8 @@
 
 //------- define constant --------//
 
-#define MAX_TOWN_GROWTH_POPULATION  100		// grow up to 60 persons in a town
-#define MAX_TOWN_POPULATION  100		// MAX number of units in a town
+#define MAX_TOWN_GROWTH_POPULATION  1000		// grow up to 1000 persons in a town
+#define MAX_TOWN_POPULATION  1000		// MAX number of units in a town
 
 //-------- Define constant -----------//
 
@@ -56,8 +56,8 @@
 
 //--------- Define training cost and level --------//
 
-#define TRAIN_SKILL_COST				30
-#define TRAIN_SKILL_LEVEL        	20
+#define TRAIN_SKILL_COST				25
+#define TRAIN_SKILL_LEVEL        	25
 #define TOTAL_TRAIN_DAYS				 5		 // No. of days needed for training an unit
 
 #define MIN_RECRUIT_LOYALTY			   30 	// only when loyalty > this, the unit can be recruited
@@ -147,6 +147,7 @@ public:
 
 	int   race_harmony(int raceId);
 	int   majority_race();		// the race that has the majority of the population
+    int race_count(); // Get race count in a town
 
 	int	average_loyalty();
 	int	average_target_loyalty();

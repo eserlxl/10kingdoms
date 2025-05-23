@@ -800,15 +800,15 @@ int Town::think_build_camp()
 
 	//---- only build camp if we need more protection than it is currently available ----//
 
-	int protectionNeeded 	= protection_needed();
+	/*int protectionNeeded 	= protection_needed();
 	int protectionAvailable = protection_available();
 
 	if( protectionAvailable >= protectionNeeded )
-		return 0;
+		return 0;*/
 
 	Nation* nationPtr = nation_array[nation_recno];
 
-	if( !(protectionNeeded>0 && protectionAvailable==0) )		// if protection needed > 0, and protection available is 0, we must build a camp now
+	/*if( !(protectionNeeded>0 && protectionAvailable==0) )		// if protection needed > 0, and protection available is 0, we must build a camp now
 	{
 		int needUrgency = 100 * (protectionNeeded-protectionAvailable) / protectionNeeded;
 
@@ -817,7 +817,7 @@ int Town::think_build_camp()
 		{
 			return 0;
 		}
-	}
+	}*/
 
 	//--- check if we have enough people to recruit ---//
 
@@ -1128,7 +1128,7 @@ int Town::think_split_town()
 
 	Nation* nationPtr = nation_array[nation_recno];
 
-	if( population < 45 + nationPtr->pref_territorial_cohesiveness / 10 )
+	if( population < 0.95*MAX_TOWN_POPULATION/race_count() + nationPtr->pref_territorial_cohesiveness / 10 )
 		return 0;
 
 	//-------- think about which race to move --------//

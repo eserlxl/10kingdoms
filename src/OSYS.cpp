@@ -2353,7 +2353,7 @@ static int detect_scenario_cheat_key(unsigned scanCode, unsigned skeyState)
             }
             else if(locPtr->can_build_site(1) && !locPtr->is_power_off()) // add site
             {
-               i = MAX_RAW_RESERVE_QTY * (50 + misc.random(50)) / 100;
+               i = MAX_RAW_RESERVE_QTY * (75 + misc.random(25)) / 100;
                site_array.add_site(curXLoc, curYLoc, SITE_RAW, misc.random(MAX_RAW)+1, i);
                //box.msg( "Site added." );
             }

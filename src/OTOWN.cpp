@@ -1376,7 +1376,7 @@ void Town::update_loyalty()
 		if( race_pop_array[i] == 0 )
 			continue;
 
-		targetLoyalty = (float) race_target_loyalty_array[i];
+		targetLoyalty = (float) race_target_loyalty_array[i]*(1-(float)race_pop_array[i]/MAX_TOWN_POPULATION);
 
 		if(race_loyalty_array[i] < targetLoyalty)
 		{
@@ -1616,7 +1616,7 @@ void Town::update_resistance()
 //
 void Town::collect_yearly_tax()
 {
-	nation_array[nation_recno]->add_income(INCOME_TAX, (float)population * TAX_PER_PERSON );
+	nation_array[nation_recno]->add_income(INCOME_TAX, (float)population * TAX_PER_PERSON * (1 - (float)population/MAX_TOWN_POPULATION) );
 }
 //----------- End of function Town::collect_yearly_tax ---------//
 
@@ -1667,7 +1667,7 @@ void Town::collect_tax(char remoteAction)
 	{
 		float beforeLoyalty = race_loyalty_array[i];
 		change_loyalty( i+1, (float) -loyaltyDecrease );
-		taxCollected += (beforeLoyalty - race_loyalty_array[i]) * race_pop_array[i] * TAX_PER_PERSON / loyaltyDecrease;
+		taxCollected += (beforeLoyalty - race_loyalty_array[i]) * race_pop_array[i] * TAX_PER_PERSON / loyaltyDecrease * (1 - (float)race_pop_array[i]/MAX_TOWN_POPULATION);
 	}
 
 	//----------- increase cash ------------//
@@ -4656,3 +4656,22 @@ static char random_race()
 	return config_adv.race_random_list[num];
 }
 //--------- End of static function random_race ---------//
+
+
+//-------- Begin of function Town::race_count ------//
+//
+int Town::race_count()
+{
+    int count=0;
+
+    for( int i=0 ; i<MAX_RACE ; i++ )
+    {
+        if( race_pop_array[i] > 0 )
+        {
+            count++;
+        }
+    }
+
+    return count;
+}
+//---------- End of function Town::race_count --------//

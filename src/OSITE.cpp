@@ -382,7 +382,7 @@ int SiteArray::create_raw_site(int regionId, int townRecno)
 	if( world.locate_space_random(locX1, locY1, locX2, locY2,
 		 5, 5, maxTries, regionId, 1) )     	// 5,5 are the size of the raw site, it must be large enough for a mine to build and 1 location for the edges. The last para 1 = site building mode
 	{
-		int reserveQty = MAX_RAW_RESERVE_QTY * (50 + misc.random(50)) / 100;
+		int reserveQty = MAX_RAW_RESERVE_QTY * (75 + misc.random(25)) / 100;
 
 		add_site( locX1+2, locY1+2, SITE_RAW, rawId, reserveQty );		// xLoc+1 & yLoc+1 as the located size is 3x3, the raw site is at the center of it
 
