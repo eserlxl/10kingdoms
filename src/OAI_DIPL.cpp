@@ -427,6 +427,11 @@ int Nation::think_end_treaty()
 		if( nationRelation->status < NATION_FRIENDLY )
 			continue;
 
+        // Prevent breaking an alliance within 30 days of its formation
+        if (nationRelation->status == NATION_ALLIANCE &&
+            info.game_date < nationRelation->last_change_status_date + 30)
+            continue;
+
 		if( nationRelation->ai_secret_attack ||
 			 ( nationRelation->ai_relation_level < 30 && trade_rating(i) < 50 ) )
 		{
