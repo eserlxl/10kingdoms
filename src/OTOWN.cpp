@@ -1948,8 +1948,15 @@ void Town::think_rebel()
 		if( population==1 )		// if only one peasant left, break, so not all peasants will rebel 
 			break;
 
-		raceRebelCount = (int) (race_pop_array[i]-restrictRebelCount[i]) * (30+misc.random(30)) / 100;		// 30% - 60% of the unit will rebel.
-		err_when(raceRebelCount+1 > MAX_TOWN_POPULATION); // plus 1 for the leader, cannot excess MAX_TOWN_POPULATION, consider the case these units settle immediately
+		// Cap the number of rebels for this race so the total does not exceed 10% of the population
+		int maxRebels = (int)(population * 0.1f);
+		if (maxRebels < 1) maxRebels = 1;
+		raceRebelCount = MIN(
+			(int) (race_pop_array[i]-restrictRebelCount[i]) * (30+misc.random(30)) / 100,
+			maxRebels - rebelCount
+		);
+		if (raceRebelCount < 0)
+			raceRebelCount = 0;
 
 		for( j=0 ; j<raceRebelCount ; j++ )		// no. of rebel units of this race
 		{
