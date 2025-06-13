@@ -72,6 +72,28 @@ void Town::process_ai()
 		LOG_MSG(misc.get_random_seed());
 	}
 
+	//------ auto-grant if loyalty is dangerously low ---//
+	if (nation_recno > 0 && ownNation->is_ai()) {
+		if (average_loyalty() < 30) {
+			// Use the same logic as think_reward for spending check
+			if (accumulated_reward_penalty == 0) {
+				int importanceRating = 40 + population;
+				if (ownNation->ai_should_spend(importanceRating)) {
+					reward(COMMAND_AI);
+				}
+			}
+		}
+	}
+
+	//------ ensure at least one counter-spy in the town ---//
+	if (nation_recno > 0 && ownNation->is_ai()) {
+		int spyCount = 0;
+		int curSpyLevel = spy_array.total_spy_skill_level(SPY_TOWN, town_recno, nation_recno, spyCount);
+		if (spyCount < 1) {
+			ownNation->ai_assign_spy_to_town(town_recno);
+		}
+	}
+
 	//----- if this town should migrate now -----//
 
 	if( should_ai_migrate() )
@@ -414,6 +436,10 @@ void Town::think_collect_tax()
 	if( accumulated_collect_tax_penalty > 0 )
 		return;
 
+	//--- Prevent AI from collecting tax if loyalty is below 30 ---//
+	if( average_loyalty() < 30 )
+		return;
+
 	//--- collect tax if the loyalty of all the races >= minLoyalty (55-85) ---//
 
 	int yearProfit = (int) nation_array[nation_recno]->profit_365days();
@@ -421,15 +447,15 @@ void Town::think_collect_tax()
 	int minLoyalty = 55 + 30 * nation_array[nation_recno]->pref_loyalty_concern / 100;
 
 	if( yearProfit < 0 )								// we are losing money now
-		minLoyalty -= (-yearProfit) / 100;		// more aggressive in collecting tax if we are losing a lot of money
+		minLoyalty -= (-yearProfit) / 100;   // more aggressive in collecting tax if we are losing a lot of money
 
 	minLoyalty = MAX( 55, minLoyalty );
 
 	//---------------------------------------------//
 
-	int achievableLoyalty = average_target_loyalty()-10;		// -10 because it's an average, -10 will be safer
+	int achievableLoyalty = average_target_loyalty()-10;   // -10 because it's an average, -10 will be safer
 
-	if( achievableLoyalty > minLoyalty )		// if the achievable loyalty is higher, then use it 
+	if( achievableLoyalty > minLoyalty )   // if the achievable loyalty is higher, then use it 
 		minLoyalty = achievableLoyalty;
 
 	if( average_loyalty() < minLoyalty )
@@ -759,12 +785,12 @@ int Town::think_build_market()
 //
 int Town::think_build_camp()
 {
-	//----- check if any of the other camps protecting this town is still recruiting soldiers, if so, wait until their recruitment is finished. So we can measure the protection available accurately.
+	//----- check if any of the other camps protecting this town is still recruiting soldiers, if so, skip that camp but continue checking others. -----//
 
-	Nation* 	 ownNation = nation_array[nation_recno];
+	Nation*   ownNation = nation_array[nation_recno];
 	FirmCamp* firmCamp;
-	Firm*		 firmPtr;
-	int		 campCount=0;
+	Firm*     firmPtr;
+	int       campCount=0;
 
 	for(int i=linked_firm_count-1; i>=0; --i)
 	{
@@ -780,8 +806,9 @@ int Town::think_build_camp()
 		if( firmCamp->nation_recno != nation_recno )
 			continue;
 
-		if( firmCamp->under_construction || firmCamp->ai_recruiting_soldier )  			// if this camp is still trying to recruit soldiers
-			return 0;
+		// Instead of returning early, just skip this camp if it's recruiting or under construction
+		if( firmCamp->under_construction || firmCamp->ai_recruiting_soldier )
+			continue;
 
 		campCount++;
 	}
@@ -795,29 +822,18 @@ int Town::think_build_camp()
 
 	//---- only build camp if we have enough cash and profit ----//
 
-	if( !ownNation->ai_should_spend(70+ownNation->pref_military_development/4) ) 		// 70 to 95
+	if( !ownNation->ai_should_spend(70+ownNation->pref_military_development/4) ) // 70 to 95
 		return 0;
 
-	//---- only build camp if we need more protection than it is currently available ----//
+	//---- build camp if we need more protection than is currently available ----//
 
-	/*int protectionNeeded 	= protection_needed();
+	int protectionNeeded   = protection_needed();
 	int protectionAvailable = protection_available();
 
 	if( protectionAvailable >= protectionNeeded )
-		return 0;*/
+		return 0;
 
 	Nation* nationPtr = nation_array[nation_recno];
-
-	/*if( !(protectionNeeded>0 && protectionAvailable==0) )		// if protection needed > 0, and protection available is 0, we must build a camp now
-	{
-		int needUrgency = 100 * (protectionNeeded-protectionAvailable) / protectionNeeded;
-
-		if( nationPtr->total_jobless_population-MAX_WORKER <
-			 (100-needUrgency) * (200 - nationPtr->pref_military_development) / 200 )
-		{
-			return 0;
-		}
-	}*/
 
 	//--- check if we have enough people to recruit ---//
 
@@ -831,7 +847,7 @@ int Town::think_build_camp()
 	{
 		buildFlag = 1;
 	}
-	else if( nationPtr->ai_has_should_close_camp(region_id) )		// there is camp that can be closed
+	else if( nationPtr->ai_has_should_close_camp(region_id) ) // there is camp that can be closed
 	{
 		buildFlag = 1;
 	}
