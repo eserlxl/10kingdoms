@@ -641,7 +641,6 @@ int Nation::think_declare_war()
     for( i=1 ; i<=nation_array.size() ; i++ ) {
         if (nation_array.is_deleted(i) || i == nation_recno)
             continue;
-
         activeNation++;
     }
 
@@ -651,7 +650,6 @@ int Nation::think_declare_war()
     {
         if( nation_array.is_deleted(j) || j==nation_recno || j == i || !get_relation(j)->has_contact )
             continue;
-
         if( get_relation(j)->status > NATION_NEUTRAL )
         {
             allyCount++;
@@ -663,7 +661,6 @@ int Nation::think_declare_war()
         {
             if( nation_array.is_deleted(j) || j==nation_recno || j == i || !get_relation(j)->has_contact )
                 continue;
-
             if( get_relation(j)->status > NATION_NEUTRAL )
             {
                 change_ai_relation_level( j, -misc.random(100));
@@ -684,8 +681,15 @@ int Nation::think_declare_war()
 
 	//------------------------------------------------//
 
-	int targetStrength, minStrength=0x1000, bestTargetNation=0;
-    int mutualEnemy = 0;
+	// Enhanced war logic: consider distance and resources, not just strength
+	int bestTargetNation=0;
+	float bestTargetScore = -1e9f;
+	int myTownRecno = largest_town_recno;
+	int myTownX = 0, myTownY = 0;
+	if (myTownRecno > 0 && !town_array.is_deleted(myTownRecno)) {
+		myTownX = town_array[myTownRecno]->center_x;
+		myTownY = town_array[myTownRecno]->center_y;
+	}
 
 	for( i=1 ; i<=nation_array.size() ; i++ )
 	{
@@ -693,69 +697,81 @@ int Nation::think_declare_war()
 			continue;
 
 		nationRelation = get_relation(i);
-
 		if( !nationRelation->has_contact )
 			continue;
-
-		if( nationRelation->status == NATION_HOSTILE )		// already at war
+		if( nationRelation->status == NATION_HOSTILE )
 			continue;
-
 		if( nationRelation->ai_relation_level >= 10 )
 			continue;
-
-		if( !ai_should_spend( 100-trade_rating(i) ) )		// if trade_rating is 0, importanceRating will be 100, if trade_rating is 100, importanceRating will be 0
+		if( !ai_should_spend( 100-trade_rating(i) ) )
 			continue;
 
-        // Search for mutual enemies
-        for( j=1 ; j<=nation_array.size() ; j++ )
-        {
-            if( nation_array.is_deleted(j) || j==nation_recno || j == i || !get_relation(j)->has_contact )
-                continue;
+		// Search for mutual enemies
+		int mutualEnemy = 0;
+		for( j=1 ; j<=nation_array.size() ; j++ )
+		{
+			if( nation_array.is_deleted(j) || j==nation_recno || j == i || !get_relation(j)->has_contact )
+				continue;
+			if( get_relation(j)->status < NATION_NEUTRAL && nation_array[i]->get_relation(j)->status < NATION_NEUTRAL )
+			{
+				mutualEnemy++;
+			}
+		}
+		if( mutualEnemy )
+		{
+			continue;
+		}
 
-            if( get_relation(j)->status < NATION_NEUTRAL && nation_array[i]->get_relation(j)->status < NATION_NEUTRAL )
-            {
-                mutualEnemy++;
-            }
-        }
-        if( mutualEnemy )
-        {
-            continue;
-        }
-
-        // Don't be a very good ally!
-        int fightingAllyCount = 0;
-        for( j=1 ; j<=nation_array.size() ; j++ )
-        {
-            if( nation_array.is_deleted(j) || j==nation_recno || j == i || !get_relation(j)->has_contact )
-                continue;
-
-            if( get_relation(j)->status > NATION_NEUTRAL && nation_array[i]->get_relation(j)->status < NATION_NEUTRAL )
-            {
-                fightingAllyCount++;
-            }
-        }
-        if( activeNation > 2 && fightingAllyCount > 0.5*(activeNation-1) )
-        {
-            continue;
-        }
-
-		//----------------------------------------//
+		// Don't be a very good ally!
+		int fightingAllyCount = 0;
+		for( j=1 ; j<=nation_array.size() ; j++ )
+		{
+			if( nation_array.is_deleted(j) || j==nation_recno || j == i || !get_relation(j)->has_contact )
+				continue;
+			if( get_relation(j)->status > NATION_NEUTRAL && nation_array[i]->get_relation(j)->status < NATION_NEUTRAL )
+			{
+				fightingAllyCount++;
+			}
+		}
+		if( activeNation > 2 && fightingAllyCount > 0.5*(activeNation-1) )
+		{
+			continue;
+		}
 
 		Nation* targetNation = nation_array[i];
+		// --- 1. Strength factor (lower is more attractive) ---
+		int targetStrength = targetNation->military_rank_rating() +
+							 targetNation->population_rank_rating()/2 +
+							 targetNation->economic_rank_rating()/3;
+		float strengthScore = 1000.0f - targetStrength; // lower strength = higher score
 
-		targetStrength = targetNation->military_rank_rating() +
-							  targetNation->population_rank_rating()/2 +
-							  targetNation->economic_rank_rating()/3;
+		// --- 2. Distance factor (closer is more attractive) ---
+		float distanceScore = 0.0f;
+		int targetTownRecno = targetNation->largest_town_recno;
+		if (targetTownRecno > 0 && !town_array.is_deleted(targetTownRecno)) {
+			int targetX = town_array[targetTownRecno]->center_x;
+			int targetY = town_array[targetTownRecno]->center_y;
+			int dist = misc.points_distance(myTownX, myTownY, targetX, targetY);
+			// Normalize: closer = higher score, max map size assumed 200
+			distanceScore = 200.0f - dist;
+		}
 
-		// War decision is a serious thing, think carefully!
-		if( targetStrength < minStrength && misc.random(100) < 7 )
-		{
-			minStrength = targetStrength;
+		// --- 3. Resource factor (more resources = more attractive) ---
+		float resourceScore = 0.0f;
+		// Example: use total population and cash as a proxy for resource richness
+		resourceScore = (float)targetNation->total_population/10.0f + (float)targetNation->cash/1000.0f;
+
+		// --- 4. Personality/randomness factor ---
+		float personalityScore = misc.random(20) - 10; // -10 to +9
+
+		// --- Combine scores (weights: 50% strength, 30% distance, 20% resources) ---
+		float totalScore = 0.5f*strengthScore + 0.3f*distanceScore + 0.2f*resourceScore + personalityScore;
+
+		if( totalScore > bestTargetScore ) {
+			bestTargetScore = totalScore;
 			bestTargetNation = i;
 		}
 	}
-
-	//------------------------------------------//
 
 	if( bestTargetNation )
 	{
