@@ -432,6 +432,11 @@ int Nation::think_end_treaty()
             info.game_date < nationRelation->last_change_status_date + 30)
             continue;
 
+        // Prevent breaking friendly status within 15 days of its formation
+        if (nationRelation->status == NATION_FRIENDLY &&
+            info.game_date < nationRelation->last_change_status_date + 15)
+            continue;
+
 		if( nationRelation->ai_secret_attack ||
 			 ( nationRelation->ai_relation_level < 30 && trade_rating(i) < 50 ) )
 		{
