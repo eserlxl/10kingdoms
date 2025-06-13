@@ -436,6 +436,10 @@ int FirmCamp::ai_recruit(int recruitCombatLevel)
 		if( townPtr->nation_recno != nation_recno || !townPtr->jobless_population )
 			continue;
 
+		// Do not recruit from towns with fewer than 25 idle villagers (jobless_population)
+		if( townPtr->jobless_population < 25 )
+			continue;
+
 		//-- recruit majority race first, but will also consider other races --//
 
 		raceId = MAX( 1, majorityRace );
