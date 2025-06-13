@@ -457,7 +457,16 @@ int Nation::think_end_treaty()
 			// even if its power is lower than the enemy.
 			//-----------------------------------------//
 
-			if( pref_honesty-50 > nationPtr->overall_rating - overall_rating )
+			// --- Bonding score: longer alliances are harder to break --- //
+			int allianceDuration = info.game_date - nationRelation->last_change_status_date;
+			int bondingScore = allianceDuration / 10; // 1 point per 10 days
+			if (bondingScore > 50)
+				bondingScore = 50; // Cap bonding score
+
+			int breakUrge = pref_honesty-50 - (nationPtr->overall_rating - overall_rating);
+			breakUrge -= bondingScore; // Subtract bonding score
+
+			if( breakUrge > 0 )
 			{
 				if( nationRelation->status == NATION_FRIENDLY )
 					talk_res.ai_send_talk_msg(i, nation_recno, TALK_END_FRIENDLY_TREATY);
