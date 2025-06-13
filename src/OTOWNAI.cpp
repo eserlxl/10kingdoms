@@ -785,6 +785,16 @@ int Town::think_build_market()
 //
 int Town::think_build_camp()
 {
+	// Only restrict building a camp if there is already at least one camp next to the town
+	int existingCampCount = 0;
+	for(int i=linked_firm_count-1; i>=0; --i) {
+		Firm* firmPtr = firm_array[linked_firm_array[i]];
+		if(firmPtr->firm_id == FIRM_CAMP && firmPtr->nation_recno == nation_recno)
+			existingCampCount++;
+	}
+	if(existingCampCount > 0 && jobless_population < 10)
+		return 0;
+
 	//----- check if any of the other camps protecting this town is still recruiting soldiers, if so, skip that camp but continue checking others. -----//
 
 	Nation*   ownNation = nation_array[nation_recno];
