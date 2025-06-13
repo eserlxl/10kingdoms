@@ -328,40 +328,17 @@ void TownArray::think_new_independent_town()
 
 	townPtr = town_array[townRecno];
 
-	while(1)
-	{
-		err_when( loopCount++ > 100 );
+	// Only add population from the initially chosen race to ensure single-race towns
+	addPop = race_wander_pop_array[raceId-1];
+	addPop = MIN(maxTownPop, addPop);
 
-		addPop = race_wander_pop_array[raceId-1];
-		addPop = MIN(maxTownPop-townPtr->population, addPop);
+	if (addPop < 1)
+		return; // Not enough wanderers to found a town
 
-		townResistance = independent_town_resistance();
-
-		townPtr->init_pop( raceId, addPop, townResistance, 0, 1 );		// 0-the add pop do not have jobs, 1-first init
-
-		race_wander_pop_array[raceId-1] -= addPop;
-
-		err_when( race_wander_pop_array[raceId-1] < 0 );
-
-		if( townPtr->population >= maxTownPop )
-			break;
-
-		//---- next race to be added to the independent town ----//
-
-		raceId = random_race();
-
-		for( i=0 ; i<MAX_RACE ; i++ )
-		{
-			if( ++raceId > MAX_RACE )
-				raceId = 1;
-
-			if( race_wander_pop_array[raceId-1] >= 5 )
-				break;
-		}
-
-		if( i==MAX_RACE )		// no suitable race
-			break;
-	}
+	townResistance = independent_town_resistance();
+	townPtr->init_pop(raceId, addPop, townResistance, 0, 1); // 0-the add pop do not have jobs, 1-first init
+	race_wander_pop_array[raceId-1] -= addPop;
+	err_when( race_wander_pop_array[raceId-1] < 0 );
 
 	//---------- set town layout -----------//
 
