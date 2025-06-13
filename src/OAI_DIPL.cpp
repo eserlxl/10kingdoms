@@ -634,6 +634,10 @@ int Nation::think_request_buy_food()
 //
 int Nation::think_declare_war()
 {
+	// Prevent AI from declaring war in the first 60 days of the game
+	if (info.game_date < info.game_start_date + 60)
+		return 0;
+
 	NationRelation* nationRelation;
 	int rc=0;
 
