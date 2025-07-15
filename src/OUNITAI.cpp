@@ -1255,7 +1255,84 @@ int Unit::ai_settle_new_town()
 //
 int Unit::ai_handle_seek_path_fail()
 {
-	if( seek_path_fail_count < 5 )		// wait unit it has failed many times
+	// New: If any enemy building (town or firm) is adjacent to the unit, attack it immediately.
+	for (int dx = -1; dx <= 1; ++dx) {
+		for (int dy = -1; dy <= 1; ++dy) {
+			if (dx == 0 && dy == 0) continue;
+			int checkX = next_x_loc() + dx;
+			int checkY = next_y_loc() + dy;
+			if (checkX < 0 || checkX >= MAX_WORLD_X_LOC || checkY < 0 || checkY >= MAX_WORLD_Y_LOC)
+				continue;
+			Location* locPtr = world.get_loc(checkX, checkY);
+			if (!locPtr) continue;
+
+			// Check for enemy town
+			if (locPtr->is_town()) {
+				short blockingTownRecno = locPtr->town_recno();
+				if (blockingTownRecno > 0 && !town_array.is_deleted(blockingTownRecno)) {
+					Town* blockingTown = town_array[blockingTownRecno];
+					if (blockingTown->nation_recno != nation_recno && nation_can_attack(blockingTown->nation_recno)) {
+						attack_town(blockingTown->loc_x1, blockingTown->loc_y1);
+						return 1;
+					}
+				}
+			}
+			// Check for enemy firm (including walls if walls are a type of firm)
+			if (locPtr->is_firm()) {
+				short blockingFirmRecno = locPtr->firm_recno();
+				if (blockingFirmRecno > 0 && !firm_array.is_deleted(blockingFirmRecno)) {
+					Firm* blockingFirm = firm_array[blockingFirmRecno];
+					if (blockingFirm->nation_recno != nation_recno && nation_can_attack(blockingFirm->nation_recno)) {
+						attack_firm(blockingFirm->loc_x1, blockingFirm->loc_y1);
+						return 1;
+					}
+				}
+			}
+		}
+	}
+
+	// Enhanced: If pathfinding fails, check for a blocking enemy building (town or firm) near the closest node reached.
+	// Context: This triggers as soon as the AI fails to find a path, and scans for a blocking enemy building anywhere along the route.
+	Node* closestNode = seek_path.return_closest_node();
+	if (closestNode) {
+		for (int dx = -1; dx <= 1; ++dx) {
+			for (int dy = -1; dy <= 1; ++dy) {
+				if (dx == 0 && dy == 0) continue;
+				int checkX = closestNode->node_x + dx;
+				int checkY = closestNode->node_y + dy;
+				if (checkX < 0 || checkX >= MAX_WORLD_X_LOC || checkY < 0 || checkY >= MAX_WORLD_Y_LOC)
+					continue;
+				Location* locPtr = world.get_loc(checkX, checkY);
+				if (!locPtr) continue;
+
+				// Check for enemy town
+				if (locPtr->is_town()) {
+					short blockingTownRecno = locPtr->town_recno();
+					if (blockingTownRecno > 0 && !town_array.is_deleted(blockingTownRecno)) {
+						Town* blockingTown = town_array[blockingTownRecno];
+						if (blockingTown->nation_recno != nation_recno && nation_can_attack(blockingTown->nation_recno)) {
+							attack_town(blockingTown->loc_x1, blockingTown->loc_y1);
+							return 1;
+						}
+					}
+				}
+				// Check for enemy firm (including walls if walls are a type of firm)
+				if (locPtr->is_firm()) {
+					short blockingFirmRecno = locPtr->firm_recno();
+					if (blockingFirmRecno > 0 && !firm_array.is_deleted(blockingFirmRecno)) {
+						Firm* blockingFirm = firm_array[blockingFirmRecno];
+						if (blockingFirm->nation_recno != nation_recno && nation_can_attack(blockingFirm->nation_recno)) {
+							// Optionally: check if this firm is a wall and handle differently if needed.
+							attack_firm(blockingFirm->loc_x1, blockingFirm->loc_y1);
+							return 1;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	if( seek_path_fail_count < 5 )		// wait until it has failed many times
 		return 0;
 
 	//----- try to move to a new location -----//
