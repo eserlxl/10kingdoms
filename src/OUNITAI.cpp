@@ -1266,11 +1266,13 @@ int Unit::ai_handle_seek_path_fail()
 			Location* locPtr = world.get_loc(checkX, checkY);
 			if (!locPtr) continue;
 
-			// Check for enemy town
+			// Check for enemy town, but skip independent towns (nation_recno == 0)
 			if (locPtr->is_town()) {
 				short blockingTownRecno = locPtr->town_recno();
 				if (blockingTownRecno > 0 && !town_array.is_deleted(blockingTownRecno)) {
 					Town* blockingTown = town_array[blockingTownRecno];
+					if (blockingTown->nation_recno == 0) // Independent town, skip
+						continue;
 					if (blockingTown->nation_recno != nation_recno && nation_can_attack(blockingTown->nation_recno)) {
 						attack_town(blockingTown->loc_x1, blockingTown->loc_y1);
 						return 1;
@@ -1305,11 +1307,13 @@ int Unit::ai_handle_seek_path_fail()
 				Location* locPtr = world.get_loc(checkX, checkY);
 				if (!locPtr) continue;
 
-				// Check for enemy town
+				// Check for enemy town, but skip independent towns (nation_recno == 0)
 				if (locPtr->is_town()) {
 					short blockingTownRecno = locPtr->town_recno();
 					if (blockingTownRecno > 0 && !town_array.is_deleted(blockingTownRecno)) {
 						Town* blockingTown = town_array[blockingTownRecno];
+						if (blockingTown->nation_recno == 0) // Independent town, skip
+							continue;
 						if (blockingTown->nation_recno != nation_recno && nation_can_attack(blockingTown->nation_recno)) {
 							attack_town(blockingTown->loc_x1, blockingTown->loc_y1);
 							return 1;
@@ -1322,7 +1326,6 @@ int Unit::ai_handle_seek_path_fail()
 					if (blockingFirmRecno > 0 && !firm_array.is_deleted(blockingFirmRecno)) {
 						Firm* blockingFirm = firm_array[blockingFirmRecno];
 						if (blockingFirm->nation_recno != nation_recno && nation_can_attack(blockingFirm->nation_recno)) {
-							// Optionally: check if this firm is a wall and handle differently if needed.
 							attack_firm(blockingFirm->loc_x1, blockingFirm->loc_y1);
 							return 1;
 						}
