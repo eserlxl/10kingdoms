@@ -1269,25 +1269,47 @@ int Unit::ai_handle_seek_path_fail()
 			// Check for enemy town, but skip independent towns (nation_recno == 0)
 			if (locPtr->is_town()) {
 				short blockingTownRecno = locPtr->town_recno();
-				if (blockingTownRecno > 0 && !town_array.is_deleted(blockingTownRecno)) {
-					Town* blockingTown = town_array[blockingTownRecno];
-					if (blockingTown->nation_recno == 0) // Independent town, skip
-						continue;
-					if (blockingTown->nation_recno != nation_recno && nation_can_attack(blockingTown->nation_recno)) {
-						attack_town(blockingTown->loc_x1, blockingTown->loc_y1);
-						return 1;
-					}
+				if (blockingTownRecno <= 0) {
+					printf("[AI DEBUG] Invalid blockingTownRecno: %d at (%d,%d)\n", blockingTownRecno, checkX, checkY);
+					continue;
+				}
+				if (town_array.is_deleted(blockingTownRecno)) {
+					printf("[AI DEBUG] Deleted town recno: %d at (%d,%d)\n", blockingTownRecno, checkX, checkY);
+					continue;
+				}
+				Town* blockingTown = town_array[blockingTownRecno];
+				if (!blockingTown) {
+					printf("[AI DEBUG] Null town pointer for recno: %d at (%d,%d)\n", blockingTownRecno, checkX, checkY);
+					continue;
+				}
+				if (blockingTown->nation_recno == 0) // Independent town, skip
+					continue;
+				if (blockingTown->nation_recno != nation_recno && nation_can_attack(blockingTown->nation_recno)) {
+					printf("[AI DEBUG] Attacking town recno: %d at (%d,%d)\n", blockingTownRecno, blockingTown->loc_x1, blockingTown->loc_y1);
+					attack_town(blockingTown->loc_x1, blockingTown->loc_y1);
+					return 1;
 				}
 			}
 			// Check for enemy firm (including walls if walls are a type of firm)
 			if (locPtr->is_firm()) {
 				short blockingFirmRecno = locPtr->firm_recno();
-				if (blockingFirmRecno > 0 && !firm_array.is_deleted(blockingFirmRecno)) {
-					Firm* blockingFirm = firm_array[blockingFirmRecno];
-					if (blockingFirm->nation_recno != nation_recno && nation_can_attack(blockingFirm->nation_recno)) {
-						attack_firm(blockingFirm->loc_x1, blockingFirm->loc_y1);
-						return 1;
-					}
+				if (blockingFirmRecno <= 0) {
+					printf("[AI DEBUG] Invalid blockingFirmRecno: %d at (%d,%d)\n", blockingFirmRecno, checkX, checkY);
+					continue;
+				}
+				if (firm_array.is_deleted(blockingFirmRecno)) {
+					printf("[AI DEBUG] Deleted firm recno: %d at (%d,%d)\n", blockingFirmRecno, checkX, checkY);
+					continue;
+				}
+				Firm* blockingFirm = firm_array[blockingFirmRecno];
+				if (!blockingFirm) {
+					printf("[AI DEBUG] Null firm pointer for recno: %d at (%d,%d)\n", blockingFirmRecno, checkX, checkY);
+					continue;
+				}
+				if (blockingFirm->nation_recno != nation_recno && nation_can_attack(blockingFirm->nation_recno)) {
+					printf("[AI DEBUG] Attacking firm recno: %d at (%d,%d)\n", blockingFirmRecno, blockingFirm->loc_x1, blockingFirm->loc_y1);
+					attack_firm(blockingFirm->loc_x1, blockingFirm->loc_y1);
+					return 1;
 				}
 			}
 		}
@@ -1308,27 +1330,51 @@ int Unit::ai_handle_seek_path_fail()
 				if (!locPtr) continue;
 
 				// Check for enemy town, but skip independent towns (nation_recno == 0)
+				short blockingTownRecno = -1;
 				if (locPtr->is_town()) {
-					short blockingTownRecno = locPtr->town_recno();
-					if (blockingTownRecno > 0 && !town_array.is_deleted(blockingTownRecno)) {
-						Town* blockingTown = town_array[blockingTownRecno];
-						if (blockingTown->nation_recno == 0) // Independent town, skip
-							continue;
-						if (blockingTown->nation_recno != nation_recno && nation_can_attack(blockingTown->nation_recno)) {
-							attack_town(blockingTown->loc_x1, blockingTown->loc_y1);
-							return 1;
-						}
+					blockingTownRecno = locPtr->town_recno();
+					if (blockingTownRecno <= 0) {
+						printf("[AI DEBUG] Invalid blockingTownRecno: %d at (%d,%d)\n", blockingTownRecno, checkX, checkY);
+						continue;
+					}
+					if (town_array.is_deleted(blockingTownRecno)) {
+						printf("[AI DEBUG] Deleted town recno: %d at (%d,%d)\n", blockingTownRecno, checkX, checkY);
+						continue;
+					}
+					Town* blockingTown = town_array[blockingTownRecno];
+					if (!blockingTown) {
+						printf("[AI DEBUG] Null town pointer for recno: %d at (%d,%d)\n", blockingTownRecno, checkX, checkY);
+						continue;
+					}
+					if (blockingTown->nation_recno == 0) // Independent town, skip
+						continue;
+					if (blockingTown->nation_recno != nation_recno && nation_can_attack(blockingTown->nation_recno)) {
+						printf("[AI DEBUG] Attacking town recno: %d at (%d,%d)\n", blockingTownRecno, blockingTown->loc_x1, blockingTown->loc_y1);
+						attack_town(blockingTown->loc_x1, blockingTown->loc_y1);
+						return 1;
 					}
 				}
 				// Check for enemy firm (including walls if walls are a type of firm)
+				short blockingFirmRecno = -1;
 				if (locPtr->is_firm()) {
-					short blockingFirmRecno = locPtr->firm_recno();
-					if (blockingFirmRecno > 0 && !firm_array.is_deleted(blockingFirmRecno)) {
-						Firm* blockingFirm = firm_array[blockingFirmRecno];
-						if (blockingFirm->nation_recno != nation_recno && nation_can_attack(blockingFirm->nation_recno)) {
-							attack_firm(blockingFirm->loc_x1, blockingFirm->loc_y1);
-							return 1;
-						}
+					blockingFirmRecno = locPtr->firm_recno();
+					if (blockingFirmRecno <= 0) {
+						printf("[AI DEBUG] Invalid blockingFirmRecno: %d at (%d,%d)\n", blockingFirmRecno, checkX, checkY);
+						continue;
+					}
+					if (firm_array.is_deleted(blockingFirmRecno)) {
+						printf("[AI DEBUG] Deleted firm recno: %d at (%d,%d)\n", blockingFirmRecno, checkX, checkY);
+						continue;
+					}
+					Firm* blockingFirm = firm_array[blockingFirmRecno];
+					if (!blockingFirm) {
+						printf("[AI DEBUG] Null firm pointer for recno: %d at (%d,%d)\n", blockingFirmRecno, checkX, checkY);
+						continue;
+					}
+					if (blockingFirm->nation_recno != nation_recno && nation_can_attack(blockingFirm->nation_recno)) {
+						printf("[AI DEBUG] Attacking firm recno: %d at (%d,%d)\n", blockingFirmRecno, blockingFirm->loc_x1, blockingFirm->loc_y1);
+						attack_firm(blockingFirm->loc_x1, blockingFirm->loc_y1);
+						return 1;
 					}
 				}
 			}
