@@ -78,6 +78,12 @@ void SpriteRes::load_sprite_info()
 	int		  	    i, j, actionRecno, dirId;
 
 	sprite_info_count = dbSprite->rec_count();
+	// Defensive check for sprite_info_count to prevent overflow and allocation issues
+	if (sprite_info_count <= 0 || sprite_info_count > 1000000) { // 1 million is an arbitrary upper bound for sanity
+		err_when(sprite_info_count <= 0 || sprite_info_count > 1000000); // triggers error handling macro
+		return;
+	}
+
 	sprite_info_array = new SpriteInfo[sprite_info_count];
 
 	memset( sprite_info_array, 0, sizeof(SpriteInfo)*sprite_info_count );
