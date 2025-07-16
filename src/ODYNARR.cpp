@@ -652,7 +652,7 @@ void DynArray::linkin_sort(void* varPtr)
 {
 	err_when( sort_offset < 0 );
 
-	register int jumpStep,cmpRet;
+	int jumpStep,cmpRet;
 
 	char* lastVar,*lastVar2;
    char* varData,*bodyChar;
