@@ -364,11 +364,17 @@ void UnitArray::move_to_now(int destXLoc, int destYLoc, short* selectedUnitArray
 	unprocessCount = sizeOneSelectedCount;
 
 	//---- construct array to store size one selected unit ----//
-	short* selectedSizeOneUnitArray;
-	if(sizeOneSelectedCount)
+	short* selectedSizeOneUnitArray = nullptr;
+	if(sizeOneSelectedCount < 0) {
+		// Log error and prevent allocation with negative size
+		error_log("[BUG] sizeOneSelectedCount is negative in move_to_now: %d", sizeOneSelectedCount);
+		sizeOneSelectedCount = 0;
+	}
+	if(sizeOneSelectedCount > 0)
 	{
-		selectedSizeOneUnitArray = (short*)mem_add(sizeof(short)*sizeOneSelectedCount);
-		memset(selectedSizeOneUnitArray, 0, sizeof(short)*sizeOneSelectedCount);
+		size_t allocSize = sizeof(short) * (size_t)sizeOneSelectedCount;
+		selectedSizeOneUnitArray = (short*)mem_add(allocSize);
+		memset(selectedSizeOneUnitArray, 0, allocSize);
 		for(i=0, k=0; i<selectedCount && unprocessCount; i++)
 		{
 			unitPtr = operator[](selectedUnitArray[i]);
