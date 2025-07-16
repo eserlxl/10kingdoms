@@ -282,7 +282,7 @@ int FirmInn::hire(short recNo)
 
 	Unit* unitPtr = unit_array[unitRecno];
 
-	memcpy( &(unitPtr->skill), &(innUnit->skill), sizeof(Skill) );
+	unitPtr->skill = innUnit->skill;
 
 	err_when( innUnit->skill.combat_level<=0 || innUnit->skill.combat_level>100 );
 
