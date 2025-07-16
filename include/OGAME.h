@@ -138,6 +138,8 @@ public:
 	void			write_record(GameGF *r);
 	void			read_record(GameGF *r);
 
+	int input_box(const char *tell_string, char *buf, int len, char hide_input=0);
+
 private:
 	void			init_remap_table();
 
@@ -153,7 +155,6 @@ private:
 	void			view_encyclopedia();
 	void			view_credits();
 
-	int			input_box(const char *tell_string, char *buf, int len, char hide_input=0);
 	int			input_name_pass(const char *txt[], char *name, int name_len, char *pass, int pass_len);
 
 	//------- multiplayer game functions -------//
@@ -173,6 +174,7 @@ private:
 extern Game game;
 extern char game_demo_mode, game_design_mode, scenario_file_name[FilePath::MAX_FILE_PATH+1];
 
+// Global wrapper for text input box
 //-------------------------------------//
 
 #endif

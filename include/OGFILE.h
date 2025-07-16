@@ -62,6 +62,7 @@ public:
 	int          game_date;     // the game date of the saved game
 	GameFileDate file_date;     // saving game date
 	short        terrain_set;
+	char         note[128];     // User note for savegame
 
 public:
 	int   save_game(const char* fileName=NULL);

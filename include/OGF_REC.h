@@ -76,6 +76,7 @@ struct GameFileHeader
 	int32_t              game_date;
 	GameFileDateGF       file_date;
 	int16_t              terrain_set;
+	char                 note[128]; // User note for savegame
 };
 
 struct FirmInfoGF

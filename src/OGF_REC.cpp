@@ -70,6 +70,7 @@ void GameFile::write_record(GameFileHeader *r)
 	WriteInt32(file_date.dwLowDateTime);
 	WriteInt32(file_date.dwHighDateTime);
 	WriteInt16(terrain_set);
+	WriteInt8Array(note, 128);
 }
 
 void GameFile::read_record(GameFileHeader *r)
@@ -83,6 +84,7 @@ void GameFile::read_record(GameFileHeader *r)
 	ReadInt32(file_date.dwLowDateTime);
 	ReadInt32(file_date.dwHighDateTime);
 	ReadInt16(terrain_set);
+	ReadInt8Array(note, 128);
 }
 
 void FirmInfo::write_record(FirmInfoGF *r)

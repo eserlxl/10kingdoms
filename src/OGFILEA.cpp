@@ -62,7 +62,7 @@
 #include <windows.h>
 #endif
 
-
+extern int input_box(const char*, char*, int, char);
 
 //--------- Define constant ---------//
 
@@ -75,6 +75,7 @@ enum { FILE_MAIN_MENU_X1 = 80,
 enum { FILE_IN_GAME_MENU_X1 = 80,
 		 FILE_IN_GAME_MENU_Y1 = 115 };
 
+// Revert row height:
 enum { BROWSE_X1 = 34,
 		 BROWSE_Y1 = 31,
 		 BROWSE_REC_WIDTH  = 538,
@@ -660,16 +661,18 @@ void GameFileArray::disp_entry_info(const GameFile* entry, int x, int y)
 	str += ": ";
 	str += entry->file_name;
 
-	#if(defined(FRENCH))
-		font_small.put( x+320, y+16, str );
-	#elif(defined(GERMAN))
-		font_small.put( x+320, y+16, str );
-	#else
-		font_small.put( x+335, y+16, str );
-	#endif
-
-	str  = _("File Date");
-	str += ": ";
+	// Move file info, file date, and note text up by 20 pixels in disp_entry_info:
+	// File name
+#if(defined(FRENCH))
+	font_small.put( x+320, y+6, str );
+#elif(defined(GERMAN))
+	font_small.put( x+320, y+6, str );
+#else
+	font_small.put( x+335, y+6, str );
+#endif
+// File date
+str  = _( "File Date" );
+str += ": ";
 #ifdef USE_WINDOWS
 	SYSTEMTIME sysTime;
 	FILETIME localFileTime;
@@ -686,14 +689,23 @@ void GameFileArray::disp_entry_info(const GameFile* entry, int x, int y)
 	str += " ";
 	str += date.time_str(lt->tm_hour*100 + lt->tm_min);
 #endif
-
-	#if(defined(FRENCH))
-		font_small.put( x+318, y+34, str );
-	#elif(defined(GERMAN))
-		font_small.put( x+320, y+34, str );
-	#else
-		font_small.put( x+335, y+34, str );
-	#endif
+#if(defined(FRENCH))
+	font_small.put( x+318, y+20, str );
+#elif(defined(GERMAN))
+	font_small.put( x+320, y+20, str );
+#else
+	font_small.put( x+335, y+20, str );
+#endif
+// Note
+if (entry->note[0]) {
+#if(defined(FRENCH))
+	font_small.put( x+318, y+34, entry->note );
+#elif(defined(GERMAN))
+	font_small.put( x+320, y+34, entry->note );
+#else
+	font_small.put( x+335, y+34, entry->note );
+#endif
+}
 }
 //--------- End of function GameFileArray::disp_entry_info --------//
 
@@ -724,6 +736,16 @@ int GameFileArray::process_action(int saveNew)
 				return 0;
 
 			GameFile* gameFile = (*this)[browse_recno];
+			char note_buf2[128] = "";
+			if (game.game_mode != GAME_PREGAME) {
+				if (!input_box("Enter a note for this save (optional):", note_buf2, sizeof(note_buf2)-1, 0)) {
+					note_buf2[0] = '\0';
+				}
+			}
+			note_buf2[sizeof(note_buf2)-1] = '\0';
+			strncpy(gameFile->note, note_buf2, sizeof(gameFile->note));
+			gameFile->note[sizeof(gameFile->note)-1] = '\0';
+
 			if( !gameFile->save_game() )
 			{
 				box.msg(gameFile->status_str());
@@ -806,6 +828,16 @@ int GameFileArray::save_new_game(const char* fileName)
 	}
 
 	//----------- save game now ------------//
+
+	char note_buf[128] = "";
+	if (game.game_mode != GAME_PREGAME) { // Only prompt if not in pregame (adjust as needed)
+		if (!input_box("Enter a note for this save (optional):", note_buf, sizeof(note_buf)-1, 0)) {
+			note_buf[0] = '\0'; // User cancelled or empty
+		}
+	}
+	note_buf[sizeof(note_buf)-1] = '\0';
+	strncpy(gameFile.note, note_buf, sizeof(gameFile.note));
+	gameFile.note[sizeof(gameFile.note)-1] = '\0';
 
 	if( gameFile.save_game(fileName) )
 	{

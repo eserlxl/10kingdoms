@@ -438,3 +438,8 @@ char* Game::get_color_remap_table(int nationRecno, int selectedFlag)
    return colorRemapTable;
 }
 //--------- End of function Game::get_color_remap_table --------//
+
+// Global wrapper for text input box
+int input_box(const char *tell_string, char *buf, int len, char hide_input) {
+    return game.input_box(tell_string, buf, len, hide_input);
+}

@@ -173,6 +173,8 @@ int GameFile::load_game(const char* base_path, const char* fileName)
 		}
 
 		read_record(&gf_rec.game_file);
+		strncpy(note, gf_rec.game_file.note, sizeof(note));
+		note[sizeof(note)-1] = '\0';
 
 		if( !validate_header() )
 		{
@@ -344,6 +346,8 @@ int GameFile::read_game_header(const char* filePath)
 	}
 
 	read_record(&gf_rec.game_file);
+	strncpy(note, gf_rec.game_file.note, sizeof(note));
+	note[sizeof(note)-1] = '\0';
 
 	if( !validate_header() )
 	{
@@ -458,6 +462,8 @@ int GameFile::write_game_header(File* filePtr)
 
 	//------- write GameFile to the saved game file -------//
 
+	strncpy(gf_rec.game_file.note, note, sizeof(gf_rec.game_file.note));
+	gf_rec.game_file.note[sizeof(gf_rec.game_file.note)-1] = '\0';
 	write_record(&gf_rec.game_file);
 	return filePtr->file_write(&gf_rec, sizeof(GameFileHeader));     // write the whole object to the saved game file
 }
