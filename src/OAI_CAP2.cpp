@@ -572,7 +572,16 @@ int Nation::mobile_defense_combat_level(int targetXLoc, int targetYLoc, int targ
 			if( !locPtr->has_unit(UNIT_LAND) )
 				continue;
 
-			unitPtr = unit_array[ locPtr->unit_recno(UNIT_LAND) ];
+			int unitRecno = locPtr->unit_recno(UNIT_LAND);
+			if( unitRecno <= 0 || unit_array.is_deleted(unitRecno) ) {
+				// Log error for debugging
+				#ifdef DEBUG
+					fprintf(stderr, "[ERROR] Invalid or deleted unitRecno %d at (%d,%d) in mobile_defense_combat_level\n", unitRecno, xLoc, yLoc);
+				#endif
+				continue;
+			}
+
+			unitPtr = unit_array[ unitRecno ];
 
 			//--------------------------------------------------//
 			// If there is already a battle going on in this town,
