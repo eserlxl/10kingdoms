@@ -57,6 +57,8 @@ struct FilePath
 
 	FilePath& operator+=(const char *s)
 	{
+		if (!s || !*s)
+			return *this;
 		size_t s_len = strlen(s);
 		if( !s_len )
 			return *this;
@@ -72,6 +74,8 @@ struct FilePath
 
 	FilePath& operator/=(const char *s)
 	{
+		if (!s || !*s)
+			return *this;
 		size_t s_len = strlen(s);
 		if( !s_len )
 			return *this;
