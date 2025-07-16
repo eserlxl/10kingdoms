@@ -1316,7 +1316,8 @@ void ZoomMatrix::draw_objects()
 			{
 				memset(&displaySort, 0, sizeof(displaySort));
 				unitPtr = unit_array[locPtr->air_cargo_recno];
-
+				if (!unitPtr)
+					continue;
 				unitPtr->update_abs_pos();		// update its absolute position
 
 				displaySort.object_type  = OBJECT_UNIT;
@@ -1352,7 +1353,8 @@ void ZoomMatrix::draw_objects()
 			{
 				memset(&displaySort, 0, sizeof(displaySort));
 				unitPtr = unit_array[locPtr->cargo_recno];
-
+				if (!unitPtr)
+					continue;
 				unitPtr->update_abs_pos();		// update its absolute position
 
 				displaySort.object_type  = OBJECT_UNIT;
@@ -1391,7 +1393,8 @@ void ZoomMatrix::draw_objects()
 				displaySort.object_recno = locPtr->firm_recno();
 
 				firmPtr = firm_array[locPtr->firm_recno()];
-
+				if (!firmPtr)
+					continue;
 				displaySort.object_y2 = firmPtr->abs_y2;
 
 				if( xLoc==MAX( firmPtr->loc_x1, zoomXLoc1 ) &&
@@ -1411,7 +1414,8 @@ void ZoomMatrix::draw_objects()
 				displaySort.object_recno = locPtr->town_recno();
 
 				townPtr = town_array[locPtr->town_recno()];
-
+				if (!townPtr)
+					continue;
 				displaySort.object_y2 = townPtr->abs_y2;
 
 				if( xLoc==MAX( townPtr->loc_x1, zoomXLoc1 ) &&
@@ -1431,7 +1435,8 @@ void ZoomMatrix::draw_objects()
 				displaySort.object_recno = locPtr->plant_id();
 
 				plantBitmap = plant_res.get_bitmap(locPtr->plant_id());
-
+				if (!plantBitmap)
+					continue;
 				innerY  = locPtr->plant_inner_y();
 				drawY   = yLoc*ZOOM_LOC_HEIGHT + innerY-ZOOM_LOC_HEIGHT/2 + plantBitmap->offset_y + plantBitmap->bitmap_height - 1;
 
@@ -1496,6 +1501,8 @@ void ZoomMatrix::draw_objects()
 				memset(&displaySort, 0, sizeof(displaySort));
 				displaySort.object_type  = OBJECT_ROCK;
 				Rock *rockPtr = rock_array[displaySort.object_recno = locPtr->rock_array_recno()];
+				if (!rockPtr)
+					continue;
 				displaySort.object_y2 =	ZOOM_LOC_HEIGHT  * (rockPtr->loc_y 
 					+ rock_res.get_rock_info(rockPtr->rock_recno)->loc_height) -1;
 
