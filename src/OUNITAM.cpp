@@ -367,7 +367,7 @@ void UnitArray::move_to_now(int destXLoc, int destYLoc, short* selectedUnitArray
 	short* selectedSizeOneUnitArray = nullptr;
 	if(sizeOneSelectedCount < 0) {
 		// Log error and prevent allocation with negative size
-		error_log("[BUG] sizeOneSelectedCount is negative in move_to_now: %d", sizeOneSelectedCount);
+		MSG("[BUG] sizeOneSelectedCount is negative in move_to_now: %d", sizeOneSelectedCount);
 		sizeOneSelectedCount = 0;
 	}
 	if(sizeOneSelectedCount > 0)
