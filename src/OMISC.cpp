@@ -1242,6 +1242,10 @@ int Misc::is_file_exist(const char* fileName)
    return 1;
 #endif
 #ifdef USE_POSIX
+   if (!fileName) {
+      // Optionally log an error here
+      return 0;
+   }
    return !access(fileName, F_OK);
 #endif
    err.msg("Misc::is_file_exist: stub");

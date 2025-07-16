@@ -235,6 +235,10 @@ static int can_move_to(int xLoc, int yLoc)
 							break;
 
 					case SEARCH_MODE_A_UNIT_IN_GROUP:	// a unit in a group
+							if (recno < 1 || unit_array.is_deleted(recno)) {
+								// Optionally log an error here
+								return 0;
+							}
 							unitPtr = unit_array[recno];
 							return unitPtr->cur_action==SPRITE_MOVE && unitPtr->unit_id!=UNIT_CARAVAN;
 
@@ -245,6 +249,10 @@ static int can_move_to(int xLoc, int yLoc)
 							break;
 
 					case SEARCH_MODE_BLOCKING:	// 2x2 unit blocking
+							if (recno < 1 || unit_array.is_deleted(recno)) {
+								// Optionally log an error here
+								return 0;
+							}
 							unitPtr = unit_array[recno];
 							return unitPtr->unit_group_id==group_id && (unitPtr->cur_action==SPRITE_MOVE || unitPtr->cur_action==SPRITE_READY_TO_MOVE);
 					
@@ -291,6 +299,10 @@ static int can_move_to(int xLoc, int yLoc)
 			}
 
 			//------- checking for unit's group_id, cur_action, nation_recno and position --------//
+			if (recno < 1 || unit_array.is_deleted(recno)) {
+				// Optionally log an error here
+				return 0;
+			}
 			unitPtr = unit_array[recno];
 			unitCurAction = unitPtr->cur_action;
 			return (unitPtr->unit_group_id==group_id && unitCurAction!=SPRITE_ATTACK) ||
@@ -316,6 +328,10 @@ static int can_move_to(int xLoc, int yLoc)
 							break;
 
 					case SEARCH_MODE_A_UNIT_IN_GROUP:	// a unit in a group
+							if (recno < 1 || unit_array.is_deleted(recno)) {
+								// Optionally log an error here
+								return 0;
+							}
 							return unit_array[recno]->cur_action==SPRITE_MOVE;
 
 					case SEARCH_MODE_TO_ATTACK:
@@ -358,6 +374,10 @@ static int can_move_to(int xLoc, int yLoc)
 								if(!recno)
 									return 1;
 
+								if (recno < 1 || unit_array.is_deleted(recno)) {
+									// Optionally log an error here
+									return 0;
+								}
 								unitPtr = unit_array[recno];
 								unitCurAction = unitPtr->cur_action;
 								return (unitPtr->unit_group_id==group_id && unitCurAction!=SPRITE_ATTACK &&
@@ -378,6 +398,10 @@ static int can_move_to(int xLoc, int yLoc)
 			}
 			
 			//------- checking for unit's group_id, cur_action, nation_recno and position --------//
+			if (recno < 1 || unit_array.is_deleted(recno)) {
+				// Optionally log an error here
+				return 0;
+			}
 			unitPtr = unit_array[recno];
 			unitCurAction = unitPtr->cur_action;
 			return (unitPtr->unit_group_id==group_id && unitCurAction!=SPRITE_ATTACK) ||
@@ -402,6 +426,10 @@ static int can_move_to(int xLoc, int yLoc)
 				case SEARCH_MODE_ATTACK_FIRM_BY_RANGE:
 				case SEARCH_MODE_ATTACK_TOWN_BY_RANGE:
 				case SEARCH_MODE_ATTACK_WALL_BY_RANGE:
+						if (recno < 1 || unit_array.is_deleted(recno)) {
+							// Optionally log an error here
+							return 0;
+						}
 						unitPtr = unit_array[recno];
 						unitCurAction = unitPtr->cur_action;
 						return (unitPtr->unit_group_id==group_id && unitCurAction!=SPRITE_ATTACK) ||
@@ -409,6 +437,10 @@ static int can_move_to(int xLoc, int yLoc)
 								 (unitPtr->nation_recno==seek_nation_recno && unitCurAction==SPRITE_IDLE);
 
 				case SEARCH_MODE_A_UNIT_IN_GROUP: // a unit in a group
+						if (recno < 1 || unit_array.is_deleted(recno)) {
+							// Optionally log an error here
+							return 0;
+						}
 						return unit_array[recno]->cur_action==SPRITE_MOVE;
 
 				default: err_here();
