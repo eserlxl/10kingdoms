@@ -46,7 +46,7 @@
 #define MAP_HEIGHT      MAX_WORLD_Y_LOC
 
 #define MAX_MAP_WIDTH	220
-#define MAX_MAP_HEIGHT	250
+#define MAX_MAP_HEIGHT	260
 
 #define MAP_X1          (WORLD_WIDTH-MAX_MAP_WIDTH-2+(MAX_MAP_WIDTH-MAP_WIDTH)/2)
 #define MAP_Y1          (5 +(MAX_MAP_HEIGHT-MAP_HEIGHT)/2)
@@ -63,11 +63,10 @@
 
 #define ZOOM_X1           0     // World Zoom Window
 #define ZOOM_Y1          56
+#define ZOOM_WIDTH      (WORLD_WIDTH-MAX_MAP_WIDTH-1)
+#define ZOOM_HEIGHT     ((WORLD_HEIGHT-56)/ZOOM_LOC_HEIGHT*ZOOM_LOC_HEIGHT) // 1536
 #define ZOOM_X2         (WORLD_WIDTH-MAX_MAP_WIDTH-5)
-#define ZOOM_Y2         (WORLD_HEIGHT-1)
-
-#define ZOOM_WIDTH      (WORLD_WIDTH-MAX_MAP_WIDTH-1)     // ZOOM_LOC_WIDTH(32)  * 18 = 576
-#define ZOOM_HEIGHT     (WORLD_HEIGHT-56)     // ZOOM_LOC_HEIGHT(32) * 17 = 544
+#define ZOOM_Y2         (ZOOM_Y1 + ZOOM_HEIGHT - 1) // 56 + 1536 - 1 = 1591
 
 #define ZOOM_LOC_HEIGHT  32     // in world zoom window
 #define ZOOM_LOC_WIDTH   32
