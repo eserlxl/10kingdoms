@@ -65,6 +65,7 @@ Running locally from source build
 To run the game from the build directory, you need to point to the game data
 folder. The game data folder is set by the environment variable TKDATA. In
 a bash shell, this can be accomplished by
-bash autogen.sh 
+bash autogen.sh
+./configure
 TKDATA=data src/10kingdoms
 
