@@ -5,8 +5,8 @@
 MAINICON ICON "7k.ico"
 
 VS_VERSION_INFO VERSIONINFO
-FILEVERSION     SKVERMAJ,SKVERMED,SKVERMIN,0
-PRODUCTVERSION  SKVERMAJ,SKVERMED,SKVERMIN,0
+FILEVERSION     TKVERMAJ,TKVERMED,TKVERMIN,0
+PRODUCTVERSION  TKVERMAJ,TKVERMED,TKVERMIN,0
 FILEFLAGSMASK   0x3fL
 #ifdef _DEBUG
 FILEFLAGS       0x1L
@@ -21,16 +21,16 @@ BEGIN
 	BEGIN
 		BLOCK "040904B0"
 		BEGIN
-			VALUE "Comments",         ""
-			VALUE "CompanyName",      "7kfans.com"
-            VALUE "FileDescription",  "Seven Kingdoms: Ancient Adversaries executable for Windows (from the open-source project)"
-            VALUE "FileVersion",      SKVERSION
-            VALUE "InternalName",     "7kaa"
+			VALUE "Comments",         "Visit 7kfans.com for Seven Kingdoms"
+			VALUE "CompanyName",      "lxl"
+            VALUE "FileDescription",  "Ten Kingdoms: Ancient Adversaries executable for Windows (from the open-source project)"
+            VALUE "FileVersion",      TKVERSION
+            VALUE "InternalName",     "10kaa"
 			VALUE "LegalCopyright",   "Source code under GPL license"
-            VALUE "LegalTrademarks",  "Seven Kingdoms is a trademark of Enlight Software"
-            VALUE "OriginalFilename", "7kaa.exe"
-            VALUE "ProductName",      "Seven Kingdoms: Ancient Adversaries"
-            VALUE "ProductVersion",   SKVERSION
+            VALUE "LegalTrademarks",  "Seven Kingdoms is a trademark of Enlight Software, Ten Kingdoms is only a public fork of this game."
+            VALUE "OriginalFilename", "10kaa.exe"
+            VALUE "ProductName",      "Ten Kingdoms: Ancient Adversaries"
+            VALUE "ProductVersion",   TKVERSION
 		END
 	END
 

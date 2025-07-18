@@ -1,5 +1,5 @@
 /*
- * Seven Kingdoms: Ancient Adversaries
+ * Ten Kingdoms: Ancient Adversaries
  *
  * Copyright 1997,1998 Enlight Software Ltd.
  * Copyright 2010,2015 Jesse Allen
@@ -830,7 +830,7 @@ void Vga::save_status_report()
    if( !file )
       return;
 
-   fprintf(file, "=== Seven Kingdoms " SKVERSION " ===\n");
+   fprintf(file, "=== Ten Kingdoms " TKVERSION " ===\n");
    s = SDL_GetPlatform();
    fprintf(file, "Platform: %s\n", s);
    if( SDL_BYTEORDER == SDL_BIG_ENDIAN )

@@ -135,7 +135,7 @@ NOTE: this README is essentially deprecated and will be heavily rewritten once c
     % commented out titlesec code. Recommented and font size reduced to huge and 30.
     % force smallcaps for universalis by defining starting capital letters as \Huge vs. \huge. This has the effect of making the header text buggy. Original manual has the text in small italics instead of bold/etc. Opposing page has Ten Kingdoms: Ancient Adversaries in italics. And it does not include sectioning numbering. It is most likely the universalis font. Due to bugs, this is being held off.
     % included recent contributor.
-    % README - changed internal and arbitrary versioning to 0.3 to reflect the status of the manual being in its third iteration (7k -> 7kaa -> 7kaa GPLv2).
+    % README - changed internal and arbitrary versioning to 0.3 to reflect the status of the manual being in its third iteration (7k -> 7kaa -> 10kaa GPLv2).
     % Begin using v0.3.2-dev to coincide with 2.15.5-dev in the README.
     % 
 
