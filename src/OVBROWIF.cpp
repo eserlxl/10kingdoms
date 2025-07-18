@@ -95,15 +95,25 @@ void VBrowseIF::disp_all()
 	int scrollRecno = (disp_frame && x_max_rec==1) ? rec_no : top_rec_no;
 
 	scroll_bar.refresh( scrollRecno, 1, disp_max_rec,
-				 (disp_frame && x_max_rec==1 ? 1 : disp_max_rec),
-				 total_rec_num );
+			 (disp_frame && x_max_rec==1 ? 1 : disp_max_rec),
+			 total_rec_num );
 
+	int y = iy1;
 	for( recNo=top_rec_no ; recNo<=total_rec_num && recNo<top_rec_no+disp_max_rec ; recNo++ )
 	{
-		disp_one( recNo, DISP_REC );
+		int is_selected = (recNo == rec_no);
+		int highlight_extra = is_selected ? 4 : 0;
+		int y_offset = is_selected ? 2 : 0;
+		int row_height = rec_height + highlight_extra;
+		int x = ix1;
 
-		if( recNo == rec_no )
-			disp_one( recNo, DISP_HIGH );
+		if( disp_frame && is_selected ) {
+			Vga::active_buf->draw_d3_up_border(x-2, y-2, x+rec_width+1, y+rec_height+1+highlight_extra);
+			disp_rec( recNo, x, y + y_offset, INFO_REPAINT );
+		} else if( !is_selected ) {
+			disp_rec( recNo, x, y, INFO_REPAINT );
+		}
+		y += row_height + rec_y_space;
 	}
 }
 //--------- End of function VBrowseIF::disp_all ----------//
@@ -121,34 +131,32 @@ void VBrowseIF::disp_one(int recNo, int dispType)
 	if( none_record )
 		return;
 
-	int x,y;
+	int x, y;
+
+	// Increase the height and y-position of the selected row to prevent overlap
+	int highlight_extra = (dispType == DISP_HIGH) ? 4 : 0;
+	int y_offset = (dispType == DISP_HIGH) ? 2 : 0;
 
 	y = iy1 + (recNo-top_rec_no)/x_max_rec * (rec_height+rec_y_space);
 	x = ix1 + (recNo-top_rec_no)%x_max_rec * (rec_width+rec_x_space);
 
-	//---- put a outline rect around the record if it is highlight ---//
-
 	if( disp_frame && dispType == CLEAR_HIGH && !vga.use_back_buf && !vga_front_only )
 	{
-		vga_util.blt_buf( x-2, y-2			  , x+rec_width+1, y-2				, 0 );	// top
-		vga_util.blt_buf( x-2, y+rec_height+1, x+rec_width+1, y+rec_height+1, 0 );	// bottom
-		vga_util.blt_buf( x-2, y-2			  , x-2		     , y+rec_height+1, 0 );	// left
-		vga_util.blt_buf( x+rec_width+1, y-2 , x+rec_width+1, y+rec_height+1, 0 );	// right
+		vga_util.blt_buf( x-2, y-2, x+rec_width+1, y-2, 0 );
+		vga_util.blt_buf( x-2, y+rec_height+1+highlight_extra, x+rec_width+1, y+rec_height+1+highlight_extra, 0 );
+		vga_util.blt_buf( x-2, y-2, x-2, y+rec_height+1+highlight_extra, 0 );
+		vga_util.blt_buf( x+rec_width+1, y-2, x+rec_width+1, y+rec_height+1+highlight_extra, 0 );
 	}
 
-	if( dispType == DISP_REC )
-		disp_rec( recNo, x, y, INFO_REPAINT );  // call user defined function
-
-	if( disp_frame && dispType == DISP_HIGH )
-	{
-		//-------- draw d3 up border --------//
-
-		Vga::active_buf->draw_d3_up_border(x-2, y-2, x+rec_width+1, y+rec_height+1);
-
-		//--------- display the record --------//
-
+	if( dispType == DISP_REC ) {
+		disp_rec( recNo, x, y, INFO_REPAINT );  // call user defined function at normal y
+	}
+	else if( dispType == DISP_HIGH ) {
+		// Draw highlight border and content at shifted y
+		int content_y = y + y_offset;
+		Vga::active_buf->draw_d3_up_border(x-2, y-2, x+rec_width+1, y+rec_height+1+highlight_extra);
+		disp_rec( recNo, x, content_y, INFO_REPAINT );
 		int scrollRecno = (disp_frame && x_max_rec==1) ? recNo : top_rec_no;
-
 		scroll_bar.refresh( scrollRecno, 0, disp_max_rec,
 			 (disp_frame && x_max_rec==1 ? 1 : disp_max_rec),
 					total_rec_num );

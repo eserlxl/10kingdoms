@@ -178,7 +178,7 @@ void Info::disp_nation(int refreshFlag)
 	if( refreshFlag == INFO_REPAINT )
 	{
 		browse_nation.init( REPORT_BROWSE_X1, REPORT_BROWSE_Y1+35, REPORT_BROWSE_X2, REPORT_BROWSE_Y2,
-								  0, 20, nation_filter(), put_nation_rec, 1 );
+								  0, MAX_NATION, nation_filter(), put_nation_rec, 1 );
 
 		browse_nation.open(browse_nation_recno);
 	}

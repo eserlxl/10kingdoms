@@ -1349,7 +1349,7 @@ int Unit::ai_handle_seek_path_fail()
 					if (blockingTown->nation_recno == 0) // Independent town, skip
 						continue;
 					if (blockingTown->nation_recno != nation_recno && nation_can_attack(blockingTown->nation_recno)) {
-						printf("[AI DEBUG] Attacking town recno: %d at (%d,%d)\n", blockingTownRecno, blockingTown->loc_x1, blockingTown->loc_y1);
+						// printf("[AI DEBUG] Attacking town recno: %d at (%d,%d)\n", blockingTownRecno, blockingTown->loc_x1, blockingTown->loc_y1);
 						attack_town(blockingTown->loc_x1, blockingTown->loc_y1);
 						return 1;
 					}
@@ -1372,7 +1372,7 @@ int Unit::ai_handle_seek_path_fail()
 						continue;
 					}
 					if (blockingFirm->nation_recno != nation_recno && nation_can_attack(blockingFirm->nation_recno)) {
-						printf("[AI DEBUG] Attacking firm recno: %d at (%d,%d)\n", blockingFirmRecno, blockingFirm->loc_x1, blockingFirm->loc_y1);
+						// printf("[AI DEBUG] Attacking firm recno: %d at (%d,%d)\n", blockingFirmRecno, blockingFirm->loc_x1, blockingFirm->loc_y1);
 						attack_firm(blockingFirm->loc_x1, blockingFirm->loc_y1);
 						return 1;
 					}

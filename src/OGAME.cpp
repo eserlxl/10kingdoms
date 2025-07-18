@@ -336,29 +336,34 @@ void Game::init_remap_table()
 	static ColorRemapMethod remap_method_array[] =
 	{
       { 0xBC, 0xDC },   // the first remap table is for independent units
-      { 0xA0, 0xC0 },   // following are eight remap table for each color code
-      { 0xA4, 0xC4 },
-      { 0xA8, 0xC8 },
-      { 0xAC, 0xCC },
-      { 0xB0, 0xD0 },
-		{ 0xB4, 0xD4 },
-      { 0xB8, 0xD8 },
-      { 0xBC, 0xDC },
-   };
+      { 0xA0, 0xC0 },   // nation 1
+      { 0xA4, 0xC4 },   // nation 2
+      { 0xA8, 0xC8 },   // nation 3
+      { 0xAC, 0xCC },   // nation 4
+      { 0xB0, 0xD0 },   // nation 5
+      { 0xB4, 0xD4 },   // nation 6
+      { 0xB8, 0xD8 },   // nation 7
+      { 0xC8, 0xA8 },   // nation 8: V_DARK_GREEN (0xC8+3=0xCB), secondary light green (0xA8)
+      { 0x90, 0xB8 },   // nation 9: V_GRAY (0x90+1=0x91), secondary brown
+      { 0xA2, 0xA4 },   // nation 10: V_CYAN (0xA2+1=0xA3), secondary light blue
+	};
 
    //---- define the main color code for each color scheme ----//
 
    static int main_color_array[] =
    {
-      0xDC,
-      0xC0,
-      0xC4,
-      0xC8,
-      0xCC,
-      0xD0,
-      0xD4,
-      0xD8,
-	};
+      0xDC, // independent
+      0xC0, // nation 1
+      0xC4, // nation 2
+      0xC8, // nation 3
+      0xCC, // nation 4
+      0xD0, // nation 5
+      0xD4, // nation 6
+      0xD8, // nation 7
+      0xCB, // nation 8: V_DARK_GREEN (0xC8+3)
+      0x91, // nation 9: V_GRAY (0x90+1)
+      0xA3, // nation 10: V_CYAN (0xA2+1)
+   };
 
 	//-------- initialize color remap table -------//
 

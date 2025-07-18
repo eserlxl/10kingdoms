@@ -94,7 +94,7 @@ void Info::disp_rank(int refreshFlag)
 	if( refreshFlag == INFO_REPAINT )
 	{
 		browse_nation.init( NATION_BROWSE_X1, NATION_BROWSE_Y1+34, NATION_BROWSE_X2, NATION_BROWSE_Y2,
-								  0, 22, nation_filter(), put_nation_rec, 1 );
+								  0, MAX_NATION, nation_filter(), put_nation_rec, 1 );
 
 		browse_nation.open(browse_nation_recno);
 	}
@@ -479,6 +479,9 @@ const char *rank_num_th[MAX_NATION] =
 	N_("5th"),
 	N_("6th"),
 	N_("7th"),
+	N_("8th"),
+	N_("9th"),
+	N_("10th")
 };
 //-------- Begin of function Info::get_rank_pos_str --------//
 //

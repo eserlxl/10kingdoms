@@ -1041,8 +1041,8 @@ static void init_window_size()
    if( !config_adv.vga_full_screen_desktop )
    {
       // must match game's native resolution
-      config_adv.vga_window_width = 800;
-      config_adv.vga_window_height = 600;
+      config_adv.vga_window_width = VGA_WIDTH;
+      config_adv.vga_window_height = VGA_HEIGHT;
       return;
    }
 
@@ -1064,10 +1064,10 @@ static void init_window_size()
    if( SDL_GetDisplayUsableBounds(display_idx, &rect)<0 )
       goto unknown_display;
 
-   if( rect.w >= 2560 && rect.h >= 1600 )
+   if( rect.w >= VGA_WIDTH && rect.h >= VGA_HEIGHT )
    {
-      config_adv.vga_window_width = 2560;
-      config_adv.vga_window_height = 1600;
+      config_adv.vga_window_width = VGA_WIDTH;
+      config_adv.vga_window_height = VGA_HEIGHT;
       return;
    }
 
@@ -1098,7 +1098,7 @@ static void init_window_size()
 #endif
 
 unknown_display:
-      config_adv.vga_window_width = 800;
-      config_adv.vga_window_height = 600;
+      config_adv.vga_window_width = VGA_WIDTH;
+      config_adv.vga_window_height = VGA_HEIGHT;
       return;
 }

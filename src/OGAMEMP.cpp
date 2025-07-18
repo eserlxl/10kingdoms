@@ -2952,7 +2952,7 @@ int Game::mp_select_option(NewNationPara *nationPara, int *mpPlayerCount)
 			// ------- display difficulty -------//
 			if( (refreshFlag & SGOPTION_DIFFICULTY) || (mRefreshFlag & MGOPTION_PLAYERS) )
 			{
-				font_san.center_put( 718, offsetY+74, 780, offsetY+108, 
+				font_san.center_put( VGA_WIDTH-82, offsetY+74, VGA_WIDTH-20, offsetY+108, 
 					misc.format(tempConfig.multi_player_difficulty(regPlayerCount-1)), 1 );
 			}
 
@@ -2999,6 +2999,7 @@ int Game::mp_select_option(NewNationPara *nationPara, int *mpPlayerCount)
 
 			if( from == 1 ) // The game host is always #1
 			{
+				err_when(remote.is_host);
 				mp_info_box_show(&info_box, _("The game host has disconnected."), _("Ok"));
 			}
 
@@ -3013,7 +3014,7 @@ int Game::mp_select_option(NewNationPara *nationPara, int *mpPlayerCount)
 				for( q = 0; q < regPlayerCount; ++q )
 					if( regPlayerId[q] == from )
 						break;
-				if( q < regPlayerCount )
+				if( q < regPlayerCount)
 				{
 					memmove( regPlayerId+q, regPlayerId+q+1, (MAX_NATION-1-q)*sizeof(regPlayerId[0]) );
 					regPlayerId[MAX_NATION-1] = 0;
@@ -3040,13 +3041,14 @@ int Game::mp_select_option(NewNationPara *nationPara, int *mpPlayerCount)
 			mRefreshFlag |= MGOPTION_PLAYERS;
 		}
 
+
 		if( info_box.visible )
 		{
 			// If the info box is being displayed, then a serious condition
 			// has occurred, and the user will eventually close out the
 			// connection. Skip normal input at this point while the user
-			// has time to understand what happened. This jump is placed after
-			// the network polling so that connections can drop off smoothly.
+			// has time to understand what happened. This is placed here so
+			// that the network service will still get polled.
 
 			vga_front.unlock_buf();
 			continue;
@@ -3081,10 +3083,16 @@ int Game::mp_select_option(NewNationPara *nationPara, int *mpPlayerCount)
 					break;
 					// ####### end Gilbert 25/10 #######//
 				case MPMSG_NEW_PLAYER:
+					{
+						// client has incorrect game mode, reject
+						MpStructRefuseNewPlayer msgRefuse(REFUSE_REASON_SAVEFILE_REQUIRED);
+						mp_obj.send(from, &msgRefuse, sizeof(msgRefuse));
+					}
+					break;
+				case MPMSG_LOAD_GAME_NEW_PLAYER:
 					if( remote.is_host )
 					{
-						MpStructNewPlayer *newPlayerMsg = (MpStructNewPlayer *)recvPtr;
-
+						MpStructLoadGameNewPlayer *newPlayerMsg = (MpStructLoadGameNewPlayer *)recvPtr;
 						if( newPlayerMsg->ver1 != SKVERMAJ ||
 							newPlayerMsg->ver2 != SKVERMED ||
 							newPlayerMsg->ver3 != SKVERMIN ||
@@ -3100,6 +3108,20 @@ int Game::mp_select_option(NewNationPara *nationPara, int *mpPlayerCount)
 							mp_obj.send(from, &msgRefuse, sizeof(msgRefuse));
 							break;
 						}
+						if(
+							nation_array.is_deleted(newPlayerMsg->nation_recno) ||
+							nation_array[newPlayerMsg->nation_recno]->color_scheme_id != newPlayerMsg->color_scheme_id ||
+							nation_array[newPlayerMsg->nation_recno]->race_id != newPlayerMsg->race_id ||
+							colorAssigned[newPlayerMsg->color_scheme_id-1] ||
+							newPlayerMsg->frame_count != sys.frame_count ||
+							newPlayerMsg->random_seed != misc.get_random_seed()
+						)
+						{
+							// client's save file doesn't match the host's
+							MpStructRefuseNewPlayer msgRefuse(REFUSE_REASON_SAVEFILE_MISMATCH);
+							mp_obj.send(from, &msgRefuse, sizeof(msgRefuse));
+							break;
+						}
 						if( !mp_obj.auth_player(from, newPlayerMsg->name, newPlayerMsg->pass) )
 						{
 							MpStructRefuseNewPlayer msgRefuse(REFUSE_REASON_NOT_AUTHORIZED);
@@ -3110,6 +3132,10 @@ int Game::mp_select_option(NewNationPara *nationPara, int *mpPlayerCount)
 						{
 							regPlayerId[regPlayerCount] = from;
 							playerReadyFlag[regPlayerCount] = 0;
+							raceAssigned[newPlayerMsg->race_id]++;
+							playerRace[regPlayerCount] = newPlayerMsg->race_id;
+							colorAssigned[newPlayerMsg->color_scheme_id-1]=1;
+							playerColor[regPlayerCount] = newPlayerMsg->color_scheme_id;
 
 							MpStructPlayerId msgId(from);
 							mp_obj.send(from, &msgId, sizeof(msgId));
@@ -3122,7 +3148,7 @@ int Game::mp_select_option(NewNationPara *nationPara, int *mpPlayerCount)
 							mp_obj.send( BROADCAST_PID, &msgAccept, sizeof(msgAccept) );
 
 							// send the new player the list of players
-							for (int i = 1; i <= MAX_NATION; i++) {
+						        for (int i = 1; i <= MAX_NATION; i++) {
 								PlayerDesc *desc = mp_obj.get_player(i);
 								if (desc && desc->id != from) {
 									MpStructAcceptNewPlayer msgNewb(desc->id,
@@ -3133,52 +3159,8 @@ int Game::mp_select_option(NewNationPara *nationPara, int *mpPlayerCount)
 								}
 							}
 
-							// assign initial race
-							int c = misc.get_time() % MAX_RACE;
-							int t;
-							for( t = 0; t < MAX_RACE; ++t, ++c )
-							{
-								c %= MAX_RACE;
-								if( raceAssigned[c] == 0 )
-								{
-									raceAssigned[c]++;
-									playerRace[regPlayerCount] = c+1;
-									MpStructAcceptRace msgAcceptRace(from, c+1);
-									mp_obj.send( from, &msgAcceptRace, sizeof(msgAcceptRace) );
-									break;
-								}
-							}
-							err_when( t >= MAX_RACE );		// not found
-
-							// assign initial color
-							c = misc.get_time() % MAX_COLOR_SCHEME;
-							for( t = 0; t < MAX_COLOR_SCHEME; ++t, ++c )
-							{
-								c %= MAX_COLOR_SCHEME;
-								if( !colorAssigned[c] )
-								{
-									colorAssigned[c]=1;
-									playerColor[regPlayerCount] = c+1;
-									MpStructAcceptColor msgAcceptColor(from, c+1);
-									mp_obj.send( from, &msgAcceptColor, sizeof(msgAcceptColor) );
-									break;
-								}
-							}
-							err_when( t >= MAX_COLOR_SCHEME );		// not found
-
-							// send random seed
-							// ###### begin Gilbert 25/10 #######//
-							// MpStructSeed msgRandomSeed(misc.get_random_seed());
-							// mp_obj.send( from, &msgRandomSeed, sizeof(msgRandomSeed) );
-							mp_obj.send( from, &msgSeedStr, sizeof(msgSeedStr) );
-							// ###### end Gilbert 25/10 #######//
-
-							// send config
-							MpStructConfig msgConfig( tempConfig );
-							mp_obj.send( from, &msgConfig, sizeof(msgConfig) );
-
 							// send ready flag
-							for( c = 0; c < regPlayerCount; ++c)
+							for( int c = 0; c < regPlayerCount; ++c)
 							{
 								if( playerReadyFlag[c] )
 								{
@@ -3204,13 +3186,6 @@ int Game::mp_select_option(NewNationPara *nationPara, int *mpPlayerCount)
 						}
 					}
 					break;
-				case MPMSG_LOAD_GAME_NEW_PLAYER:
-					{
-						// client has incorrect game mode, reject
-						MpStructRefuseNewPlayer msgRefuse(REFUSE_REASON_SAVEFILE_NOT_REQUIRED);
-						mp_obj.send(from, &msgRefuse, sizeof(msgRefuse));
-					}
-					break;
 				case MPMSG_ACCEPT_NEW_PLAYER:
 					hostPlayerId = from;
 					if( regPlayerCount < MAX_NATION && ((MpStructAcceptNewPlayer *)recvPtr)->player_id != mp_obj.get_my_player_id() )
@@ -3225,105 +3200,9 @@ int Game::mp_select_option(NewNationPara *nationPara, int *mpPlayerCount)
 						for (p = 0; p < regPlayerCount && regPlayerId[p] != newb->player_id; ++p);
 						regPlayerId[p] = newb->player_id;
 						playerReadyFlag[p] = 0;
-						if( p == regPlayerCount )
+						if( p >= regPlayerCount )
 							regPlayerCount++;
 						mRefreshFlag |= MGOPTION_PLAYERS;
-					}
-					break;
-				case MPMSG_ACQUIRE_RACE:
-					if( remote.is_host )
-					{
-						short cl = ((MpStructAcquireRace *)recvPtr)->race_id;
-						if( !cl )
-						{
-							for( cl = 1; cl <= MAX_RACE; ++cl)
-							{
-								if( raceAssigned[cl-1] == 0 )
-									break;
-							}
-						}
-						int p;
-						for( p = 0; p < regPlayerCount && regPlayerId[p] != from; ++p );
-						if( cl <= MAX_RACE && p < regPlayerCount &&
-							(shareRace || raceAssigned[cl-1] == 0 ) )		// more than one player can use the same race
-						{
-							// unassign current race
-							if( playerRace[p] > 0)
-								raceAssigned[playerRace[p]-1]--;
-
-							// mark race assigned
-							raceAssigned[cl-1]++;
-							playerRace[p] = cl;
-
-							// reply accept race
-							MpStructAcceptRace msgAcceptRace(from, cl );
-							mp_obj.send( from, &msgAcceptRace, sizeof(msgAcceptRace) );
-						}
-						else
-						{
-							// reply refuse race
-							MpStructRefuseRace msgRefuseRace(from, ((MpStructAcquireRace *)recvPtr)->race_id );
-							mp_obj.send( from, &msgRefuseRace, sizeof(msgRefuseRace) );
-						}
-					}
-					break;
-				case MPMSG_ACCEPT_RACE:
-					if( ((MpStructAcceptRace *)recvPtr)->request_player_id == mp_obj.get_my_player_id() )
-					{
-						tempConfig.race_id = char(((MpStructAcceptRace *)recvPtr)->race_id);
-						refreshFlag |= SGOPTION_RACE;
-					}
-					break;
-				case MPMSG_REFUSE_RACE:
-					if( ((MpStructRefuseRace *)recvPtr)->request_player_id == mp_obj.get_my_player_id() )
-					{
-						refreshFlag |= SGOPTION_RACE;
-						// sound effect here
-					}
-					break;
-				case MPMSG_ACQUIRE_COLOR:
-					if( remote.is_host )
-					{
-						short cl = ((MpStructAcquireColor *)recvPtr)->color_scheme_id;
-						if( !cl )
-						{
-							for( cl = 1; cl <= MAX_COLOR_SCHEME && colorAssigned[cl-1]; ++cl);
-						}
-						int p;
-						for( p = 0; p < regPlayerCount && regPlayerId[p] != from; ++p );
-						if( cl <= MAX_COLOR_SCHEME && !colorAssigned[cl-1] && p < regPlayerCount )
-						{
-							if( playerColor[p] > 0 )
-								colorAssigned[playerColor[p]-1] = 0;
-
-							// mark color assigned
-							colorAssigned[cl-1] = 1;
-							playerColor[p] = cl;
-
-							// reply accept color
-							MpStructAcceptColor msgAcceptColor(from, cl );
-							mp_obj.send( from, &msgAcceptColor, sizeof(msgAcceptColor) );
-						}
-						else
-						{
-							// reply refuse color
-							MpStructRefuseColor msgRefuseColor(from, ((MpStructAcquireColor *)recvPtr)->color_scheme_id );
-							mp_obj.send( from, &msgRefuseColor, sizeof(msgRefuseColor) );
-						}
-					}
-					break;
-				case MPMSG_ACCEPT_COLOR:
-					if( ((MpStructAcceptColor *)recvPtr)->request_player_id == mp_obj.get_my_player_id() )
-					{
-						tempConfig.player_nation_color = char(((MpStructAcceptColor *)recvPtr)->color_scheme_id);
-						refreshFlag |= SGOPTION_COLOR;
-					}
-					break;
-				case MPMSG_REFUSE_COLOR:
-					if( ((MpStructRefuseColor *)recvPtr)->request_player_id == mp_obj.get_my_player_id() )
-					{
-						refreshFlag |= SGOPTION_COLOR;
-						// sound effect here
 					}
 					break;
 				case MPMSG_PLAYER_READY:
@@ -4857,7 +4736,7 @@ int Game::mp_select_load_option(char *fileName)
 			// ------- display difficulty -------//
 			if( (refreshFlag & SGOPTION_DIFFICULTY) || (mRefreshFlag & MGOPTION_PLAYERS) )
 			{
-				font_san.center_put( 718, offsetY+84, 774, offsetY+108, 
+				font_san.center_put( VGA_WIDTH-82, offsetY+74, VGA_WIDTH-20, offsetY+108, 
 					misc.format(tempConfig.difficulty_rating), 1 );
 			}
 
@@ -4928,7 +4807,7 @@ int Game::mp_select_load_option(char *fileName)
 					short freeColor = playerColor[q];
 					memmove( playerColor+q, playerColor+q+1, (MAX_NATION-1-q)*sizeof(playerColor[0]) );
 					playerColor[MAX_NATION-1] = 0;
-					if(freeColor > 0 && freeColor <= MAX_COLOR_SCHEME)
+					if (freeColor > 0 && freeColor <= MAX_COLOR_SCHEME)
 						colorAssigned[freeColor-1] = 0;
 					short freeRace = playerRace[q];
 					memmove( playerRace+q, playerRace+q+1, (MAX_NATION-1-q)*sizeof(playerRace[0]) );

@@ -668,7 +668,7 @@ static int select_option()
 			// ------- display difficulty -------//
 			if( refreshFlag & SGOPTION_DIFFICULTY )
 			{
-				font_san.center_put( 718, offsetY+74, 780, offsetY+108,
+				font_san.center_put( VGA_WIDTH-82, offsetY+74, VGA_WIDTH-20, offsetY+108,
 					misc.format(tempConfig.single_player_difficulty()), 1 );
 			}
 

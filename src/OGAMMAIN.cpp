@@ -62,18 +62,23 @@ void Game::main_menu()
 {
 	enum { MAIN_OPTION_COUNT = 6 };
 
-	static OptionInfo main_option_array[MAIN_OPTION_COUNT] =
-	{
-		{ 6+SWORD1_X,  11+SWORD1_Y, 282+SWORD1_X ,  63+SWORD1_Y },
-		{ 6+SWORD1_X,  68+SWORD1_Y, 282+SWORD1_X , 113+SWORD1_Y },
-		{ 6+SWORD1_X, 121+SWORD1_Y, 282+SWORD1_X , 176+SWORD1_Y },
-		// ####### begin Gilbert 20/10 ######//
-		// { 6+SWORD1_X, 189+SWORD1_Y, 282+SWORD1_X , 219+SWORD1_Y },
-		{ 6+SWORD1_X, 184+SWORD1_Y, 282+SWORD1_X , 222+SWORD1_Y },
-		// ####### end Gilbert 20/10 ######//
-		{ 6+SWORD1_X, 224+SWORD1_Y, 282+SWORD1_X , 295+SWORD1_Y },
-		{40+SWORD1_X, 297+SWORD1_Y, 254+SWORD1_X , 337+SWORD1_Y },
-	};
+	// Calculate base positions proportionally to the current resolution
+	int base_x = VGA_WIDTH * 258 / 800;
+	int base_y = VGA_HEIGHT * 194 / 600;
+	int x_scale = VGA_WIDTH;
+	int y_scale = VGA_HEIGHT;
+
+	// Option rectangles, scaled from original 800x600 layout
+	static OptionInfo main_option_array[MAIN_OPTION_COUNT];
+	main_option_array[0] = { (short)(base_x + x_scale * 6 / 800),  (short)(base_y + y_scale * 11 / 600),  (short)(base_x + x_scale * 282 / 800),  (short)(base_y + y_scale * 63 / 600) };
+	main_option_array[1] = { (short)(base_x + x_scale * 6 / 800),  (short)(base_y + y_scale * 68 / 600),  (short)(base_x + x_scale * 282 / 800),  (short)(base_y + y_scale * 113 / 600) };
+	main_option_array[2] = { (short)(base_x + x_scale * 6 / 800),  (short)(base_y + y_scale * 121 / 600), (short)(base_x + x_scale * 282 / 800),  (short)(base_y + y_scale * 176 / 600) };
+	// ####### begin Gilbert 20/10 ######//
+	// { 6+SWORD1_X, 189+SWORD1_Y, 282+SWORD1_X , 219+SWORD1_Y },
+	main_option_array[3] = { (short)(base_x + x_scale * 6 / 800),  (short)(base_y + y_scale * 184 / 600), (short)(base_x + x_scale * 282 / 800),  (short)(base_y + y_scale * 222 / 600) };
+	// ####### end Gilbert 20/10 ######//
+	main_option_array[4] = { (short)(base_x + x_scale * 6 / 800),  (short)(base_y + y_scale * 224 / 600), (short)(base_x + x_scale * 282 / 800),  (short)(base_y + y_scale * 295 / 600) };
+	main_option_array[5] = { (short)(base_x + x_scale * 40 / 800), (short)(base_y + y_scale * 297 / 600), (short)(base_x + x_scale * 254 / 800), (short)(base_y + y_scale * 337 / 600) };
 
 	char main_option_flag[MAIN_OPTION_COUNT] = 
 	{
@@ -151,18 +156,75 @@ void Game::main_menu()
 			{
 				if( main_option_flag[i] >= 0 )
 				{
-					mouse.hide_area(main_option_array[i].x1, main_option_array[i].y1,
-						main_option_array[i].x2, main_option_array[i].y2);
-					vga_front.put_bitmap_area(SWORD1_X, SWORD1_Y, 
-						main_option_flag[i] ? menuBitmap : darkBitmap,
-						main_option_array[i].x1 - SWORD1_X, main_option_array[i].y1 - SWORD1_Y,
-						main_option_array[i].x2 - SWORD1_X, main_option_array[i].y2 - SWORD1_Y);
-					mouse.show_area();
+					// Clamp source rectangle to bitmap size
+					char* bitmapPtr = main_option_flag[i] ? menuBitmap : darkBitmap;
+					int bmp_w = *((short*)bitmapPtr);
+					int bmp_h = *(((short*)bitmapPtr)+1);
+					int src_x1 = std::max(0, main_option_array[i].x1 - SWORD1_X);
+					int src_y1 = std::max(0, main_option_array[i].y1 - SWORD1_Y);
+					int src_x2 = std::min(bmp_w-1, main_option_array[i].x2 - SWORD1_X);
+					int src_y2 = std::min(bmp_h-1, main_option_array[i].y2 - SWORD1_Y);
+					if (src_x1 <= src_x2 && src_y1 <= src_y2) {
+						mouse.hide_area(main_option_array[i].x1, main_option_array[i].y1,
+							main_option_array[i].x2, main_option_array[i].y2);
+						vga_front.put_bitmap_area(SWORD1_X, SWORD1_Y, bitmapPtr,
+							src_x1, src_y1, src_x2, src_y2);
+						mouse.show_area();
+					}
 				}
 			}
 			pointingOption = -1;
 			refreshFlag=0;
 		}
+
+		// --- BEGIN: Safe menu bitmap drawing and optional scaling ---
+		const int SCALE_MENU_BITMAP = 1; // Always scale
+		auto scale_bitmap = [](char* src, int src_w, int src_h, char* dst, int dst_w, int dst_h) {
+			for (int y = 0; y < dst_h; ++y) {
+				int src_y = y * src_h / dst_h;
+				for (int x = 0; x < dst_w; ++x) {
+					int src_x = x * src_w / dst_w;
+					dst[y * dst_w + x] = src[src_y * src_w + src_x];
+				}
+			}
+		};
+
+		if (refreshFlag) {
+			mouse_cursor.set_icon(CURSOR_NORMAL);
+			char* bitmapPtr = menuBitmap;
+			if (bitmapPtr) {
+				int bmp_w = *((short*)bitmapPtr);
+				int bmp_h = *(((short*)bitmapPtr)+1);
+				char* bmp_data = bitmapPtr + 4;
+				static char* scaled_buf = nullptr;
+				static int scaled_buf_size = 0;
+				int needed_size = VGA_WIDTH * VGA_HEIGHT;
+				if (!scaled_buf || scaled_buf_size < needed_size) {
+					if (scaled_buf) delete[] scaled_buf;
+					scaled_buf = new char[needed_size];
+					scaled_buf_size = needed_size;
+				}
+				scale_bitmap(bmp_data, bmp_w, bmp_h, scaled_buf, VGA_WIDTH, VGA_HEIGHT);
+				vga_front.bar(0, 0, VGA_WIDTH-1, VGA_HEIGHT-1, V_BLACK);
+				vga_front.put_bitmap2(0, 0, VGA_WIDTH, VGA_HEIGHT, scaled_buf);
+			} else {
+				vga_front.bar(0, 0, VGA_WIDTH-1, VGA_HEIGHT-1, V_BLACK);
+			}
+			// Draw menu options ONCE, at correct scaled positions, only text/label
+			const char* labels[MAIN_OPTION_COUNT] = {
+				"SINGLE PLAYER", "MULTI-PLAYER", "ENCYCLOPEDIA", "HALL OF FAME", "CREDITS", "QUIT"
+			};
+			for (int i = 0; i < MAIN_OPTION_COUNT; ++i) {
+				if (main_option_flag[i] > 0) {
+					int x1 = main_option_array[i].x1;
+					int y1 = main_option_array[i].y1;
+					int x2 = main_option_array[i].x2;
+					int y2 = main_option_array[i].y2;
+					font_san.center_put(x1, y1, x2, y2, labels[i], 1);
+				}
+			}
+		}
+		// --- END: Safe menu bitmap drawing and optional scaling ---
 
 		if( config.music_flag )
 		{

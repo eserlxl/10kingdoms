@@ -36,6 +36,7 @@
 #define VGA_YELLOW				0xB4
 #define VGA_BROWN					0xB8
 #define VGA_GRAY					0x90
+#define VGA_CYAN                     0xA2
 
 #define V_BLACK              	0x00       // single color only
 #define V_WHITE              	0x9F
@@ -48,6 +49,8 @@
 #define V_ORANGE					VGA_ORANGE
 #define V_YELLOW					VGA_YELLOW
 #define V_BROWN					VGA_BROWN+2
+#define V_GRAY                      VGA_GRAY+1
+#define V_CYAN                       VGA_CYAN+1
 
 #define V_BACKGROUND         	0xFF               // background color, pixels of this color are not put in VGAputIcon
 

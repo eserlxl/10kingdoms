@@ -92,7 +92,7 @@ enum { COMMAND_PLAYER=0, COMMAND_REMOTE=1, COMMAND_AI, COMMAND_AUTO };
 
 #define MAX_RACE                  10
 
-#define MAX_COLOR_SCHEME             7    // Maximum no. of color schemes
+#define MAX_COLOR_SCHEME             10    // Increased from 9 to 10 for all 10 nations
 
 #define MAX_NATION                   MAX_COLOR_SCHEME // Maximum no. of nation should be equal to the maximum no. of color scheme-1 (the exclude one is for independent nations)
 
