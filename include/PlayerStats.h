@@ -1,5 +1,5 @@
 /*
-* Seven Kingdoms: Ancient Adversaries
+* Ten Kingdoms: Ancient Adversaries
 *
 * Copyright 2019 Steven Lavoie
 *

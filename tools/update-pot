@@ -1,7 +1,7 @@
 #!/bin/bash
 
 XGETTEXT=xgettext
-DOMAIN=7kaa
+DOMAIN=10kingdoms
 DIR=$(pwd)
 PODIR=po
 DATADIR=data
@@ -20,10 +20,10 @@ ${XGETTEXT} --default-domain=${DOMAIN} --directory=${DIR} \
 
 ${GENPOT} ${DATADIR} | msguniq > ${PODIR}/${DOMAIN}.res.pot
 
-msgcat ${PODIR}/7kaa.src.pot ${PODIR}/7kaa.res.pot > ${PODIR}/7kaa.pot
+msgcat ${PODIR}/10kingdoms.src.pot ${PODIR}/10kingdoms.res.pot > ${PODIR}/10kingdoms.pot
 
 # Update translations to reflect new template.
 for i in `grep -v '^#' ${PODIR}/LINGUAS`; do
   echo Updating $i.po;
-  msgmerge --update --lang=$i ${PODIR}/$i.po ${PODIR}/7kaa.pot
+  msgmerge --update --lang=$i ${PODIR}/$i.po ${PODIR}/10kingdoms.pot
 done

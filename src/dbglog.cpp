@@ -39,7 +39,7 @@ int dbglog_init()
 
 	if (debug_log_initialized) return 1;
 
-	debug_env_var = getenv("SKDEBUG");
+	debug_env_var = getenv("TKDEBUG");
 	if (debug_env_var)
 		len = strlen(debug_env_var);
 	else

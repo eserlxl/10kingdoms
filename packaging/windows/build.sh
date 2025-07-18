@@ -23,12 +23,12 @@ STRIP=${HOST}-strip
 ./configure --disable-silent-rules $HOST_OPT
 make -j6 pkgdatadir="" localedir=locale
 make install DESTDIR=`pwd`/dest bindir=/ docdir=/ pkgdatadir=/ localedir=/locale
-$STRIP dest/7kaa.exe
+$STRIP dest/10kingdoms.exe
 
 cd doc
 latexmk
 cd ..
-cp doc/main.pdf dest/7kaa-manual.pdf
+cp doc/main.pdf dest/10kingdoms-manual.pdf
 
 # Still need to add music and dlls
 # then run NSIS on install.nsi

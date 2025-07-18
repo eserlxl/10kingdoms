@@ -50,9 +50,9 @@ struct GameVer {
 
 	void set_current_version()
 	{
-		ver1 = SKVERMAJ;
-		ver2 = SKVERMED;
-		ver3 = SKVERMIN;
+		ver1 = TKVERMAJ;
+		ver2 = TKVERMED;
+		ver3 = TKVERMIN;
 		flags = config_adv.flags;
 	}
 

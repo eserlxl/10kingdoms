@@ -89,7 +89,7 @@ void LocaleRes::init()
 	}
 	textdomain(PACKAGE);
 	setlocale(LC_ALL, "");
-	load(getenv("SKMESSAGES"));
+	load(getenv("TKMESSAGES"));
 
 	in_buf = mem_add(INIT_BUF_SIZE+1);
 	in_buf_size = INIT_BUF_SIZE;
@@ -237,8 +237,8 @@ const char *LocaleRes::get_locale_dir()
 {
 	if( misc.is_file_exist("locale") )
 		return "locale";
-	if( misc.is_file_exist(getenv("SKLOCALE")) )
-		return getenv("SKLOCALE");
+	if( misc.is_file_exist(getenv("TKLOCALE")) )
+		return getenv("TKLOCALE");
 #ifdef LOCALE_DIR
 	if( misc.is_file_exist(LOCALE_DIR) )
 		return LOCALE_DIR;

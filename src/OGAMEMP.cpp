@@ -228,7 +228,7 @@ struct MpStructNewPlayer : public MpStructBase
 	char pass[MP_FRIENDLY_NAME_LEN+1];
 
 	MpStructNewPlayer(char *name, char *pass) : MpStructBase(MPMSG_NEW_PLAYER),
-		ver1(SKVERMAJ), ver2(SKVERMED), ver3(SKVERMIN), flags(config_adv.flags)
+		ver1(TKVERMAJ), ver2(TKVERMED), ver3(TKVERMIN), flags(config_adv.flags)
 	{
 		strncpy(this->name, name, MP_FRIENDLY_NAME_LEN);
 		strncpy(this->pass, pass, MP_FRIENDLY_NAME_LEN);
@@ -335,7 +335,7 @@ struct MpStructLoadGameNewPlayer : public MpStructBase
 		MpStructBase(MPMSG_LOAD_GAME_NEW_PLAYER),
 		nation_recno(n->nation_recno), color_scheme_id(n->color_scheme_id),
 		race_id(n->race_id), frame_count(frame), random_seed(seed),
-		ver1(SKVERMAJ), ver2(SKVERMED), ver3(SKVERMIN), flags(config_adv.flags)
+		ver1(TKVERMAJ), ver2(TKVERMED), ver3(TKVERMIN), flags(config_adv.flags)
 	{
 		strncpy(this->name, name, MP_FRIENDLY_NAME_LEN);
 		strncpy(this->pass, pass, MP_FRIENDLY_NAME_LEN);
@@ -1045,7 +1045,7 @@ const char *service_short_desc[SERVICE_BUTTON_NUM] =
 	N_("Local Area Network"),
 	// TRANSLATORS: This is a button label for entering a web or IP Address for connecting to an online game
 	N_("Enter Address"),
-	"7kfans.com",
+	"www.7kfans.com",
 };
 const char *service_long_desc[SERVICE_BUTTON_NUM] =
 {
@@ -1734,7 +1734,7 @@ int Game::input_name_pass(const char *txt[], char *name, int name_len, char *pas
 #ifdef HAVE_LIBCURL
 const char *login_failed_msg = N_("Unable to connect to the 7kfans.com service. Verify your account information and try again.");
 #else
-const char *login_failed_msg = N_("Unable to connect to the 7kfans service.\n(No libcurl)");
+const char *login_failed_msg = N_("Unable to connect to the 7kfans.com service.\n(No libcurl)");
 #endif
 
 
@@ -3093,9 +3093,9 @@ int Game::mp_select_option(NewNationPara *nationPara, int *mpPlayerCount)
 					if( remote.is_host )
 					{
 						MpStructLoadGameNewPlayer *newPlayerMsg = (MpStructLoadGameNewPlayer *)recvPtr;
-						if( newPlayerMsg->ver1 != SKVERMAJ ||
-							newPlayerMsg->ver2 != SKVERMED ||
-							newPlayerMsg->ver3 != SKVERMIN ||
+						if( newPlayerMsg->ver1 != TKVERMAJ ||
+							newPlayerMsg->ver2 != TKVERMED ||
+							newPlayerMsg->ver3 != TKVERMIN ||
 							newPlayerMsg->flags != config_adv.flags)
 						{
 							MpStructRefuseNewPlayer msgRefuse(REFUSE_REASON_SKVER_MISMATCH);
@@ -4877,9 +4877,9 @@ int Game::mp_select_load_option(char *fileName)
 					if( remote.is_host )
 					{
 						MpStructLoadGameNewPlayer *newPlayerMsg = (MpStructLoadGameNewPlayer *)recvPtr;
-						if( newPlayerMsg->ver1 != SKVERMAJ ||
-							newPlayerMsg->ver2 != SKVERMED ||
-							newPlayerMsg->ver3 != SKVERMIN ||
+						if( newPlayerMsg->ver1 != TKVERMAJ ||
+							newPlayerMsg->ver2 != TKVERMED ||
+							newPlayerMsg->ver3 != TKVERMIN ||
 							newPlayerMsg->flags != config_adv.flags)
 						{
 							MpStructRefuseNewPlayer msgRefuse(REFUSE_REASON_SKVER_MISMATCH);

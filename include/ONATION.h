@@ -1,5 +1,5 @@
 /*
- * Seven Kingdoms: Ancient Adversaries
+ * Ten Kingdoms: Ancient Adversaries
  *
  * Copyright 1997,1998 Enlight Software Ltd.
  *
@@ -134,7 +134,7 @@ struct ActionNode
 	enum { MAX_ACTION_GROUP_UNIT = 9 };
 
 	char 	action_mode;		// eg build firm, attack, etc
-	char	action_type;		// action type. For 7kaa, this is always ACTION_FIXED.
+	char	action_type;		// action type. For 10kingdoms, this is always ACTION_FIXED.
 	short action_para;		// parameter for the action. e.g. firmId for AI_BUILD_FIRM
 	short action_para2;		// parameter for the action. e.g. firm race id. for building FirmBase
 	uint16_t	action_id;			// an unique id. for identifying this node

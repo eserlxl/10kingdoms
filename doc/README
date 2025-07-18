@@ -13,16 +13,16 @@ NOTE: this README is essentially deprecated and will be heavily rewritten once c
     % make TOC entries not capital letters.
     % fix large letters not appearing in index.
     % fix bugs:
-    	% Manual: Incomplete Tabular Box https://github.com/the3dfxdude/7kaa/issues/210
-    	% Extra Whitespace in the Manual https://github.com/the3dfxdude/7kaa/issues/209
-    	% A Few Bugs in the Manual https://github.com/the3dfxdude/7kaa/issues/206 
-    	% Sectioning and Text Spacing https://github.com/the3dfxdude/7kaa/issues/202
-    	% Chapter Headings Misaligned https://github.com/the3dfxdude/7kaa/issues/203
+    	% Manual: Incomplete Tabular Box
+    	% Extra Whitespace in the Manual
+    	% A Few Bugs in the Manual
+    	% Sectioning and Text Spacing
+    	% Chapter Headings Misaligned
 	% BUG HERE: ~ pg 11, pg 12, pg 14, pg 17, pg 18, pg 44, pg 47, pg 62, pg 64, pg 65, pg 69, pg 73, pg 93, pg 86, pg 87, pg 91 ...
     % "index anchor is in the wrong spot. It is before the section break, so it's on the last page of credits."
     % reduce whitespace in chapter 16.
     % sort 7kfans credits as chronological.
-    % Align "Ancient Adversaries" with the Seven Kingdoms graphic.
+    % Align "Ancient Adversaries" with the Ten Kingdoms graphic.
     % Restore purple cover.
     % Expand on:  
         % Added trade locations to the trade report. pg#?
@@ -100,7 +100,7 @@ NOTE: this README is essentially deprecated and will be heavily rewritten once c
     % Rewrote installation chapter with help from the3dfxdude.
     % ADDED information about 7kfans.com multiplayer service.
     % REMOVED troubleshooting information.
-    % Updated 7k icon to (color) 7kaa icon.
+    % Updated 7k icon to (color) 10kingdoms icon.
     % Rearranged interface chapter to preceed the village chapter.
     % Updated reputation penalties with help from the3dfxdude.
     % ADDED and updated hotkeys from MicroVirus' documentation.
@@ -122,7 +122,7 @@ NOTE: this README is essentially deprecated and will be heavily rewritten once c
     % Standardized on listing roles as volunteering for 7kfans credits.
     % Changed from textgoth to textswab.
     % REMOVED installation instructions.
-    % Changed 7kaa icon to grayscale.
+    % Changed 10kingdoms icon to grayscale.
     % Removed references to the 7kfans.com\wiki link.
     % ADDED 1.4 inch whitespace in addition to the margin for the chapter starts, modifying {before} in \titlespacing\chapter - from original manual.
     % REMOVED dummy section from FAQ and removed sectioning for bf text.
@@ -133,7 +133,7 @@ NOTE: this README is essentially deprecated and will be heavily rewritten once c
 
     % reduced textswab to huge.
     % commented out titlesec code. Recommented and font size reduced to huge and 30.
-    % force smallcaps for universalis by defining starting capital letters as \Huge vs. \huge. This has the effect of making the header text buggy. Original manual has the text in small italics instead of bold/etc. Opposing page has Seven Kingdoms: Ancient Adversaries in italics. And it does not include sectioning numbering. It is most likely the universalis font. Due to bugs, this is being held off.
+    % force smallcaps for universalis by defining starting capital letters as \Huge vs. \huge. This has the effect of making the header text buggy. Original manual has the text in small italics instead of bold/etc. Opposing page has Ten Kingdoms: Ancient Adversaries in italics. And it does not include sectioning numbering. It is most likely the universalis font. Due to bugs, this is being held off.
     % included recent contributor.
     % README - changed internal and arbitrary versioning to 0.3 to reflect the status of the manual being in its third iteration (7k -> 7kaa -> 7kaa GPLv2).
     % Begin using v0.3.2-dev to coincide with 2.15.5-dev in the README.

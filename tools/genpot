@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #
-# Seven Kingdoms: Ancient Adversaries
+# Ten Kingdoms: Ancient Adversaries
 #
 # Copyright 1997,1998 Enlight Software Ltd.
 # Copyright 2017 Jesse Allen
@@ -84,7 +84,7 @@ my @dbf_list = (
 #	['NAME', 'Unit|Name'],
 ]);
 
-print "# POT extraction from 7KAA data files\n";
+print "# POT extraction from 10KINGDOMS data files\n";
 foreach (@dbf_list) {
 	pot_extract_dbf(@$_);
 }

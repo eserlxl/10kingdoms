@@ -3,7 +3,7 @@
 SRC="../src"
 DST="."
 
-NAME="Seven Kingdoms"
+NAME="Ten Kingdoms"
 BDIR="$DST/$NAME.app"
 CDIR="$BDIR/Contents"
 XDIR="$CDIR/MacOS"
@@ -58,7 +58,7 @@ make_info_plist()
 <plist version="1.0">
 <dict>
         <key>CFBundleIconFile</key>
-        <string>7kaa.icns</string>
+        <string>10kingdoms.icns</string>
 </dict>
 </plist>
 EOF
@@ -88,5 +88,5 @@ find "$RDIR" -type f \
     chmod 644 "$FILE" || exit 1
   done
 
-install -v "$SRC/7kaa" "$EXEC" || exit 1
+install -v "$SRC/10kingdoms" "$EXEC" || exit 1
 install_dyn_libs "$EXEC" || exit 1

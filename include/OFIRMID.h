@@ -1,5 +1,5 @@
 /*
- * Seven Kingdoms: Ancient Adversaries
+ * Ten Kingdoms: Ancient Adversaries
  *
  * Copyright 1997,1998 Enlight Software Ltd.
  *

@@ -33,9 +33,9 @@ extern const int GAME_VERSION;
 
 //-------- Define constant ------------//
 
-#define APP_NAME           "SK"                         // application name
-#define WIN_CLASS_NAME     "Seven_Kingdoms"             // for registering window class
-#define WIN_TITLE          "Seven Kingdoms"             // window title
+#define APP_NAME           "TK"                         // application name
+#define WIN_CLASS_NAME     "Ten_Kingdoms"             // for registering window class
+#define WIN_TITLE          "Ten Kingdoms"             // window title
 
 //------- Data sub-directories -------//
 
@@ -46,8 +46,8 @@ extern const int GAME_VERSION;
 #endif
 
 // config dir
-#define CONFIG_ORGANIZATION_NAME "7kfans.com"
-#define CONFIG_APPLICATION_NAME "7kaa"
+#define CONFIG_ORGANIZATION_NAME "lxl"
+#define CONFIG_APPLICATION_NAME "10kingdoms"
 
 // data dirs
 #define DIR_RES         "RESOURCE" PATH_DELIM

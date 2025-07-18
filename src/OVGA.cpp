@@ -169,7 +169,7 @@ int Vga::init()
    }
 
    FilePath icon_path(sys.dir_image);
-   icon_path += "7K_ICON.BMP";
+   icon_path += "10kingdoms_ICON.BMP";
    icon = SDL_LoadBMP(icon_path);
    if (icon)
    {

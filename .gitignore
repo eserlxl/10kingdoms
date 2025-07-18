@@ -8,7 +8,7 @@
 *.swp
 tags
 cscope.out
-7kaa
+10kingdoms
 Makefile
 Makefile.in
 .deps
@@ -69,8 +69,8 @@ m4/xsize.m4
 data/RESOURCE/STD/
 data/RESOURCE/TUT_INTR/
 data/RESOURCE/TUT_TEXT/
-po/7kaa.res.pot
-po/7kaa.src.pot
+po/10kingdoms.res.pot
+po/10kingdoms.src.pot
 po/Makefile.in.in
 po/Makevars.template
 po/Rules-quot

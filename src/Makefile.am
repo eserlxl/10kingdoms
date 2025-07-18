@@ -3,8 +3,8 @@ if USE_CURL
 SUBDIRS += curl
 endif
 
-bin_PROGRAMS = 7kaa
-7kaa_SOURCES = \
+bin_PROGRAMS = 10kingdoms
+10kingdoms_SOURCES = \
 	AM.cpp \
 	ConfigAdv.cpp \
 	CmdLine.cpp \
@@ -299,33 +299,33 @@ AM_CXXFLAGS += $(SDL_CFLAGS)
 
 AM_LDFLAGS = $(GLOBAL_LDFLAGS)
 
-7kaa_LDADD =
+10kingdoms_LDADD =
 
 if AUDIO_OPENAL
-7kaa_LDADD += ./openal/libaudio_openal.a
+10kingdoms_LDADD += ./openal/libaudio_openal.a
 endif
 
 
-7kaa_LDADD += ./enet/libmultiplayer.a
+10kingdoms_LDADD += ./enet/libmultiplayer.a
 
 
 if USE_ASM
-7kaa_LDADD += ./imgfun/x86/libimgfun_x86.a
+10kingdoms_LDADD += ./imgfun/x86/libimgfun_x86.a
 else
-7kaa_LDADD += ./imgfun/generic/libimgfun_generic.a
+10kingdoms_LDADD += ./imgfun/generic/libimgfun_generic.a
 endif
 
 if USE_CURL
-7kaa_LDADD += ./curl/libWebService.a
+10kingdoms_LDADD += ./curl/libWebService.a
 endif
 
 if USE_WINDOWS
-7kaa_SOURCES += ico.rc
+10kingdoms_SOURCES += ico.rc
 endif
 
 SUFFIXES = .rc
 .rc.o:
 	$(WINDRES) -I "$(top_srcdir)/include" -i $< $@
-ico.o: $(top_srcdir)/include/version.h 7k.ico
+ico.o: $(top_srcdir)/include/version.h 10kingdoms.ico
 
-EXTRA_DIST = 7k.ico ico.rc
+EXTRA_DIST = 10kingdoms.ico ico.rc
