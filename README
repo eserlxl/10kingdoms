@@ -1,20 +1,16 @@
 Ten Kingdoms: Ancient Adversaries
 -----------------------------------
+Ten Kingdoms is only a public fork of the Seven Kingdoms project for 7kfans.
 
-Release version 2.15.7
-Project website: www.7kfans.com
-Downloads and source repo: sourceforge.net/projects/skfans
+Forked from Seven Kingdoms 2.15.7
+Seven Kingdoms website: www.7kfans.com
+Seven Kingdoms source repo: sourceforge.net/projects/skfans
 
-This is a GPL release of the Ten Kingdoms: Ancient Adversaries thanks to
-Enlight Software which granted the ability to license the game under a
+Seven Kingdoms is a trademark of Enlight Software Ltd.
+Enlight Software granted the ability to license the game under a
 free and open source license in 2009. See the file "COPYING" for the
-details of the license. We are indebted to Enlight for making the 7kfans
-project possible and giving a new chance to build a community for fans
-of the game.
-
-Summary of changes from 2.15.6 to 2.15.7
----------
-
+details of the license.
+Ten Kingdoms is a public fork of the Seven Kingdoms project, maintained for the 7kfans community. This fork is based on Seven Kingdoms version 2.15.7 and continues development under the GPL thanks to Enlight Software, which granted the ability to license the game under a free and open source license in 2009. See the file "COPYING" for the details of the license. We are indebted to Enlight for making the 7kfans project possible and giving a new chance to build a community for fans of the game.
 
 System Requirements
 ---------
@@ -69,5 +65,6 @@ Running locally from source build
 To run the game from the build directory, you need to point to the game data
 folder. The game data folder is set by the environment variable TKDATA. In
 a bash shell, this can be accomplished by
-$ TKDATA=data src/10kingdoms
+bash autogen.sh 
+TKDATA=data src/10kingdoms
 
