@@ -2830,8 +2830,8 @@ int Sys::chdir_to_game_dir()
    if (misc.is_file_exist(test_file))
       return 1;
 
-   // test environment variable SKDATA for the path
-   env_data_path = getenv("SKDATA");
+   // test environment variable TKDATA for the path
+   env_data_path = getenv("TKDATA");
    if (env_data_path)
    {
       chdir(env_data_path);
