@@ -341,7 +341,11 @@ public:
    virtual void scroll(int,int);
 
    Location* get_loc(int xLoc,int yLoc)
-        { return loc_matrix+yLoc * max_x_loc + xLoc; }
+        { 
+			if (!loc_matrix || xLoc < 0 || yLoc < 0 || xLoc >= max_x_loc || yLoc >= max_y_loc)
+				return NULL;
+			return loc_matrix+yLoc * max_x_loc + xLoc; 
+		}
 
 protected:
    virtual void post_draw()      {;}
