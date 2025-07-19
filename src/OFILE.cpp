@@ -205,6 +205,15 @@ int File::file_read(void* dataBuf, unsigned dataSize)
 	if (file_type == File::STRUCTURED)
 	{
 		recordSize = file_get_unsigned_short();
+		// Add error checking to prevent uninitialized value usage
+		if (ferror(file_handle) || feof(file_handle))
+		{
+			if (handle_error)
+				err.run("[File::file_read] error occurred while reading record size from file: %s\n", file_name);
+			else
+				ERR("[File::file_read] error occurred while reading record size from file: %s\n", file_name);
+			return 0;
+		}
 		if (recordSize && recordSize < dataSize) // recordSize==0, if the size > 0xFFFF
 			bytesToRead = recordSize; // the read size is the minimum of the record size and the supposed read size
 	}
@@ -260,7 +269,7 @@ int8_t File::file_get_char()
 {
 	err_when(!file_handle);
 
-	int8_t value;
+	int8_t value = 0;  // Initialize value to prevent uninitialized usage
 	fread(&value, 1, sizeof(int8_t), file_handle);
 
 	if (ferror(file_handle))
@@ -298,7 +307,7 @@ int16_t File::file_get_short()
 {
     	err_when(!file_handle);
 
-	int16_t value;
+	int16_t value = 0;  // Initialize value to prevent uninitialized usage
 	fread(&value, 1, sizeof(int16_t), file_handle);
 
 	if (ferror(file_handle))
@@ -417,7 +426,7 @@ uint16_t File::file_get_unsigned_short()
 {
     	err_when(!file_handle);
 
-	uint16_t value;
+	uint16_t value = 0;  // Initialize value to prevent uninitialized usage
 	fread(&value, 1, sizeof(uint16_t), file_handle);
 
 	if (ferror(file_handle))
@@ -455,7 +464,7 @@ int32_t File::file_get_long()
 {
     	err_when(!file_handle);
 
-	int32_t value;
+	int32_t value = 0;  // Initialize value to prevent uninitialized usage
 	fread(&value, 1, sizeof(int32_t), file_handle);
 
 	if (ferror(file_handle))
