@@ -89,6 +89,7 @@ void Matrix::init(int winX1, int winY1, int winX2, int winY2, int areaWidth,
 	//---------------------------------------------//
 
 	loc_matrix = NULL;
+	own_matrix = 0;  // Initialize own_matrix to prevent uninitialized value usage
 
 	top_x_loc = 0;
 	top_y_loc = 0;
