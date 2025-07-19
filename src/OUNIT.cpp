@@ -1829,11 +1829,11 @@ void Unit::inc_minor_combat_level(int incLevel)
 //
 void Unit::inc_minor_skill_level(int incLevel)
 {
-   err_when( incLevel<0 || incLevel>100 );
+   err_when( incLevel<0 );
 
    skill.skill_level_minor += incLevel;
 
-   if( skill.skill_level_minor >= 100 )
+   while( skill.skill_level_minor >= 100 )
    {
       if( skill.skill_level < 100 )
          skill.skill_level++;
