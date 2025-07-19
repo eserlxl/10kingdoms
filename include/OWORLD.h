@@ -109,10 +109,18 @@ public:
 		uint8_t		 get_region_id(int xLoc,int yLoc);
 	#else
 		Location* get_loc(int xLoc,int yLoc)
-						{ return loc_matrix + MAX_WORLD_X_LOC * yLoc + xLoc; }
+						{ 
+							if (!loc_matrix || xLoc < 0 || yLoc < 0 || xLoc >= max_x_loc || yLoc >= max_y_loc)
+								return NULL;
+							return loc_matrix + MAX_WORLD_X_LOC * yLoc + xLoc; 
+						}
 
 		uint8_t		 get_region_id(int xLoc,int yLoc)
-						{ return loc_matrix[MAX_WORLD_X_LOC*yLoc+xLoc].region_id; }
+						{ 
+							if (!loc_matrix || xLoc < 0 || yLoc < 0 || xLoc >= max_x_loc || yLoc >= max_y_loc)
+								return 0;
+							return loc_matrix[MAX_WORLD_X_LOC*yLoc+xLoc].region_id; 
+						}
 	#endif
 
 	short		get_unit_recno(int xLoc,int yLoc, int mobileType);
