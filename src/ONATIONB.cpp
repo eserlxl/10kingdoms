@@ -598,6 +598,12 @@ const char* NationBase::king_name(int firstWordOnly)
 	}
 	else
 	{
+		// Add bounds checking to prevent invalid memory access
+		// Note: race_id uses 1-based indexing, so valid range is 1 to race_count
+		if (race_id < 1 || race_id > race_res.race_count || !race_res[race_id]) {
+			return "Unknown";  // Return a safe default
+		}
+		
 		if( firstWordOnly )
 			return race_res[race_id]->get_single_name( static_cast<uint16_t>(nation_name_id) );
 		else
