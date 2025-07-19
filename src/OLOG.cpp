@@ -72,7 +72,7 @@ void Log::mark_end()
 
 
 // -------- begin of function Log::mark ----------//
-void Log::mark(char *msg, char *file, int line)
+void Log::mark(const char *msg, const char *file, int line)
 {
 	log_text = msg;
 	log_file = file;
@@ -86,7 +86,7 @@ void Log::mark(char *msg, char *file, int line)
 
 
 // -------- begin of function Log::mark ----------//
-void Log::mark(int n , char *file, int line)
+void Log::mark(int n, const char *file, int line)
 {
 	log_text = n;
 	log_file = file;
