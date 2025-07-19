@@ -45,10 +45,10 @@ public:
 
 	char* buf_ptr()             { return cur_buf_ptr; }
 	char* buf_ptr(int x, int y) { return cur_buf_ptr + surface->pitch*y + x;  }
-	int   buf_pitch()           { return surface->pitch; }
-	int   buf_size()            { return surface->h * surface->w; }
-	int   buf_width()           { return surface->w; }
-	int   buf_height()          { return surface->h; }
+	int   buf_pitch()           { return surface ? surface->pitch : 0; }
+	int   buf_size()            { return surface ? surface->h * surface->w : 0; }
+	int   buf_width()           { return surface ? surface->w : 0; }
+	int   buf_height()          { return surface ? surface->h : 0; }
 
 	//---- GUI colors -----//
 
