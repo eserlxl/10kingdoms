@@ -58,9 +58,26 @@
 // [alex] TODO: use a struct for bitmaps
 void IMGcall IMGbltArea(char* imageBuf,int pitch, int desX, int desY, char* bitmapBuf, int srcX1, int srcY1, int srcX2, int srcY2)
 {
-	int dest = (desY+srcY1) * pitch + (desX+srcX1);
+	// Add bounds checking to prevent buffer overflow
+	if (!imageBuf || !bitmapBuf || pitch <= 0 || srcX1 < 0 || srcY1 < 0 || srcX2 < srcX1 || srcY2 < srcY1)
+		return;
+
 	int bitmapWidth = ((unsigned char*)bitmapBuf)[0] + (((unsigned char*)bitmapBuf)[1]<<8);
+	int bitmapHeight = ((unsigned char*)bitmapBuf)[2] + (((unsigned char*)bitmapBuf)[3]<<8);
+	
+	// Ensure source coordinates are within bitmap bounds
+	if (srcX2 >= bitmapWidth || srcY2 >= bitmapHeight)
+		return;
+	
+	// Calculate bitmap data size and ensure we don't read beyond it
+	int bitmapDataSize = bitmapWidth * bitmapHeight;
 	int src = 4 + srcY1 * bitmapWidth + srcX1;	// 4 bytes are header fields (width, height)
+	
+	// Check if we would read beyond the bitmap data
+	if (src + (srcY2 - srcY1 + 1) * bitmapWidth > bitmapDataSize + 4)
+		return;
+
+	int dest = (desY+srcY1) * pitch + (desX+srcX1);
 	int width = srcX2-srcX1+1;
 	int height = srcY2-srcY1+1;
 
