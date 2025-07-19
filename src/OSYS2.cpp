@@ -191,7 +191,7 @@ void Sys::process()
 
 	//------ check if it's time for the next day ------//
 
-	if( ++day_frame_count > FRAMES_PER_DAY )
+	if( ++day_frame_count >= FRAMES_PER_DAY )
 	{
 		LOG_MSG("begin info.next_day()");
 		info.next_day();
@@ -686,7 +686,7 @@ void Sys::update_view()
 		{
 			vga.use_back();
 /*
-			char* germanStr = "d ü    ä    ß    ö    Ä    Ü    Ö";
+			char* germanStr = "d ï¿½    ï¿½    ï¿½    ï¿½    ï¿½    ï¿½    ï¿½";
 
 			vga_back.bar( ZOOM_X1, ZOOM_Y1, ZOOM_X1+300, ZOOM_Y1+150, VGA_LIGHT_GREEN );
 
