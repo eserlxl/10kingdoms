@@ -1217,10 +1217,10 @@ struct WorkerGF
 	uint16_t             name_id;
 	int8_t               skill_id;
 	int8_t               skill_level;
-	int8_t               skill_level_minor;
-	int8_t               skill_potential;
+	uint8_t              skill_level_minor;
+	uint8_t              skill_potential;
 	int8_t               combat_level;
-	int8_t               combat_level_minor;
+	uint8_t              combat_level_minor;
 	int16_t              spy_recno;
 	int8_t               rank_id;
 	int8_t               worker_loyalty;
