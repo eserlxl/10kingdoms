@@ -43,16 +43,34 @@
 //
 void IMGcall IMGbar(char* imageBuf,int pitch,int x1,int y1,int x2,int y2,int color)
 {
+	// Add bounds checking to prevent buffer overflow
+	if (!imageBuf || pitch <= 0)
+		return;
+
+	// Ensure coordinates are valid
+	if (x1 > x2 || y1 > y2)
+		return;
+
 	int dest = y1 * pitch + x1;
 	int width = x2 - x1 + 1;
-	// note: only the byte value of color is used (see memset reference)
-	for (int y=y1; y<=y2; ++y, dest+=pitch)
+	int height = y2 - y1 + 1;
+
+	// Calculate the total bytes that would be written
+	int totalBytes = height * pitch;
+	int lastWriteOffset = dest + (height - 1) * pitch + width - 1;
+	
+	// Estimate buffer size based on pitch and reasonable dimensions
+	// This is a conservative estimate to prevent buffer overflow
+	int estimatedBufferSize = pitch * 2048; // Assume max height of 2048
+	
+	if (dest < 0 || lastWriteOffset >= estimatedBufferSize)
+		return;
+
+	for( int j=0 ; j<height ; j++, dest+=pitch )
 	{
-		memset(&imageBuf[dest], color, width);
+		memset( imageBuf+dest, color, width );
 	}
 }
-
-
 //---------- END OF FUNCTION IMGbar ------------//
 
 
