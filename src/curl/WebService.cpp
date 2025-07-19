@@ -84,7 +84,7 @@ int WebService::refresh(char *user)
 	CURLcode res;
 
 	curl_easy_setopt(curl, CURLOPT_POST, 0);
-	curl_easy_setopt(curl, CURLOPT_URL, "https://7kfans.com/forums/index.php");
+	curl_easy_setopt(curl, CURLOPT_URL, "https://www.7kfans.com/forums/index.php");
 	buffer = "";
 
 	res = curl_easy_perform(curl);
@@ -109,7 +109,7 @@ int WebService::login(char *user, char *pass)
 
 	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, login.c_str());
 	curl_easy_setopt(curl, CURLOPT_POST, 1);
-	curl_easy_setopt(curl, CURLOPT_URL, "https://7kfans.com/forums/ucp.php?mode=login");
+	curl_easy_setopt(curl, CURLOPT_URL, "https://www.7kfans.com/forums/ucp.php?mode=login");
 	buffer = "";
 
 	res = curl_easy_perform(curl);
