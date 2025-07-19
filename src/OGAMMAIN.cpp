@@ -62,23 +62,18 @@ void Game::main_menu()
 {
 	enum { MAIN_OPTION_COUNT = 6 };
 
-	// Calculate base positions proportionally to the current resolution
-	int base_x = VGA_WIDTH * 258 / 800;
-	int base_y = VGA_HEIGHT * 194 / 600;
-	int x_scale = VGA_WIDTH;
-	int y_scale = VGA_HEIGHT;
-
-	// Option rectangles, scaled from original 800x600 layout
-	static OptionInfo main_option_array[MAIN_OPTION_COUNT];
-	main_option_array[0] = { (short)(base_x + x_scale * 6 / 800),  (short)(base_y + y_scale * 11 / 600),  (short)(base_x + x_scale * 282 / 800),  (short)(base_y + y_scale * 63 / 600) };
-	main_option_array[1] = { (short)(base_x + x_scale * 6 / 800),  (short)(base_y + y_scale * 68 / 600),  (short)(base_x + x_scale * 282 / 800),  (short)(base_y + y_scale * 113 / 600) };
-	main_option_array[2] = { (short)(base_x + x_scale * 6 / 800),  (short)(base_y + y_scale * 121 / 600), (short)(base_x + x_scale * 282 / 800),  (short)(base_y + y_scale * 176 / 600) };
-	// ####### begin Gilbert 20/10 ######//
-	// { 6+SWORD1_X, 189+SWORD1_Y, 282+SWORD1_X , 219+SWORD1_Y },
-	main_option_array[3] = { (short)(base_x + x_scale * 6 / 800),  (short)(base_y + y_scale * 184 / 600), (short)(base_x + x_scale * 282 / 800),  (short)(base_y + y_scale * 222 / 600) };
-	// ####### end Gilbert 20/10 ######//
-	main_option_array[4] = { (short)(base_x + x_scale * 6 / 800),  (short)(base_y + y_scale * 224 / 600), (short)(base_x + x_scale * 282 / 800),  (short)(base_y + y_scale * 295 / 600) };
-	main_option_array[5] = { (short)(base_x + x_scale * 40 / 800), (short)(base_y + y_scale * 297 / 600), (short)(base_x + x_scale * 254 / 800), (short)(base_y + y_scale * 337 / 600) };
+	static OptionInfo main_option_array[MAIN_OPTION_COUNT] =
+	{
+		{ 6+SWORD1_X,  11+SWORD1_Y, 282+SWORD1_X ,  63+SWORD1_Y },
+		{ 6+SWORD1_X,  68+SWORD1_Y, 282+SWORD1_X , 113+SWORD1_Y },
+		{ 6+SWORD1_X, 121+SWORD1_Y, 282+SWORD1_X , 176+SWORD1_Y },
+		// ####### begin Gilbert 20/10 ######//
+		// { 6+SWORD1_X, 189+SWORD1_Y, 282+SWORD1_X , 219+SWORD1_Y },
+		{ 6+SWORD1_X, 184+SWORD1_Y, 282+SWORD1_X , 222+SWORD1_Y },
+		// ####### end Gilbert 20/10 ######//
+		{ 6+SWORD1_X, 224+SWORD1_Y, 282+SWORD1_X , 295+SWORD1_Y },
+		{40+SWORD1_X, 297+SWORD1_Y, 254+SWORD1_X , 337+SWORD1_Y },
+	};
 
 	char main_option_flag[MAIN_OPTION_COUNT] = 
 	{
