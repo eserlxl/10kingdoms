@@ -303,7 +303,7 @@ void MultiPlayer::close_port()
 int MultiPlayer::set_service_provider(const char *host)
 {
 #ifdef USE_ENET
-	if (host) {
+	if (host && *host) {
 		enet_address_set_host(&service_provider, host);
 		service_provider.port = UDP_MONITOR_PORT;
 	} else {
