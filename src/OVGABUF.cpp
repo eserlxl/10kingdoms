@@ -67,6 +67,17 @@ void VgaBuf::init(char front, int w, int h)
 		w = VGA_WIDTH;
 	if( !h )
 		h = VGA_HEIGHT;
+	
+	// Add bounds checking for surface dimensions
+	if (w <= 0 || h <= 0 || w > 32768 || h > 32768)
+	{
+		if( front )
+			sys.show_error_dialog(_("Invalid surface dimensions!"));
+		else
+			sys.show_error_dialog(_("Invalid surface dimensions!"));
+		return;
+	}
+	
 	surface = SDL_CreateRGBSurface(0, w, h, VGA_BPP, 0, 0, 0, 0);
 	if( !surface )
 	{
@@ -76,6 +87,19 @@ void VgaBuf::init(char front, int w, int h)
 			sys.show_error_dialog(_("An error occurred creating the back surface!"));
 		return;
 	}
+	
+	// Ensure the surface has valid pixels
+	if (!surface->pixels)
+	{
+		SDL_FreeSurface(surface);
+		surface = NULL;
+		if( front )
+			sys.show_error_dialog(_("An error occurred creating the front surface!"));
+		else
+			sys.show_error_dialog(_("An error occurred creating the back surface!"));
+		return;
+	}
+	
 	cur_buf_ptr = (char*)surface->pixels;
 	is_front = front;
 }
