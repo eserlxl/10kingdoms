@@ -141,6 +141,9 @@ static int  disp_picture( int selClass, int selSubClass, int firstDisp=0);
 
 void Game::view_encyclopedia()
 {
+	// Resize window for UI mode
+	vga.resize_for_mode();
+
 	music.stop();			// no music for encyclopedia as it reads files from the CDROM
 
 	//---- load the interface into the back buffer ----//
@@ -165,7 +168,7 @@ void Game::view_encyclopedia()
 
 	//------ turn screen dark and blt the buffer ---------//
 
-	vga_front.bar( 0, 0, VGA_WIDTH-1, VGA_HEIGHT-1, 0 );
+	vga_front.bar( 0, 0, vga_front.buf_width()-1, vga_front.buf_height()-1, 0 );
 	sys.blt_virtual_buf();
 
 	//------- bilt the back buffer to the front ---------//
@@ -309,7 +312,7 @@ void Game::view_encyclopedia()
 
 	//----- palette restore when backupPal destruct ----//
 	{
-		vga_front.bar( 0, 0, VGA_WIDTH-1, VGA_HEIGHT-1, 0 );
+		vga_front.bar( 0, 0, vga_front.buf_width()-1, vga_front.buf_height()-1, 0 );
 
 		VgaFrontLock vgaLock;
 		vga.free_custom_palette();
@@ -409,7 +412,7 @@ static void disp_class_buttons()
 		subClassId -= monster_page_index[monsterSubClass-1];
 	}
 
-	vga_util.blt_buf( BUTTON_X, 14, BUTTON_X+BUTTON_WIDTH-1, VGA_HEIGHT-40, 0 );
+	vga_util.blt_buf( BUTTON_X, 14, BUTTON_X+BUTTON_WIDTH-1, vga_back.buf_height()-40, 0 );
 
 	int y=CLASS_BUTTON_Y;
 	// ###### begin Gilbert 22/9 #######//

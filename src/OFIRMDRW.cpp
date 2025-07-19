@@ -140,12 +140,24 @@ void Firm::draw_full_size(int displayLayer)
 #define FLAG_WIDTH 9
 #define FLAG_HEIGHT 25
 		char *flagBitmapPtr = image_spict.get_ptr("FLAG-S0");
-		int drawX = loc_x1 * ZOOM_LOC_WIDTH - world.view_top_x + ZOOM_X1;
-		int drawY = loc_y1 * ZOOM_LOC_HEIGHT - world.view_top_y + ZOOM_Y1;
-		world.zoom_matrix->put_bitmap_remap_clip(drawX, drawY, flagBitmapPtr, colorRemapTable, 1);	// 1-the bitmap is compressed
+		if( flagBitmapPtr )
+		{
+			int flagWidth = *((short*)flagBitmapPtr);
+			int flagHeight = *(((short*)flagBitmapPtr)+1);
+			
+			int drawX = loc_x1 * ZOOM_LOC_WIDTH - world.view_top_x + ZOOM_X1;
+			int drawY = loc_y1 * ZOOM_LOC_HEIGHT - world.view_top_y + ZOOM_Y1;
+			if( drawX >= 0 && drawY >= 0 && drawX + flagWidth <= vga_back.buf_width() && drawY + flagHeight <= vga_back.buf_height() )
+			{
+				world.zoom_matrix->put_bitmap_remap_clip(drawX, drawY, flagBitmapPtr, colorRemapTable, 1);	// 1-the bitmap is compressed
+			}
 
-		drawX = (loc_x2+1)*ZOOM_LOC_WIDTH - FLAG_WIDTH - world.view_top_x + ZOOM_X1;
-		world.zoom_matrix->put_bitmap_remap_clip(drawX, drawY, flagBitmapPtr, colorRemapTable, 1);	// 1-the bitmap is compressed
+			drawX = (loc_x2+1)*ZOOM_LOC_WIDTH - FLAG_WIDTH - world.view_top_x + ZOOM_X1;
+			if( drawX >= 0 && drawY >= 0 && drawX + flagWidth <= vga_back.buf_width() && drawY + flagHeight <= vga_back.buf_height() )
+			{
+				world.zoom_matrix->put_bitmap_remap_clip(drawX, drawY, flagBitmapPtr, colorRemapTable, 1);	// 1-the bitmap is compressed
+			}
+		}
 	}
 	// ######## end Gilbert 29/10 #######//
 
@@ -239,15 +251,27 @@ void Firm::draw_full_size(int displayLayer)
 
 		if( x1 < 0 || x2 >= ZOOM_WIDTH || y1 < 0 || y2 >= ZOOM_HEIGHT )
 		{
-			vga_back.put_bitmap_area_trans_remap_decompress( x1+ZOOM_X1, y1+ZOOM_Y1, firmBitmap->bitmap_ptr,
-				MAX(0,x1)-x1, MAX(0,y1)-y1, MIN(ZOOM_WIDTH-1,x2)-x1, MIN(ZOOM_HEIGHT-1,y2)-y1, colorRemapTable );
+			// Check bounds to prevent buffer overflow
+			int destX = x1+ZOOM_X1;
+			int destY = y1+ZOOM_Y1;
+			if( destX >= 0 && destY >= 0 && destX + firmBitmap->width <= vga_back.buf_width() && destY + firmBitmap->height <= vga_back.buf_height() )
+			{
+				vga_back.put_bitmap_area_trans_remap_decompress( destX, destY, firmBitmap->bitmap_ptr,
+					MAX(0,x1)-x1, MAX(0,y1)-y1, MIN(ZOOM_WIDTH-1,x2)-x1, MIN(ZOOM_HEIGHT-1,y2)-y1, colorRemapTable );
+			}
 		}
 
 		//---- the whole sprite is inside the view area ------//
 
 		else
 		{
-			vga_back.put_bitmap_trans_remap_decompress( x1+ZOOM_X1, y1+ZOOM_Y1, firmBitmap->bitmap_ptr, colorRemapTable );
+			// Check bounds to prevent buffer overflow
+			int destX = x1+ZOOM_X1;
+			int destY = y1+ZOOM_Y1;
+			if( destX >= 0 && destY >= 0 && destX + firmBitmap->width <= vga_back.buf_width() && destY + firmBitmap->height <= vga_back.buf_height() )
+			{
+				vga_back.put_bitmap_trans_remap_decompress( destX, destY, firmBitmap->bitmap_ptr, colorRemapTable );
+			}
 		}
 	}
 
@@ -256,12 +280,24 @@ void Firm::draw_full_size(int displayLayer)
 	if( under_construction )
 	{
 		char *flagBitmapPtr = image_spict.get_ptr("FLAG-S0");
-		int drawX = loc_x1 * ZOOM_LOC_WIDTH - world.view_top_x + ZOOM_X1;
-		int drawY = (loc_y2+1) * ZOOM_LOC_HEIGHT - FLAG_HEIGHT - world.view_top_y + ZOOM_Y1;
-		world.zoom_matrix->put_bitmap_remap_clip(drawX, drawY, flagBitmapPtr, colorRemapTable, 1);	// 1-the bitmap is compressed
+		if( flagBitmapPtr )
+		{
+			int flagWidth = *((short*)flagBitmapPtr);
+			int flagHeight = *(((short*)flagBitmapPtr)+1);
+			
+			int drawX = loc_x1 * ZOOM_LOC_WIDTH - world.view_top_x + ZOOM_X1;
+			int drawY = (loc_y2+1) * ZOOM_LOC_HEIGHT - FLAG_HEIGHT - world.view_top_y + ZOOM_Y1;
+			if( drawX >= 0 && drawY >= 0 && drawX + flagWidth <= vga_back.buf_width() && drawY + flagHeight <= vga_back.buf_height() )
+			{
+				world.zoom_matrix->put_bitmap_remap_clip(drawX, drawY, flagBitmapPtr, colorRemapTable, 1);	// 1-the bitmap is compressed
+			}
 
-		drawX = (loc_x2+1)*ZOOM_LOC_WIDTH - FLAG_WIDTH - world.view_top_x + ZOOM_X1;
-		world.zoom_matrix->put_bitmap_remap_clip(drawX, drawY, flagBitmapPtr, colorRemapTable, 1);	// 1-the bitmap is compressed
+			drawX = (loc_x2+1)*ZOOM_LOC_WIDTH - FLAG_WIDTH - world.view_top_x + ZOOM_X1;
+			if( drawX >= 0 && drawY >= 0 && drawX + flagWidth <= vga_back.buf_width() && drawY + flagHeight <= vga_back.buf_height() )
+			{
+				world.zoom_matrix->put_bitmap_remap_clip(drawX, drawY, flagBitmapPtr, colorRemapTable, 1);	// 1-the bitmap is compressed
+			}
+		}
 	}
 	// ######## end Gilbert 29/10 #######//
 }

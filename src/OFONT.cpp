@@ -82,7 +82,7 @@ struct FontInfo	// info for each character
 //#ifdef GERMAN
 //#define GERMAN_CHAR_COUNT  	7
 
-//	their DOS ascii characters:			 ü    ä    ß    ö    Ä    Ü    Ö
+//	their DOS ascii characters:			 ï¿½    ï¿½    ï¿½    ï¿½    ï¿½    ï¿½    ï¿½
 //static short german_ascii_array[]  = { 252, 228, 223, 246, 196, 220, 214 };
 //static short german_bmp_id_array[] = { 121, 100,  95, 116, 128, 151, 145 };
 //#endif
@@ -279,7 +279,12 @@ int Font::put(int x,int y,const char* textPtr, char clearBack, int x2 )
 	if( x2 < 0 ) // default
 		x2 = x+max_font_width*textPtrLen;
 
-	x2 = MIN( x2, VGA_WIDTH-1 );
+	// Use dynamic buffer width instead of hardcoded VGA_WIDTH
+	x2 = MIN( x2, Vga::active_buf->buf_width()-1 );
+
+	// Check bounds to prevent buffer overflow
+	if( x < 0 || y < 0 || x2 >= Vga::active_buf->buf_width() || y + max_font_height > Vga::active_buf->buf_height() )
+		return x;
 
 	if( !Vga::use_back_buf )
 		mouse.hide_area( x, y, x2, y+font_height );
@@ -341,6 +346,18 @@ int Font::put(int x,int y,const char* textPtr, char clearBack, int x2 )
 			if( x+fontInfo->width > x2 )
 				break;
 
+			// Check bounds to prevent buffer overflow
+			int destX = x;
+			int destY = y+fontInfo->offset_y;
+			int charWidth = fontInfo->width;
+			int charHeight = fontInfo->height;
+			
+			if( destX < 0 || destY < 0 || destX + charWidth > Vga::active_buf->buf_width() || destY + charHeight > Vga::active_buf->buf_height() )
+			{
+				x += fontInfo->width;		// inter-character space
+				continue;
+			}
+
 			if( fontInfo->width > 0 )
 			{
 				if( clearBack && !Vga::use_back_buf )
@@ -362,7 +379,7 @@ int Font::put(int x,int y,const char* textPtr, char clearBack, int x2 )
 				else
 				{
 					IMGbltTrans( Vga::active_buf->buf_ptr(), Vga::active_buf->buf_pitch(), 
-						x, y+fontInfo->offset_y, font_bitmap_buf + fontInfo->bitmap_offset );
+						destX, destY, font_bitmap_buf + fontInfo->bitmap_offset );
 				}
 
 				x += fontInfo->width;		// inter-character space
@@ -428,8 +445,17 @@ void Font::put_char(int x, int y, unsigned short textChar)
 	{
 		FontInfo* fontInfo = font_info_array+textChar-first_char;
 
-		IMGbltTrans( Vga::active_buf->buf_ptr(), Vga::active_buf->buf_pitch(),
-			x, y + fontInfo->offset_y, font_bitmap_buf + fontInfo->bitmap_offset );
+		// Check bounds to prevent buffer overflow
+		int destX = x;
+		int destY = y + fontInfo->offset_y;
+		int charWidth = fontInfo->width;
+		int charHeight = fontInfo->height;
+		
+		if( destX >= 0 && destY >= 0 && destX + charWidth <= Vga::active_buf->buf_width() && destY + charHeight <= Vga::active_buf->buf_height() )
+		{
+			IMGbltTrans( Vga::active_buf->buf_ptr(), Vga::active_buf->buf_pitch(),
+				destX, destY, font_bitmap_buf + fontInfo->bitmap_offset );
+		}
 	}
 }
 //----------- End of function Font::put_char ---------//

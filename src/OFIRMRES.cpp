@@ -591,15 +591,21 @@ void FirmBitmap::draw_at(int absX, int absY, char *colorRemapTable, int displayL
 		int srcX2 = x2>=ZOOM_WIDTH ? ZOOM_WIDTH-1-x1 : width-1;
 		int srcY2 = y2>=ZOOM_HEIGHT ? ZOOM_HEIGHT-1-y1 : height-1;
 
-		if( colorRemapTable )
+		// Check bounds to prevent buffer overflow
+		int destX = x1+ZOOM_X1;
+		int destY = y1+ZOOM_Y1;
+		if( destX >= 0 && destY >= 0 && destX + width <= vga_back.buf_width() && destY + height <= vga_back.buf_height() )
 		{
-			vga_back.put_bitmap_area_trans_remap_decompress( x1+ZOOM_X1, y1+ZOOM_Y1,
-				bitmap_ptr, srcX1, srcY1, srcX2, srcY2, colorRemapTable );
-		}
-		else
-		{
-			vga_back.put_bitmap_area_trans_decompress( x1+ZOOM_X1, y1+ZOOM_Y1,
-				bitmap_ptr, srcX1, srcY1, srcX2, srcY2 );
+			if( colorRemapTable )
+			{
+				vga_back.put_bitmap_area_trans_remap_decompress( destX, destY,
+					bitmap_ptr, srcX1, srcY1, srcX2, srcY2, colorRemapTable );
+			}
+			else
+			{
+				vga_back.put_bitmap_area_trans_decompress( destX, destY,
+					bitmap_ptr, srcX1, srcY1, srcX2, srcY2 );
+			}
 		}
 	}
 
@@ -607,13 +613,19 @@ void FirmBitmap::draw_at(int absX, int absY, char *colorRemapTable, int displayL
 
 	else
 	{
-		if( colorRemapTable )
+		// Check bounds to prevent buffer overflow
+		int destX = x1+ZOOM_X1;
+		int destY = y1+ZOOM_Y1;
+		if( destX >= 0 && destY >= 0 && destX + width <= vga_back.buf_width() && destY + height <= vga_back.buf_height() )
 		{
-			vga_back.put_bitmap_trans_remap_decompress( x1+ZOOM_X1, y1+ZOOM_Y1, bitmap_ptr, colorRemapTable );
-		}
-		else
-		{
-			vga_back.put_bitmap_trans_decompress( x1+ZOOM_X1, y1+ZOOM_Y1, bitmap_ptr );
+			if( colorRemapTable )
+			{
+				vga_back.put_bitmap_trans_remap_decompress( destX, destY, bitmap_ptr, colorRemapTable );
+			}
+			else
+			{
+				vga_back.put_bitmap_trans_decompress( destX, destY, bitmap_ptr );
+			}
 		}
 	}
 }

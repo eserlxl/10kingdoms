@@ -602,6 +602,9 @@ void Sys::run(int isLoadedGame)
 
    misc.unlock_seed();
 
+   // Reinitialize VGA system back to UI mode (switch from full to UI resolution)
+   vga.reinit_for_mode();
+
    sys_flag = SYS_PREGAME;
 }
 //--------- End of function Sys::run --------//

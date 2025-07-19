@@ -115,6 +115,9 @@ void Game::game_end(int winNationRecno, int playerDestroyed, int surrenderToNati
 	mouse_cursor.set_icon(CURSOR_NORMAL);
 	// ####### end Gilbert 29/10 #######//
 
+	// Resize window for UI mode
+	vga.resize_for_mode();
+
 	info.save_game_scr();
 
 	int useBackBuf = vga.use_back_buf;
@@ -213,7 +216,7 @@ void Game::game_end(int winNationRecno, int playerDestroyed, int surrenderToNati
 
 	if( !retireFlag && !remote.is_enable() )		// can't stay in the game in a multiplayer game
 	{
-		vga_front.bar( 0, 0, VGA_WIDTH-1, VGA_HEIGHT-1, V_BLACK );		// clear the screen
+		vga_front.bar( 0, 0, vga_front.buf_width()-1, vga_front.buf_height()-1, V_BLACK );		// clear the screen
 
 		// ###### begin Gilbert 29/10 ######//
 		char powerWinFlag = power.win_opened;

@@ -83,9 +83,9 @@ void Firm::disp_bribe_menu(int refreshFlag)
 
 	if( bribe_result == BRIBE_NONE )
 	{
-		int y=INFO_Y1;
+		int y=get_scaled_info_y1();
 
-		font_san.d3_put( INFO_X1, y, INFO_X2, y+19, _("Bribe") );
+		font_san.d3_put( get_scaled_info_x1(), y, get_scaled_info_x2(), y+19, _("Bribe") );
 		y+=22;
 
 		disp_bribe_unit( y );
@@ -107,25 +107,25 @@ void Firm::disp_bribe_menu(int refreshFlag)
 
 	else
 	{
-		int x=INFO_X1+4, y=INFO_Y1+4, y2=y+font_san.height()-1;
+		int x=get_scaled_info_x1()+4, y=get_scaled_info_y1()+4, y2=y+font_san.height()-1;
 
 		if( bribe_result == BRIBE_SUCCEED )
 		{
-			vga_util.d3_panel_up( INFO_X1, INFO_Y1, INFO_X2, INFO_Y1+24 );
+			vga_util.d3_panel_up( get_scaled_info_x1(), get_scaled_info_y1(), get_scaled_info_x2(), get_scaled_info_y1()+24 );
 
-			font_san.center_put( INFO_X1, y, INFO_X2, y2, _("Bribe Succeeded.") );
+			font_san.center_put( get_scaled_info_x1(), y, get_scaled_info_x2(), y2, _("Bribe Succeeded.") );
 		}
 		else
 		{
-			vga_util.d3_panel_up( INFO_X1, INFO_Y1, INFO_X2, INFO_Y1+62 );
+			vga_util.d3_panel_up( get_scaled_info_x1(), get_scaled_info_y1(), get_scaled_info_x2(), get_scaled_info_y1()+62 );
 
-			font_san.center_put( INFO_X1, y	  , INFO_X2, y2, _("Bribe Failed.") );
-			font_san.center_put( INFO_X1, y+=18, INFO_X2, y2+=18, _("Your Spy Was Caught") );
-			font_san.center_put( INFO_X1, y+=18, INFO_X2, y2+=18, _("And Executed.") );
+			font_san.center_put( get_scaled_info_x1(), y	  , get_scaled_info_x2(), y2, _("Bribe Failed.") );
+			font_san.center_put( get_scaled_info_x1(), y+=18, get_scaled_info_x2(), y2+=18, _("Your Spy Was Caught") );
+			font_san.center_put( get_scaled_info_x1(), y+=18, get_scaled_info_x2(), y2+=18, _("And Executed.") );
 		}
 
 		y+=26;
-		button_cancel.paint( INFO_X1, y, 'A', "CONTINUE" );
+		button_cancel.paint( get_scaled_info_x1(), y, 'A', "CONTINUE" );
 	}
 }
 //----------- End of function Firm::disp_bribe_menu -----------//
@@ -151,11 +151,11 @@ void Firm::detect_bribe_menu()
 
 	//-------------------------------------------//
 
-	int i, y=INFO_Y1+22+49;
+	int i, y=get_scaled_info_y1()+22+49;
 
 	for( i=0 ; i<BRIBE_AMOUNT_COUNT ; i++ )
 	{
-		if( mouse.single_click(INFO_X1, y, INFO_X2, y+BRIBE_OPTION_HEIGHT-1) )
+		if( mouse.single_click(get_scaled_info_x1(), y, get_scaled_info_x2(), y+BRIBE_OPTION_HEIGHT-1) )
 		{
 			disp_bribe_button( y, bribe_amount_array[i], 0);		// 0-display pressed button
 
@@ -191,7 +191,7 @@ void Firm::detect_bribe_menu()
 
 	//------ detect the cancel button --------//
 
-	if( mouse.single_click(INFO_X1, y, INFO_X2, y+BRIBE_OPTION_HEIGHT-1) )
+	if( mouse.single_click(get_scaled_info_x1(), y, get_scaled_info_x2(), y+BRIBE_OPTION_HEIGHT-1) )
 	{
 		disp_bribe_button( y, 0, 0);		// 0-display pressed button
 
@@ -231,14 +231,14 @@ int Firm::validate_cur_bribe()
 static void disp_bribe_button(int y, int bribeAmount, int buttonUp)
 {
 	if( buttonUp )
-		vga_util.d3_panel_up( INFO_X1, y, INFO_X2, y+BRIBE_OPTION_HEIGHT-1 );
+		vga_util.d3_panel_up( get_scaled_info_x1(), y, get_scaled_info_x2(), y+BRIBE_OPTION_HEIGHT-1 );
 	else
-		vga_util.d3_panel_down( INFO_X1, y, INFO_X2, y+BRIBE_OPTION_HEIGHT-1 );
+		vga_util.d3_panel_down( get_scaled_info_x1(), y, get_scaled_info_x2(), y+BRIBE_OPTION_HEIGHT-1 );
 
 	//--------- if display cancel button ---------//
 
 	if( bribeAmount==0 )
-		font_san.center_put( INFO_X1, y, INFO_X2, y+BRIBE_OPTION_HEIGHT-1, _("Cancel") );
+		font_san.center_put( get_scaled_info_x1(), y, get_scaled_info_x2(), y+BRIBE_OPTION_HEIGHT-1, _("Cancel") );
 	else
 	{
 		String str;
@@ -246,7 +246,7 @@ static void disp_bribe_button(int y, int bribeAmount, int buttonUp)
 		// TRANSLATORS: Offer <Amount>
 		snprintf( str, MAX_STR_LEN+1, _("Offer %s"), misc.format(bribeAmount,2) );
 
-		font_san.center_put( INFO_X1, y, INFO_X2, y+BRIBE_OPTION_HEIGHT-1, str );
+		font_san.center_put( get_scaled_info_x1(), y, get_scaled_info_x2(), y+BRIBE_OPTION_HEIGHT-1, str );
 	}
 }
 //--------- End of static function disp_bribe_button ---------//
@@ -478,7 +478,7 @@ void Firm::disp_bribe_unit(int dispY1)
 {
 	//---------------- paint the panel -----------------//
 
-	vga_util.d3_panel_up( INFO_X1, dispY1, INFO_X2, dispY1+46);
+	vga_util.d3_panel_up( get_scaled_info_x1(), dispY1, get_scaled_info_x2(), dispY1+46);
 
 	//------- get the info of the bribe target ---------//
 
@@ -511,7 +511,7 @@ void Firm::disp_bribe_unit(int dispY1)
 
 	//--------- display info of the bribe target ---------//
 
-	int x=INFO_X1+6, y=dispY1+4;
+	int x=get_scaled_info_x1()+6, y=dispY1+4;
 
 	vga_front.put_bitmap(x, y, unit_res[unitId]->get_large_icon_ptr(rankId) );
 	font_san.put( x+UNIT_LARGE_ICON_WIDTH+6, y+4, unitName );
@@ -524,7 +524,7 @@ void Firm::disp_bribe_unit(int dispY1)
 	str += ": ";
 	str += unitLoyalty;
 
-	font_san.disp( x+UNIT_LARGE_ICON_WIDTH+6, y+20, str, INFO_X2-10 );
+	font_san.disp( x+UNIT_LARGE_ICON_WIDTH+6, y+20, str, get_scaled_info_x2()-10 );
 }
 //----------- End of function Firm::disp_bribe_unit -----------//
 
@@ -536,56 +536,56 @@ void Firm::disp_assassinate_result(int refreshFlag)
 	if( refreshFlag != INFO_REPAINT )
 		return;
 
-	int x=INFO_X1+4, y=INFO_Y1+4, y2=y+font_san.height()-1;
+	int x=get_scaled_info_x1()+4, y=get_scaled_info_y1()+4, y2=y+font_san.height()-1;
 
 	if( assassinate_result == ASSASSINATE_SUCCEED_AT_LARGE )
 	{
-		vga_util.d3_panel_up( INFO_X1, INFO_Y1, INFO_X2, INFO_Y1+43 );
+		vga_util.d3_panel_up( get_scaled_info_x1(), get_scaled_info_y1(), get_scaled_info_x2(), get_scaled_info_y1()+43 );
 
-		font_san.center_put( INFO_X1, y, INFO_X2, y2, _("Assassination Succeeded.") );
-		font_san.center_put( INFO_X1, y+=18, INFO_X2, y2+=18, _("Your Spy Escaped.") );
+		font_san.center_put( get_scaled_info_x1(), y, get_scaled_info_x2(), y2, _("Assassination Succeeded.") );
+		font_san.center_put( get_scaled_info_x1(), y+=18, get_scaled_info_x2(), y2+=18, _("Your Spy Escaped.") );
 	}
 	else if( assassinate_result == ASSASSINATE_SUCCEED_KILLED )
 	{
 		#ifdef GERMAN
-			vga_util.d3_panel_up( INFO_X1, INFO_Y1, INFO_X2, INFO_Y1+80 );
+			vga_util.d3_panel_up( get_scaled_info_x1(), get_scaled_info_y1(), get_scaled_info_x2(), get_scaled_info_y1()+80 );
 
-			font_san.center_put( INFO_X1, y, INFO_X2, y2, "Assassination Succeeded." );
-			font_san.center_put( INFO_X1, y+=18, INFO_X2, y2+=18, "Your Spy" );				// German text is longer
-			font_san.center_put( INFO_X1, y+=18, INFO_X2, y2+=18, "Was Caught" );
-			font_san.center_put( INFO_X1, y+=18, INFO_X2, y2+=18, "And Executed." );
+			font_san.center_put( get_scaled_info_x1(), y, get_scaled_info_x2(), y2, "Assassination Succeeded." );
+			font_san.center_put( get_scaled_info_x1(), y+=18, get_scaled_info_x2(), y2+=18, "Your Spy" );				// German text is longer
+			font_san.center_put( get_scaled_info_x1(), y+=18, get_scaled_info_x2(), y2+=18, "Was Caught" );
+			font_san.center_put( get_scaled_info_x1(), y+=18, get_scaled_info_x2(), y2+=18, "And Executed." );
 		#else
-			vga_util.d3_panel_up( INFO_X1, INFO_Y1, INFO_X2, INFO_Y1+62 );
+			vga_util.d3_panel_up( get_scaled_info_x1(), get_scaled_info_y1(), get_scaled_info_x2(), get_scaled_info_y1()+62 );
 
-			font_san.center_put( INFO_X1, y, INFO_X2, y2, _("Assassination Succeeded.") );
+			font_san.center_put( get_scaled_info_x1(), y	  , get_scaled_info_x2(), y2, _("Assassination Succeeded.") );
 			// TRANSLATORS: Part of "Your Spy Was Caught And Executed."
-			font_san.center_put( INFO_X1, y+=18, INFO_X2, y2+=18, _("Your Spy Was Caught") );
+			font_san.center_put( get_scaled_info_x1(), y+=18, get_scaled_info_x2(), y2+=18, _("Your Spy Was Caught") );
 			// TRANSLATORS: Part of "Your Spy Was Caught And Executed."
-			font_san.center_put( INFO_X1, y+=18, INFO_X2, y2+=18, _("And Executed.") );
+			font_san.center_put( get_scaled_info_x1(), y+=18, get_scaled_info_x2(), y2+=18, _("And Executed.") );
 		#endif
 	}
 	else
 	{
 		#ifdef GERMAN
-			vga_util.d3_panel_up( INFO_X1, INFO_Y1, INFO_X2, INFO_Y1+80 );
+			vga_util.d3_panel_up( get_scaled_info_x1(), get_scaled_info_y1(), get_scaled_info_x2(), get_scaled_info_y1()+80 );
 
-			font_san.center_put( INFO_X1, y	  , INFO_X2, y2, "Assassination Failed." );
-			font_san.center_put( INFO_X1, y+=18, INFO_X2, y2+=18, "Your Spy" );
-			font_san.center_put( INFO_X1, y+=18, INFO_X2, y2+=18, "Was Caught" );
-			font_san.center_put( INFO_X1, y+=18, INFO_X2, y2+=18, "And Executed." );
+			font_san.center_put( get_scaled_info_x1(), y	  , get_scaled_info_x2(), y2, "Assassination Failed." );
+			font_san.center_put( get_scaled_info_x1(), y+=18, get_scaled_info_x2(), y2+=18, "Your Spy" );
+			font_san.center_put( get_scaled_info_x1(), y+=18, get_scaled_info_x2(), y2+=18, "Was Caught" );
+			font_san.center_put( get_scaled_info_x1(), y+=18, get_scaled_info_x2(), y2+=18, "And Executed." );
 		#else
-			vga_util.d3_panel_up( INFO_X1, INFO_Y1, INFO_X2, INFO_Y1+62 );
+			vga_util.d3_panel_up( get_scaled_info_x1(), get_scaled_info_y1(), get_scaled_info_x2(), get_scaled_info_y1()+62 );
 
-			font_san.center_put( INFO_X1, y	  , INFO_X2, y2, _("Assassination Failed.") );
+			font_san.center_put( get_scaled_info_x1(), y	  , get_scaled_info_x2(), y2, _("Assassination Failed.") );
 			// TRANSLATORS: Part of "Your Spy Was Caught And Executed."
-			font_san.center_put( INFO_X1, y+=18, INFO_X2, y2+=18, _("Your Spy Was Caught") );
+			font_san.center_put( get_scaled_info_x1(), y+=18, get_scaled_info_x2(), y2+=18, _("Your Spy Was Caught") );
 			// TRANSLATORS: Part of "Your Spy Was Caught And Executed."
-			font_san.center_put( INFO_X1, y+=18, INFO_X2, y2+=18, _("And Executed.") );
+			font_san.center_put( get_scaled_info_x1(), y+=18, get_scaled_info_x2(), y2+=18, _("And Executed.") );
 		#endif
 	}
 
 	y+=26;
-	button_cancel.paint( INFO_X1, y, 'A', "CONTINUE" );
+	button_cancel.paint( get_scaled_info_x1(), y, 'A', "CONTINUE" );
 }
 //----------- End of function Firm::disp_assassinate_result -----------//
 

@@ -551,12 +551,12 @@ void Sys::disp_frame()
 				vga.use_front();
 			}
 
-			vga_util.blt_buf(0,0, VGA_WIDTH-1, VGA_HEIGHT-1, 0);
+			vga_util.blt_buf(0,0, vga_back.buf_width()-1, vga_back.buf_height()-1, 0);
+
+			info.disp();
 			// ###### begin Gilbert 4/11 ######//
 			disp_view_mode();
 			// ###### end Gilbert 4/11 ######//
-
-			info.disp();
 		}
 		else
 		{

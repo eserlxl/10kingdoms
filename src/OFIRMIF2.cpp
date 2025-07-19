@@ -78,7 +78,7 @@ void Firm::disp_spy_menu(int refreshFlag)
 
 	firm_ptr = this;
 
-	disp_basic_info(INFO_Y1, refreshFlag);
+	disp_basic_info(get_scaled_info_y1(), refreshFlag);
 
 	//---------- paint controls -----------//
 

@@ -29,6 +29,7 @@
 #include <OSKILL.h>
 #include <ODYNARR.h>
 #include <OWORLD.h>
+#include <OVGA.h>
 
 //---------- Define constant ---------//
 
@@ -257,5 +258,38 @@ public:
 extern Info info;
 
 //------------------------------------------//
+
+// Global helper functions for scaled info panel coordinates
+inline int get_scaled_info_x1() {
+    if( vga.is_ui_mode() ) {
+        return (int)(INFO_X1 * 0.3125);
+    } else {
+        return INFO_X1;
+    }
+}
+
+inline int get_scaled_info_y1() {
+    if( vga.is_ui_mode() ) {
+        return (int)(INFO_Y1 * 0.375);
+    } else {
+        return INFO_Y1;
+    }
+}
+
+inline int get_scaled_info_x2() {
+    if( vga.is_ui_mode() ) {
+        return (int)(INFO_X2 * 0.3125);
+    } else {
+        return INFO_X2;
+    }
+}
+
+inline int get_scaled_info_y2() {
+    if( vga.is_ui_mode() ) {
+        return (int)(INFO_Y2 * 0.375);
+    } else {
+        return INFO_Y2;
+    }
+}
 
 #endif

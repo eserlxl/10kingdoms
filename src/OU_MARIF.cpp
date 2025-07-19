@@ -67,7 +67,7 @@ static void				i_disp_marine_select_button(ButtonCustom *button, int repaintBody
 //
 void UnitMarine::disp_info(int refreshFlag)
 {
-	disp_basic_info(INFO_Y1, refreshFlag);
+	disp_basic_info(get_scaled_info_y1(), refreshFlag);
 
 	if( !should_show_info() )
 		return;
@@ -76,19 +76,19 @@ void UnitMarine::disp_info(int refreshFlag)
 
 	UnitInfo* unitInfo = unit_res[unit_id];
 
-	int y=INFO_Y1+54;
+	int y=get_scaled_info_y1()+54;
 
 	if( unitInfo->carry_unit_capacity && unitInfo->carry_goods_capacity )
 	{
 		if( refreshFlag == INFO_REPAINT )
 		{
-			vga_util.d3_panel_up( INFO_X1, y, INFO_X2, y+22 );
+			vga_util.d3_panel_up( get_scaled_info_x1(), y, get_scaled_info_x2(), y+22 );
 
-			button_mode[0].create_text( INFO_X1+5, y+3, INFO_X1+80, y+19, _("Units") );
-			button_mode[1].create_text( INFO_X1+90, y+3, INFO_X1+155, y+19, _("Goods") );
+			button_mode[0].create_text( get_scaled_info_x1()+5, y+3, get_scaled_info_x1()+80, y+19, _("Units") );
+			button_mode[1].create_text( get_scaled_info_x1()+90, y+3, get_scaled_info_x1()+155, y+19, _("Goods") );
 			button_mode.paint(menu_mode);
 
-			button_auto_trade.paint_text( INFO_X1+165, y+3, INFO_X2-10, y+19, auto_mode ? (char*)"T" : (char*)"C");
+			button_auto_trade.paint_text( get_scaled_info_x1()+165, get_scaled_info_y1()+57, get_scaled_info_x2()-10, get_scaled_info_y1()+73, auto_mode ? (char*)"T" : (char*)"C");
 		}
 
 		y += 25;
@@ -222,7 +222,7 @@ void UnitMarine::disp_unit_menu(int dispY1, int refreshFlag)
 		return;
 
 	if( refreshFlag==INFO_REPAINT )
-		button_unload_all.paint( INFO_X1, dispY1+165, 'A', "OUTSHIP" );
+		button_unload_all.paint( get_scaled_info_x1(), dispY1+165, 'A', "OUTSHIP" );
 
 	if( can_unload_unit() )
 		button_unload_all.enable();
@@ -374,7 +374,7 @@ void UnitMarine::disp_unit_list(int dispY1, int refreshFlag)
 	//---------------- paint the panel --------------//
 
 	if( refreshFlag == INFO_REPAINT )
-		vga_util.d3_panel_up( INFO_X1, dispY1, INFO_X2, dispY1+88 );
+		vga_util.d3_panel_up( get_scaled_info_x1(), dispY1, get_scaled_info_x2(), dispY1+88 );
 
 	//------ display population composition -------//
 
@@ -389,7 +389,7 @@ void UnitMarine::disp_unit_list(int dispY1, int refreshFlag)
 
 	for( int i=0 ; i<MAX_UNIT_IN_SHIP ; i++ )
 	{
-		x = INFO_X1+6+i%3*66;
+		x = get_scaled_info_x1()+6+i%3*66;
 		y = dispY1+i/3*28;
 
 		if( i<unit_count )
@@ -445,7 +445,7 @@ int UnitMarine::detect_unit_list()
 
 	for( i=0 ; i<unit_count ; i++ )
 	{
-		x = INFO_X1+6+i%3*66;
+		x = get_scaled_info_x1()+6+i%3*66;
 		y = unit_disp_y1+4+i/3*28;
 
 		//---------------------------------//
@@ -485,7 +485,7 @@ void UnitMarine::disp_unit_info(int dispY1, int refreshFlag)
 
 	if( refreshFlag == INFO_REPAINT )
 	{
-		vga_util.d3_panel_up( INFO_X1, dispY1, INFO_X2, dispY1+71 );
+		vga_util.d3_panel_up( get_scaled_info_x1(), dispY1, get_scaled_info_x2(), dispY1+71 );
 	}
 	else
 	{
@@ -501,18 +501,18 @@ void UnitMarine::disp_unit_info(int dispY1, int refreshFlag)
 
 	if( selected_unit_id > 0 )
 	{
-		int x=INFO_X1+4, y=dispY1+4, x1=x+100;
+		int x=get_scaled_info_x1()+4, y=dispY1+4, x1=x+100;
 
 		Unit* unitPtr = unit_array[ unit_recno_array[selected_unit_id-1] ];
 
 		if( unitPtr->race_id && unitPtr->rank_id != RANK_KING )
 			info.disp_loyalty( x, y, x1, unitPtr->loyalty, unitPtr->target_loyalty, nation_recno, refreshFlag);
 		else
-			font_san.field( x, y, _("Loyalty"), x1, _("N/A"), INFO_X2-2, refreshFlag );	// no loyalty because it does not belong to your empire
+			font_san.field( x, y, _("Loyalty"), x1, _("N/A"), get_scaled_info_x2()-2, refreshFlag );	// no loyalty because it does not belong to your empire
 
 		y+=16;
 
-		font_san.field( x, y, _("Combat"), x1, unitPtr->skill.combat_level, 1, INFO_X2-2, refreshFlag);
+		font_san.field( x, y, _("Combat"), x1, unitPtr->skill.combat_level, 1, get_scaled_info_x2()-2, refreshFlag);
 		y+=16;
 
 		//----------------------------------------------//
@@ -522,7 +522,7 @@ void UnitMarine::disp_unit_info(int dispY1, int refreshFlag)
 		str += "/";
 		str += unitPtr->max_hit_points;
 
-		font_san.field( x, y, _("Hit Points"), x1, str, INFO_X2-2, refreshFlag);
+		font_san.field( x, y, _("Hit Points"), x1, str, get_scaled_info_x2()-2, refreshFlag);
 		y += 16;
 
 		//----------------------------------------------//
@@ -530,21 +530,21 @@ void UnitMarine::disp_unit_info(int dispY1, int refreshFlag)
 		if( unitPtr->skill.skill_id )
 		{
 			if( refreshFlag == INFO_REPAINT )
-				font_san.field( x, y, unitPtr->skill.skill_des(), x1, unitPtr->skill.skill_level , 1, INFO_X2-2, refreshFlag );
+				font_san.field( x, y, unitPtr->skill.skill_des(), x1, unitPtr->skill.skill_level , 1, get_scaled_info_x2()-2, refreshFlag );
 			else
 			{
 				font_san.put( x+2, y+2, unitPtr->skill.skill_des(), 1, x1-2 );
-				font_san.update_field( x1, y, unitPtr->skill.skill_level, 1, INFO_X2-10);
+				font_san.update_field( x1, y, unitPtr->skill.skill_level, 1, get_scaled_info_x2()-10);
 			}
 		}
 		else
 		{
 			if( refreshFlag == INFO_REPAINT )
-				font_san.field( x, y, "", x1, "", INFO_X2-2, refreshFlag );
+				font_san.field( x, y, "", x1, "", get_scaled_info_x2()-2, refreshFlag );
 			else
 			{
 				font_san.put( x+2, y+2, "", 1, x1-2 );
-				font_san.update_field( x1, y, "", INFO_X2-10);
+				font_san.update_field( x1, y, "", get_scaled_info_x2()-10);
 			}
 		}
 	}

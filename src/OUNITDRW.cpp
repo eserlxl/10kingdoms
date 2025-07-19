@@ -109,13 +109,25 @@ void Unit::draw()
 
 		if( needMirror )  // if this direction needed to be mirrored
 		{
-			vga_back.put_bitmap_trans_remap_decompress_hmirror( x1+ZOOM_X1, y1+ZOOM_Y1,
+			// Check bounds to prevent buffer overflow
+			int destX = x1+ZOOM_X1;
+			int destY = y1+ZOOM_Y1;
+			if( bitmapPtr && destX >= 0 && destY >= 0 && destX + get_bitmap_width(bitmapPtr) <= vga_back.buf_width() && destY + get_bitmap_height(bitmapPtr) <= vga_back.buf_height() )
+			{
+				vga_back.put_bitmap_trans_remap_decompress_hmirror( destX, destY,
 												bitmapPtr, colorRemapTable );
+			}
 		}
 		else
 		{
-			vga_back.put_bitmap_trans_remap_decompress( x1+ZOOM_X1, y1+ZOOM_Y1,
+			// Check bounds to prevent buffer overflow
+			int destX = x1+ZOOM_X1;
+			int destY = y1+ZOOM_Y1;
+			if( bitmapPtr && destX >= 0 && destY >= 0 && destX + get_bitmap_width(bitmapPtr) <= vga_back.buf_width() && destY + get_bitmap_height(bitmapPtr) <= vga_back.buf_height() )
+			{
+				vga_back.put_bitmap_trans_remap_decompress( destX, destY,
 												bitmapPtr, colorRemapTable );
+			}
 		}
 	}
 
@@ -432,13 +444,25 @@ void Unit::draw_outlined()
 
 		if( needMirror )  // if this direction needed to be mirrored
 		{
-			vga_back.put_bitmap_trans_remap_decompress_hmirror( x1+ZOOM_X1, y1+ZOOM_Y1,
+			// Check bounds to prevent buffer overflow
+			int destX = x1+ZOOM_X1;
+			int destY = y1+ZOOM_Y1;
+			if( bitmapPtr && destX >= 0 && destY >= 0 && destX + get_bitmap_width(bitmapPtr) <= vga_back.buf_width() && destY + get_bitmap_height(bitmapPtr) <= vga_back.buf_height() )
+			{
+				vga_back.put_bitmap_trans_remap_decompress_hmirror( destX, destY,
 												bitmapPtr, colorRemapTable );
+			}
 		}
 		else
 		{
-			vga_back.put_bitmap_trans_remap_decompress( x1+ZOOM_X1, y1+ZOOM_Y1,
+			// Check bounds to prevent buffer overflow
+			int destX = x1+ZOOM_X1;
+			int destY = y1+ZOOM_Y1;
+			if( bitmapPtr && destX >= 0 && destY >= 0 && destX + get_bitmap_width(bitmapPtr) <= vga_back.buf_width() && destY + get_bitmap_height(bitmapPtr) <= vga_back.buf_height() )
+			{
+				vga_back.put_bitmap_trans_remap_decompress( destX, destY,
 												bitmapPtr, colorRemapTable );
+			}
 		}
 	}
 

@@ -337,14 +337,14 @@ void SpyArray::disp_view_secret_menu(int spyRecno, int refreshFlag)
 
 	//------------------------------------//
 
-	vga_util.d3_panel_up( INFO_X1, INFO_Y1, INFO_X2, INFO_Y1+42 );
+	vga_util.d3_panel_up( get_scaled_info_x1(), get_scaled_info_y1(), get_scaled_info_x2(), get_scaled_info_y1()+42 );
 
-	font_san.put_paragraph( INFO_X1+7, INFO_Y1+5, INFO_X2-7, INFO_Y2-5,
+	font_san.put_paragraph( get_scaled_info_x1()+7, get_scaled_info_y1()+5, get_scaled_info_x2()-7, get_scaled_info_y1()+42-5,
 									_("Steal which type of secrets?") );
 
 	//------------------------------------//
 
-	int  y=INFO_Y1+45;
+	int  y=get_scaled_info_y1()+45;
 
 	err_when( spy_array.is_deleted(spyRecno) );
 
@@ -354,7 +354,7 @@ void SpyArray::disp_view_secret_menu(int spyRecno, int refreshFlag)
 	{
 		if( spyPtr->spy_skill >= secret_view_skill_array[i] )
 		{
-			button_secret_report_array[i].paint_text( INFO_X1, y, INFO_X2, y+21, _(secret_report_str_array[i]) );
+			button_secret_report_array[i].paint_text( get_scaled_info_x1(), y, get_scaled_info_x2(), y+21, _(secret_report_str_array[i]) );
 			y+=23;
 		}
 		else
@@ -363,7 +363,7 @@ void SpyArray::disp_view_secret_menu(int spyRecno, int refreshFlag)
 		}
 	}
 
-	button_secret_report_cancel.paint_text( INFO_X1, y, INFO_X2, y+22, _("Cancel") );
+	button_secret_report_cancel.paint_text( get_scaled_info_x1(), y, get_scaled_info_x2(), y+22, _("Cancel") );
 }
 //----------- End of function SpyArray::disp_view_secret_menu -----------//
 

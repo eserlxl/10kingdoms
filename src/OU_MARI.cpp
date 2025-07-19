@@ -178,25 +178,25 @@ void UnitMarine::draw()
 	#ifdef DEBUG2
 		if(selected_flag && 0)
 		{
-			vga_util.d3_panel_up( INFO_X1, INFO_Y1+144, INFO_X2, INFO_Y1+144+87 );
+			vga_util.d3_panel_up( get_scaled_info_x1(), get_scaled_info_y1()+144, get_scaled_info_x2(), get_scaled_info_y1()+144+87 );
 
-			int 	 x=INFO_X1+4, y=INFO_Y1+200, refreshFlag=INFO_REPAINT;
-			font_san.field( x, y, " " , x+2, sprite_recno, 1, INFO_X2-2, refreshFlag);
-			font_san.field( x+20, y, " " , x+22, next_x_loc(), 1, INFO_X2-2, refreshFlag);
-			font_san.field( x+50, y, " " , x+52, next_y_loc(), 1, INFO_X2-2, refreshFlag);
-			font_san.field( x+70, y, " " , x+72, nation_recno, 1, INFO_X2-2, refreshFlag);
+			int 	 x=get_scaled_info_x1()+4, y=get_scaled_info_y1()+200, refreshFlag=INFO_REPAINT;
+			font_san.field( x, y, " " , x+2, sprite_recno, 1, get_scaled_info_x2()-2, refreshFlag);
+			font_san.field( x+20, y, " " , x+22, next_x_loc(), 1, get_scaled_info_x2()-2, refreshFlag);
+			font_san.field( x+50, y, " " , x+52, next_y_loc(), 1, get_scaled_info_x2()-2, refreshFlag);
+			font_san.field( x+70, y, " " , x+72, nation_recno, 1, get_scaled_info_x2()-2, refreshFlag);
 
-			font_san.field( x+100, y, " " , x+102, action_mode, 1, INFO_X2-2, refreshFlag);
-			font_san.field( x+120, y, " " , x+122, action_para, 1, INFO_X2-2, refreshFlag);
-			font_san.field( x+140, y, " " , x+142, action_x_loc, 1, INFO_X2-2, refreshFlag);
-			font_san.field( x+160, y, " " , x+162, action_y_loc, 1, INFO_X2-2, refreshFlag);
+			font_san.field( x+100, y, " " , x+102, action_mode, 1, get_scaled_info_x2()-2, refreshFlag);
+			font_san.field( x+120, y, " " , x+122, action_para, 1, get_scaled_info_x2()-2, refreshFlag);
+			font_san.field( x+140, y, " " , x+142, action_x_loc, 1, get_scaled_info_x2()-2, refreshFlag);
+			font_san.field( x+160, y, " " , x+162, action_y_loc, 1, get_scaled_info_x2()-2, refreshFlag);
 			y-=20;
-			font_san.field( x+100, y, " " , x+102, action_mode2, 1, INFO_X2-2, refreshFlag);
-			font_san.field( x+120, y, " " , x+122, action_para2, 1, INFO_X2-2, refreshFlag);
-			font_san.field( x+140, y, " " , x+142, action_x_loc2, 1, INFO_X2-2, refreshFlag);
-			font_san.field( x+160, y, " " , x+162, action_y_loc2, 1, INFO_X2-2, refreshFlag);
+			font_san.field( x+100, y, " " , x+102, action_mode2, 1, get_scaled_info_x2()-2, refreshFlag);
+			font_san.field( x+120, y, " " , x+122, action_para2, 1, get_scaled_info_x2()-2, refreshFlag);
+			font_san.field( x+140, y, " " , x+142, action_x_loc2, 1, get_scaled_info_x2()-2, refreshFlag);
+			font_san.field( x+160, y, " " , x+162, action_y_loc2, 1, get_scaled_info_x2()-2, refreshFlag);
 			y-=20;
-			font_san.field( x+160, y, " " , x+162, cur_action, 1, INFO_X2-2, refreshFlag);
+			font_san.field( x+160, y, " " , x+162, cur_action, 1, get_scaled_info_x2()-2, refreshFlag);
 		}
 	#endif
 }
@@ -255,25 +255,25 @@ void UnitMarine::draw_outlined()
 	#ifdef DEBUG2
 		if(selected_flag && 0)
 		{
-			vga_util.d3_panel_up( INFO_X1, INFO_Y1+144, INFO_X2, INFO_Y1+144+87 );
+			vga_util.d3_panel_up( get_scaled_info_x1(), get_scaled_info_y1()+144, get_scaled_info_x2(), get_scaled_info_y1()+144+87 );
 
-			int 	 x=INFO_X1+4, y=INFO_Y1+200, refreshFlag=INFO_REPAINT;
-			font_san.field( x, y, " " , x+2, sprite_recno, 1, INFO_X2-2, refreshFlag);
-			font_san.field( x+20, y, " " , x+22, next_x_loc(), 1, INFO_X2-2, refreshFlag);
-			font_san.field( x+50, y, " " , x+52, next_y_loc(), 1, INFO_X2-2, refreshFlag);
-			font_san.field( x+70, y, " " , x+72, nation_recno, 1, INFO_X2-2, refreshFlag);
+			int 	 x=get_scaled_info_x1()+4, y=get_scaled_info_y1()+200, refreshFlag=INFO_REPAINT;
+			font_san.field( x, y, " " , x+2, sprite_recno, 1, get_scaled_info_x2()-2, refreshFlag);
+			font_san.field( x+20, y, " " , x+22, next_x_loc(), 1, get_scaled_info_x2()-2, refreshFlag);
+			font_san.field( x+50, y, " " , x+52, next_y_loc(), 1, get_scaled_info_x2()-2, refreshFlag);
+			font_san.field( x+70, y, " " , x+72, nation_recno, 1, get_scaled_info_x2()-2, refreshFlag);
 
-			font_san.field( x+100, y, " " , x+102, action_mode, 1, INFO_X2-2, refreshFlag);
-			font_san.field( x+120, y, " " , x+122, action_para, 1, INFO_X2-2, refreshFlag);
-			font_san.field( x+140, y, " " , x+142, action_x_loc, 1, INFO_X2-2, refreshFlag);
-			font_san.field( x+160, y, " " , x+162, action_y_loc, 1, INFO_X2-2, refreshFlag);
+			font_san.field( x+100, y, " " , x+102, action_mode, 1, get_scaled_info_x2()-2, refreshFlag);
+			font_san.field( x+120, y, " " , x+122, action_para, 1, get_scaled_info_x2()-2, refreshFlag);
+			font_san.field( x+140, y, " " , x+142, action_x_loc, 1, get_scaled_info_x2()-2, refreshFlag);
+			font_san.field( x+160, y, " " , x+162, action_y_loc, 1, get_scaled_info_x2()-2, refreshFlag);
 			y-=20;
-			font_san.field( x+100, y, " " , x+102, action_mode2, 1, INFO_X2-2, refreshFlag);
-			font_san.field( x+120, y, " " , x+122, action_para2, 1, INFO_X2-2, refreshFlag);
-			font_san.field( x+140, y, " " , x+142, action_x_loc2, 1, INFO_X2-2, refreshFlag);
-			font_san.field( x+160, y, " " , x+162, action_y_loc2, 1, INFO_X2-2, refreshFlag);
+			font_san.field( x+100, y, " " , x+102, action_mode2, 1, get_scaled_info_x2()-2, refreshFlag);
+			font_san.field( x+120, y, " " , x+122, action_para2, 1, get_scaled_info_x2()-2, refreshFlag);
+			font_san.field( x+140, y, " " , x+142, action_x_loc2, 1, get_scaled_info_x2()-2, refreshFlag);
+			font_san.field( x+160, y, " " , x+162, action_y_loc2, 1, get_scaled_info_x2()-2, refreshFlag);
 			y-=20;
-			font_san.field( x+160, y, " " , x+162, cur_action, 1, INFO_X2-2, refreshFlag);
+			font_san.field( x+160, y, " " , x+162, cur_action, 1, get_scaled_info_x2()-2, refreshFlag);
 		}
 	#endif
 }

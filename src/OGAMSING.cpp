@@ -106,8 +106,22 @@ void Game::single_player_game(int noAI)
 
 	//------ start single player game ----------//
 
+	// Explicitly set game mode to single player
+	game_mode = GAME_SINGLE_PLAYER;
+	printf("single_player_game(): Set game_mode to GAME_SINGLE_PLAYER (%d)\n", game_mode);
+
 	init();
+	
+	// Force resize window for gameplay mode (switch from UI to full resolution)
+	printf("single_player_game(): Calling vga.resize_for_mode() for gameplay\n");
+	vga.resize_for_mode();
+	
 	battle.run(0);			// 0-not multiplayer game
+	
+	// Resize window back to UI mode (switch from full to UI resolution)
+	printf("single_player_game(): Calling vga.resize_for_mode() for UI\n");
+	vga.resize_for_mode();
+	
 	deinit();
 }
 //--------- End of function Game::single_player_game ---------//
@@ -528,7 +542,7 @@ static int select_option()
 					image_menu2.put_to_buf( &vga_back, "SPG-BSC");
 #endif
 					image_menu.put_back( 234, 15, menuTitleBitmap);
-					vga_util.blt_buf(0,0,VGA_WIDTH-1,VGA_HEIGHT-1,0);
+					vga_util.blt_buf(0,0,vga_back.buf_width()-1,vga_back.buf_height()-1,0);
 				}
 				if( refreshFlag & SGOPTION_RACE )
 					raceGroup.paint( reverse_race_table[tempConfig.race_id-1] );
@@ -564,7 +578,7 @@ static int select_option()
 				{
 					image_menu.put_to_buf( &vga_back, "SPG-O1");
 					image_menu.put_back( 234, 15, menuTitleBitmap);
-					vga_util.blt_buf(0,0,VGA_WIDTH-1,VGA_HEIGHT-1,0);
+					vga_util.blt_buf(0,0,vga_back.buf_width()-1,vga_back.buf_height()-1,0);
 				}
 				if( refreshFlag & SGOPTION_MAP_ID )
 					mapIdField.paint();
@@ -591,7 +605,7 @@ static int select_option()
 				{
 					image_menu.put_to_buf( &vga_back, "SPG-O2");
 					image_menu.put_back( 234, 15, menuTitleBitmap);
-					vga_util.blt_buf(0,0,VGA_WIDTH-1,VGA_HEIGHT-1,0);
+					vga_util.blt_buf(0,0,vga_back.buf_width()-1,vga_back.buf_height()-1,0);
 				}
 				if( refreshFlag & SGOPTION_RAW )
 				{
@@ -625,7 +639,7 @@ static int select_option()
 				{
 					image_menu.put_to_buf( &vga_back, "SPG-GOAL");
 					image_menu.put_back( 234, 15, menuTitleBitmap);
-					vga_util.blt_buf(0,0,VGA_WIDTH-1,VGA_HEIGHT-1,0);
+					vga_util.blt_buf(0,0,vga_back.buf_width()-1,vga_back.buf_height()-1,0);
 				}
 				if( refreshFlag & SGOPTION_CLEAR_ENEMY )
 					clearEnemyButton.paint();

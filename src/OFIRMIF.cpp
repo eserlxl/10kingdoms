@@ -80,10 +80,10 @@ void Firm::disp_info_both(int refreshFlag)
 
 	if( under_construction )
 	{
-		disp_basic_info(INFO_Y1, refreshFlag);
+		disp_basic_info(get_scaled_info_y1(), refreshFlag);
 
 		if( refreshFlag == INFO_REPAINT )
-			font_san.d3_put( INFO_X1, INFO_Y1+54, INFO_X2, INFO_Y1+74, _("Under Construction") );
+			font_san.d3_put( get_scaled_info_x1(), get_scaled_info_y1()+54, get_scaled_info_x2(), get_scaled_info_y1()+74, _("Under Construction") );
 	}
 	else
 	{
@@ -142,11 +142,11 @@ void Firm::disp_info_both(int refreshFlag)
 		#ifdef DEBUG
 		if(debug2_enable_flag)
 		{
-			font_san.d3_put( INFO_X1, INFO_Y2-30, INFO_X2, INFO_Y2, "" );
-			font_san.field( INFO_X1+10, INFO_Y2-20, " ", INFO_X1+20, firm_recno, 1, INFO_X2-10, refreshFlag);
-			font_san.field( INFO_X1+40, INFO_Y2-20, " ", INFO_X1+50, loc_x1, 1, INFO_X2-10, refreshFlag);
-			font_san.field( INFO_X1+70, INFO_Y2-20, " ", INFO_X1+80, loc_y1, 1, INFO_X2-10, refreshFlag);
-			font_san.field( INFO_X1+100, INFO_Y2-20, " ", INFO_X1+110, ai_link_checked, 1, INFO_X2-10, refreshFlag);
+			font_san.d3_put( get_scaled_info_x1(), get_scaled_info_y2()-30, get_scaled_info_x2(), get_scaled_info_y2(), "" );
+			font_san.field( get_scaled_info_x1()+10, get_scaled_info_y2()-20, " ", get_scaled_info_x1()+20, firm_recno, 1, get_scaled_info_x2()-10, refreshFlag);
+			font_san.field( get_scaled_info_x1()+40, get_scaled_info_y2()-20, " ", get_scaled_info_x1()+50, loc_x1, 1, get_scaled_info_x2()-10, refreshFlag);
+			font_san.field( get_scaled_info_x1()+70, get_scaled_info_y2()-20, " ", get_scaled_info_x1()+80, loc_y1, 1, get_scaled_info_x2()-10, refreshFlag);
+			font_san.field( get_scaled_info_x1()+100, get_scaled_info_y2()-20, " ", get_scaled_info_x1()+110, ai_link_checked, 1, get_scaled_info_x2()-10, refreshFlag);
 		}
 		#endif
 	}
@@ -230,19 +230,19 @@ void Firm::disp_basic_info(int dispY1, int refreshFlag)
 
 	if( refreshFlag == INFO_REPAINT )
 	{
-		vga_util.d3_panel_up( INFO_X1, dispY1, INFO_X2, dispY1+21 );
+		vga_util.d3_panel_up( get_scaled_info_x1(), dispY1, get_scaled_info_x2(), dispY1+21 );
 
 		if( nation_recno )
 		{
-			font_san.center_put( INFO_X1+21, dispY1, INFO_X2-2, dispY1+21, firm_name() );
+			font_san.center_put( get_scaled_info_x1()+21, dispY1, get_scaled_info_x2()-2, dispY1+21, firm_name() );
 
 			char *nationPict = image_button.get_ptr("V_COLCOD");
 
-			vga_front.put_bitmap_remap(INFO_X1+3, dispY1+2, nationPict, game.get_color_remap_table(nation_recno, 0) );
+			vga_front.put_bitmap_remap(get_scaled_info_x1()+3, dispY1+2, nationPict, game.get_color_remap_table(nation_recno, 0) );
 		}
 		else
 		{
-			font_san.center_put( INFO_X1, dispY1, INFO_X2-2, dispY1+21, firm_name() );
+			font_san.center_put( get_scaled_info_x1(), dispY1, get_scaled_info_x2()-2, dispY1+21, firm_name() );
 		}
 	}
 
@@ -253,11 +253,11 @@ void Firm::disp_basic_info(int dispY1, int refreshFlag)
 	int sliderX1, sliderX2;
 
 	if( under_construction )
-		sliderX1 = INFO_X1+34;		// there is only one button in the contruction mode, so the slider is longer
+		sliderX1 = get_scaled_info_x1()+34;		// there is only one button in the contruction mode, so the slider is longer
 	else
-		sliderX1 = INFO_X1+64;
+		sliderX1 = get_scaled_info_x1()+64;
 
-	sliderX2 = INFO_X2-64;
+	sliderX2 = get_scaled_info_x2()-64;
 
 	int showRepairIcon = builder_recno && !under_construction && should_show_info();
 	int showReqRepairIcon = !builder_recno && !under_construction && should_show_info() && own_firm() && find_idle_builder(0);
@@ -268,14 +268,14 @@ void Firm::disp_basic_info(int dispY1, int refreshFlag)
 		button_sell.reset();
 		button_destruct.reset();
 
-		vga_util.d3_panel_up( INFO_X1, dispY1, INFO_X2, dispY1+26 );
+		vga_util.d3_panel_up( get_scaled_info_x1(), dispY1, get_scaled_info_x2(), dispY1+26 );
 
 		if( nation_array.player_recno &&
 			 nation_recno == nation_array.player_recno )
 		{
 			if( under_construction || !can_sell() )
 			{
-				button_destruct.paint( INFO_X1+4, dispY1+1, "V_DEM-U", "V_DEM-D" );	// Destruct
+				button_destruct.paint( get_scaled_info_x1()+4, dispY1+1, "V_DEM-U", "V_DEM-D" );	// Destruct
 
 				if( under_construction )
 					button_destruct.set_help_code( "CANCELBLD" );
@@ -285,7 +285,7 @@ void Firm::disp_basic_info(int dispY1, int refreshFlag)
 
 			if( !under_construction && can_sell() )
 			{
-				button_sell.paint( INFO_X1+4, dispY1+1, "V_SEL-U", "V_SEL-D" );	// Sell
+				button_sell.paint( get_scaled_info_x1()+4, dispY1+1, "V_SEL-U", "V_SEL-D" );	// Sell
 				button_sell.set_help_code( "SELLFIRM" );
 			}
 		}
@@ -293,14 +293,14 @@ void Firm::disp_basic_info(int dispY1, int refreshFlag)
 		if( showRepairIcon )
 		{
 			button_request_builder.init_flag = 0;
-			button_builder.paint( INFO_X1+30, dispY1+1, "REPAIRU", "REPAIRD" );	// Builder
+			button_builder.paint( get_scaled_info_x1()+30, dispY1+1, "REPAIRU", "REPAIRD" );	// Builder
 			button_builder.set_help_code( "REPAIR" );
 		}
 
 		else if( showReqRepairIcon )
 		{
 			button_builder.init_flag = 0;
-			button_request_builder.paint( INFO_X1+30, dispY1+1, "REPAIRQU", "REPAIRQD" );
+			button_request_builder.paint( get_scaled_info_x1()+30, dispY1+1, "REPAIRQU", "REPAIRQD" );
 			button_request_builder.set_help_code( "REPAIRQ" );
 		}
 	}
@@ -313,7 +313,7 @@ void Firm::disp_basic_info(int dispY1, int refreshFlag)
 
 			if( !button_builder.init_flag || !button_builder.enable_flag )
 			{
-				button_builder.paint( INFO_X1+30, dispY1+1, "REPAIRU", "REPAIRD" );	// Builder
+				button_builder.paint( get_scaled_info_x1()+30, dispY1+1, "REPAIRU", "REPAIRD" );	// Builder
 				button_builder.set_help_code( "REPAIR" );
 			}
 		}
@@ -325,7 +325,7 @@ void Firm::disp_basic_info(int dispY1, int refreshFlag)
 
 			if( !button_request_builder.init_flag || !button_request_builder.enable_flag )
 			{
-				button_request_builder.paint( INFO_X1+30, dispY1+1, "REPAIRQU", "REPAIRQD" );
+				button_request_builder.paint( get_scaled_info_x1()+30, dispY1+1, "REPAIRQU", "REPAIRQD" );
 				button_request_builder.set_help_code( "REPAIRQ" );
 			}
 		}
@@ -349,7 +349,7 @@ int Firm::detect_basic_info()
 {
 	//--- click on the name area to center the map on it ---//
 
-	if( mouse.single_click(INFO_X1, INFO_Y1, INFO_X2, INFO_Y1+21) )
+	if( mouse.single_click(get_scaled_info_x1(), get_scaled_info_y1(), get_scaled_info_x2(), get_scaled_info_y1()+21) )
 	{
 		world.go_loc( center_x, center_y );
 		return 1;
@@ -418,7 +418,7 @@ void Firm::disp_worker_list(int dispY1, int refreshFlag)
 	//---------------- paint the panel --------------//
 
 	if( refreshFlag == INFO_REPAINT )
-		vga_util.d3_panel_up( INFO_X1, dispY1, INFO_X2, dispY1+60 );
+		vga_util.d3_panel_up( get_scaled_info_x1(), dispY1, get_scaled_info_x2(), dispY1+60 );
 
 	//----------- display populatin distribution ---------//
 
@@ -442,7 +442,7 @@ void Firm::disp_worker_list(int dispY1, int refreshFlag)
 	for( int i=0 ; i<MAX_WORKER ; i++ )
 	{
 		workerPtr = &worker_array[worker_id_array[i]-1];
-		x = INFO_X1+4+i%4*50;
+		x = get_scaled_info_x1()+6+i%4*50;
 		y = dispY1+i/4*29;
 
 		if( i<worker_count )
@@ -552,7 +552,7 @@ int Firm::detect_worker_list()
 
 	for( i=0 ; i<worker_count ; i++ )
 	{
-		x = INFO_X1+6+i%4*50;
+		x = get_scaled_info_x1()+6+i%4*50;
 		y = pop_disp_y1+1+i/4*29;
 
 		switch( mouse.any_click(x, y, x+27, y+23, LEFT_BUTTON) ? 1 : (mouse.any_click(x, y, x+27, y+23, RIGHT_BUTTON) ? 2 : 0) )
@@ -661,21 +661,21 @@ void Firm::disp_worker_info(int dispY1, int refreshFlag)
 	if( refreshFlag == INFO_REPAINT )
 	{
 		if( firm_id == FIRM_CAMP )		// the command base has one more field
-			vga_util.d3_panel_up( INFO_X1, dispY1, INFO_X2, dispY1+71 );
+			vga_util.d3_panel_up( get_scaled_info_x1(), dispY1, get_scaled_info_x2(), dispY1+71 );
 		else
-			vga_util.d3_panel_up( INFO_X1, dispY1, INFO_X2, dispY1+55 );
+			vga_util.d3_panel_up( get_scaled_info_x1(), dispY1, get_scaled_info_x2(), dispY1+55 );
 	}
 
 	if( selected_worker_id > 0 )
 	{
-		int x=INFO_X1+4, y=dispY1+4;
+		int x=get_scaled_info_x1()+4, y=dispY1+4;
 
 		Worker* workerPtr = worker_array + selected_worker_id - 1;
 
 		if( workerPtr->town_recno )		// FirmInfo::live_in_town is 1
 		{
 			Town* townPtr = town_array[workerPtr->town_recno];
-			font_san.field( x, y, _("Residence"), x+100, townPtr->town_name(), INFO_X2-2, refreshFlag);
+			font_san.field( x, y, _("Residence"), x+100, townPtr->town_name(), get_scaled_info_x2()-2, refreshFlag);
 			y+=16;
 
 			if( town_array[workerPtr->town_recno]->nation_recno == nation_recno &&
@@ -684,14 +684,14 @@ void Firm::disp_worker_info(int dispY1, int refreshFlag)
 				info.disp_loyalty( x, y, x+100, workerPtr->loyalty(), workerPtr->target_loyalty(firm_recno), nation_recno, refreshFlag );
 			}
 			else
-				font_san.field( x, y, _("Loyalty"), x+100, _("N/A"), INFO_X2-2, refreshFlag );		// no loyalty because it does not belong to your empire
+				font_san.field( x, y, _("Loyalty"), x+100, _("N/A"), get_scaled_info_x2()-2, refreshFlag );		// no loyalty because it does not belong to your empire
 		}
 		else										// FirmInfo::live_in_town is 0
 		{
 			if( workerPtr->race_id )
 				info.disp_loyalty( x, y, x+100, workerPtr->loyalty(), workerPtr->target_loyalty(firm_recno), nation_recno, refreshFlag );
 			else
-				font_san.field( x, y, _("Loyalty"), x+100, _("N/A"), INFO_X2-2, refreshFlag );		// no loyalty because it does not belong to your empire
+				font_san.field( x, y, _("Loyalty"), x+100, _("N/A"), get_scaled_info_x2()-2, refreshFlag );		// no loyalty because it does not belong to your empire
 		}
 
 		y+=16;
@@ -706,7 +706,7 @@ void Firm::disp_worker_info(int dispY1, int refreshFlag)
 			str = _("N/A");
 
 		font_san.field( x, y, _(Skill::skill_str_array[workerPtr->skill_id-1]),
-			x+100, str, INFO_X2-2, refreshFlag);
+			x+100, str, get_scaled_info_x2()-2, refreshFlag);
 
 		y+=16;
 
@@ -719,7 +719,7 @@ void Firm::disp_worker_info(int dispY1, int refreshFlag)
 			else
 				str = _("N/A");
 
-			font_san.field( x, y, _("Combat"), x+100, str, INFO_X2-2, refreshFlag);
+			font_san.field( x, y, _("Combat"), x+100, str, get_scaled_info_x2()-2, refreshFlag);
 			y+=16;
 
 			//---------------------------------------//
@@ -728,7 +728,7 @@ void Firm::disp_worker_info(int dispY1, int refreshFlag)
 			str += "/";
 			str += workerPtr->max_hit_points();
 
-			font_san.field( x, y, _("Hit Points"), x+100, str, INFO_X2-2, refreshFlag);
+			font_san.field( x, y, _("Hit Points"), x+100, str, get_scaled_info_x2()-2, refreshFlag);
 		}
 	}
 }
@@ -742,15 +742,15 @@ void Firm::disp_overseer_info(int dispY1, int refreshFlag)
 	if( refreshFlag == INFO_REPAINT )
 	{
 		if( firm_id == FIRM_CAMP )
-			vga_util.d3_panel_up( INFO_X1, dispY1, INFO_X2, dispY1+71 );
+			vga_util.d3_panel_up( get_scaled_info_x1(), dispY1, get_scaled_info_x2(), dispY1+71 );
 		else
-			vga_util.d3_panel_up( INFO_X1, dispY1, INFO_X2, dispY1+55 );
+			vga_util.d3_panel_up( get_scaled_info_x1(), dispY1, get_scaled_info_x2(), dispY1+55 );
 	}
 
 	if( !overseer_recno )
 		return;
 
-	int x=INFO_X1+4, y=dispY1+4;
+	int x=get_scaled_info_x1()+4, y=dispY1+4;
 
 	Unit* unitPtr = unit_array[overseer_recno];
 
@@ -761,13 +761,13 @@ void Firm::disp_overseer_info(int dispY1, int refreshFlag)
 	}
 
 	font_san.field( x, y, _(Skill::skill_str_array[unitPtr->skill.skill_id-1]),
-		x+100, unitPtr->skill.skill_level , 1, INFO_X2-2, refreshFlag);
+		x+100, unitPtr->skill.skill_level , 1, get_scaled_info_x2()-2, refreshFlag);
 
 	y+=16;
 
 	if( firm_id==FIRM_CAMP )		// only display combat level in camps and don't display it in seat of power
 	{
-		font_san.field( x, y, _("Combat") , x+100, unitPtr->skill.combat_level, 1, INFO_X2-2, refreshFlag);
+		font_san.field( x, y, _("Combat") , x+100, unitPtr->skill.combat_level, 1, get_scaled_info_x2()-2, refreshFlag);
 		y+=16;
 	}
 
@@ -776,7 +776,7 @@ void Firm::disp_overseer_info(int dispY1, int refreshFlag)
 	str += "/";
 	str += unitPtr->max_hit_points;
 
-	font_san.field( x, y, _("Hit Points"), x+100, str, INFO_X2-2, refreshFlag);
+	font_san.field( x, y, _("Hit Points"), x+100, str, get_scaled_info_x2()-2, refreshFlag);
 }
 //----------- End of function Firm::disp_overseer_info -----------//
 
@@ -791,7 +791,7 @@ void Firm::disp_hit_point(int dispY1)
 	else
 		hitPoints = hit_points;
 
-	Vga::active_buf->indicator(0x0b, INFO_X1+58, dispY1+1, hitPoints, max_hit_points, 0);
+	Vga::active_buf->indicator(0x0b, get_scaled_info_x1()+58, dispY1+1, hitPoints, max_hit_points, 0);
 }
 //----------- End of function Firm::disp_hit_point -----------//
 

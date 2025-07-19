@@ -367,15 +367,27 @@ void PlantBitmap::draw(int xLoc, int yLoc)
 
 	if( x1 < 0 || x2 >= ZOOM_WIDTH || y1 < 0 || y2 >= ZOOM_HEIGHT )
 	{
-		vga_back.put_bitmap_area_trans_decompress( x1+ZOOM_X1, y1+ZOOM_Y1, bitmap_ptr,
-			MAX(0,x1)-x1, MAX(0,y1)-y1, MIN(ZOOM_WIDTH-1,x2)-x1, MIN(ZOOM_HEIGHT-1,y2)-y1 );
+		// Check bounds to prevent buffer overflow
+		int destX = x1+ZOOM_X1;
+		int destY = y1+ZOOM_Y1;
+		if( destX >= 0 && destY >= 0 && destX + bitmap_width <= vga_back.buf_width() && destY + bitmap_height <= vga_back.buf_height() )
+		{
+			vga_back.put_bitmap_area_trans_decompress( destX, destY, bitmap_ptr,
+				MAX(0,x1)-x1, MAX(0,y1)-y1, MIN(ZOOM_WIDTH-1,x2)-x1, MIN(ZOOM_HEIGHT-1,y2)-y1 );
+		}
 	}
 
 	//---- the whole sprite is inside the view area ------//
 
 	else
 	{
-		vga_back.put_bitmap_trans_decompress( x1+ZOOM_X1, y1+ZOOM_Y1, bitmap_ptr );
+		// Check bounds to prevent buffer overflow
+		int destX = x1+ZOOM_X1;
+		int destY = y1+ZOOM_Y1;
+		if( destX >= 0 && destY >= 0 && destX + bitmap_width <= vga_back.buf_width() && destY + bitmap_height <= vga_back.buf_height() )
+		{
+			vga_back.put_bitmap_trans_decompress( destX, destY, bitmap_ptr );
+		}
 	}
 }
 //--------- End of function PlantBitmap::draw -----------//
@@ -436,15 +448,27 @@ void PlantBitmap::draw_at(int absBaseX, int absBaseY)
 		if( y2 >= ZOOM_HEIGHT )
 			srcY2 -= y2-(ZOOM_HEIGHT-1);
 
-		vga_back.put_bitmap_area_trans_decompress( x1+ZOOM_X1, y1+ZOOM_Y1,
-			bitmap_ptr, srcX1, srcY1, srcX2, srcY2 );
+		// Check bounds to prevent buffer overflow
+		int destX = x1+ZOOM_X1;
+		int destY = y1+ZOOM_Y1;
+		if( destX >= 0 && destY >= 0 && destX + bitmap_width <= vga_back.buf_width() && destY + bitmap_height <= vga_back.buf_height() )
+		{
+			vga_back.put_bitmap_area_trans_decompress( destX, destY,
+				bitmap_ptr, srcX1, srcY1, srcX2, srcY2 );
+		}
 	}
 
 	//---- the whole sprite is inside the view area ------//
 
 	else
 	{
-		vga_back.put_bitmap_trans_decompress( x1+ZOOM_X1, y1+ZOOM_Y1, bitmap_ptr );
+		// Check bounds to prevent buffer overflow
+		int destX = x1+ZOOM_X1;
+		int destY = y1+ZOOM_Y1;
+		if( destX >= 0 && destY >= 0 && destX + bitmap_width <= vga_back.buf_width() && destY + bitmap_height <= vga_back.buf_height() )
+		{
+			vga_back.put_bitmap_trans_decompress( destX, destY, bitmap_ptr );
+		}
 	}
 }
 //--------- End of function PlantBitmap::draw_at -----------//

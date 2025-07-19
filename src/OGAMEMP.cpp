@@ -775,6 +775,9 @@ void Game::multi_player_game(int lobbied, char *game_host)
 
 	sys.signal_exit_flag = 0; // Richard 24-12-2013: If player tried to exit just as the game loaded, cancel the exit request
 
+	// Resize window for gameplay mode
+	vga.resize_for_mode();
+
 	battle.run(nationPara, mpPlayerCount);
 
 	mem_del(nationPara);
@@ -1026,6 +1029,9 @@ void Game::load_mp_game(char *fileName, int lobbied, char *game_host)
 	sys.signal_exit_flag = 0; // Richard 24-12-2013: If player tried to exit just as the game loaded, cancel the exit request
 
 	sys.set_speed(config_adv.game_load_default_frame_speed, COMMAND_AUTO);	// set load game speed
+
+	// Resize window for gameplay mode
+	vga.resize_for_mode();
 
 	battle.run_loaded();		// 1-multiplayer game
 
@@ -2776,7 +2782,7 @@ int Game::mp_select_option(NewNationPara *nationPara, int *mpPlayerCount)
 					image_menu2.put_to_buf( &vga_back, "MPG-BSC");
 #endif
 					image_menu.put_back( 234, 15, menuTitleBitmap);
-					vga_util.blt_buf(0,0,VGA_WIDTH-1,VGA_HEIGHT-1,0);
+					vga_util.blt_buf(0,0,vga_back.buf_width()-1,vga_back.buf_height()-1,0);
 				}
 				if( refreshFlag & SGOPTION_RACE )
 					raceGroup.paint( reverse_race_table[tempConfig.race_id-1] );
@@ -2810,7 +2816,7 @@ int Game::mp_select_option(NewNationPara *nationPara, int *mpPlayerCount)
 				{
 					image_menu.put_to_buf( &vga_back, "MPG-O1");
 					image_menu.put_back( 234, 15, menuTitleBitmap);
-					vga_util.blt_buf(0,0,VGA_WIDTH-1,VGA_HEIGHT-1,0);
+					vga_util.blt_buf(0,0,vga_back.buf_width()-1,vga_back.buf_height()-1,0);
 				}
 				// ###### begin Gilbert 25/10 #######//
 				if( refreshFlag & SGOPTION_MAP_ID )
@@ -2839,7 +2845,7 @@ int Game::mp_select_option(NewNationPara *nationPara, int *mpPlayerCount)
 				{
 					image_menu.put_to_buf( &vga_back, "MPG-O2");
 					image_menu.put_back( 234, 15, menuTitleBitmap);
-					vga_util.blt_buf(0,0,VGA_WIDTH-1,VGA_HEIGHT-1,0);
+					vga_util.blt_buf(0,0,vga_back.buf_width()-1,vga_back.buf_height()-1,0);
 				}
 				if( refreshFlag & SGOPTION_RAW )
 				{
@@ -2873,7 +2879,7 @@ int Game::mp_select_option(NewNationPara *nationPara, int *mpPlayerCount)
 				{
 					image_menu.put_to_buf( &vga_back, "MPG-GOAL");
 					image_menu.put_back( 234, 15, menuTitleBitmap);
-					vga_util.blt_buf(0,0,VGA_WIDTH-1,VGA_HEIGHT-1,0);
+					vga_util.blt_buf(0,0,vga_back.buf_width()-1,vga_back.buf_height()-1,0);
 				}
 				if( refreshFlag & SGOPTION_CLEAR_ENEMY )
 					clearEnemyButton.paint();
@@ -2952,7 +2958,7 @@ int Game::mp_select_option(NewNationPara *nationPara, int *mpPlayerCount)
 			// ------- display difficulty -------//
 			if( (refreshFlag & SGOPTION_DIFFICULTY) || (mRefreshFlag & MGOPTION_PLAYERS) )
 			{
-				font_san.center_put( VGA_WIDTH-82, offsetY+74, VGA_WIDTH-20, offsetY+108, 
+				font_san.center_put( vga_back.buf_width()-82, offsetY+74, vga_back.buf_width()-20, offsetY+108, 
 					misc.format(tempConfig.multi_player_difficulty(regPlayerCount-1)), 1 );
 			}
 
@@ -4560,7 +4566,7 @@ int Game::mp_select_load_option(char *fileName)
 					image_menu2.put_to_buf( &vga_back, "MPG-BSC");
 #endif
 					image_menu.put_back( 234, 15, menuTitleBitmap);
-					vga_util.blt_buf(0,0,VGA_WIDTH-1,VGA_HEIGHT-1,0);
+					vga_util.blt_buf(0,0,vga_back.buf_width()-1,vga_back.buf_height()-1,0);
 				}
 				if( refreshFlag & SGOPTION_RACE )
 					raceGroup.paint( reverse_race_table[tempConfig.race_id-1] );
@@ -4594,7 +4600,7 @@ int Game::mp_select_load_option(char *fileName)
 				{
 					image_menu.put_to_buf( &vga_back, "MPG-O1");
 					image_menu.put_back( 234, 15, menuTitleBitmap);
-					vga_util.blt_buf(0,0,VGA_WIDTH-1,VGA_HEIGHT-1,0);
+					vga_util.blt_buf(0,0,vga_back.buf_width()-1,vga_back.buf_height()-1,0);
 				}
 				// ###### begin Gilbert 24/10 #######//
 				if( refreshFlag & SGOPTION_MAP_ID )
@@ -4623,7 +4629,7 @@ int Game::mp_select_load_option(char *fileName)
 				{
 					image_menu.put_to_buf( &vga_back, "MPG-O2");
 					image_menu.put_back( 234, 15, menuTitleBitmap);
-					vga_util.blt_buf(0,0,VGA_WIDTH-1,VGA_HEIGHT-1,0);
+					vga_util.blt_buf(0,0,vga_back.buf_width()-1,vga_back.buf_height()-1,0);
 				}
 				if( refreshFlag & SGOPTION_RAW )
 				{
@@ -4657,7 +4663,7 @@ int Game::mp_select_load_option(char *fileName)
 				{
 					image_menu.put_to_buf( &vga_back, "MPG-GOAL");
 					image_menu.put_back( 234, 15, menuTitleBitmap);
-					vga_util.blt_buf(0,0,VGA_WIDTH-1,VGA_HEIGHT-1,0);
+					vga_util.blt_buf(0,0,vga_back.buf_width()-1,vga_back.buf_height()-1,0);
 				}
 				if( refreshFlag & SGOPTION_CLEAR_ENEMY )
 					clearEnemyButton.paint();
@@ -4736,7 +4742,7 @@ int Game::mp_select_load_option(char *fileName)
 			// ------- display difficulty -------//
 			if( (refreshFlag & SGOPTION_DIFFICULTY) || (mRefreshFlag & MGOPTION_PLAYERS) )
 			{
-				font_san.center_put( VGA_WIDTH-82, offsetY+74, VGA_WIDTH-20, offsetY+108, 
+				font_san.center_put( vga_back.buf_width()-82, offsetY+74, vga_back.buf_width()-20, offsetY+108, 
 					misc.format(tempConfig.difficulty_rating), 1 );
 			}
 

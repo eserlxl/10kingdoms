@@ -46,6 +46,9 @@ static void disp_credits(int y, const char** creditNameArray);
 
 void Game::view_credits()
 {
+	// Resize window for UI mode
+	vga.resize_for_mode();
+
 	//----- display the first page ------//
 
 	vga_util.disp_image_file("CREDITS1");

@@ -300,7 +300,7 @@ void FirmHarbor::disp_main_menu(int refreshFlag)
 {
 	firm_harbor_ptr = this;
 
-	disp_basic_info(INFO_Y1, refreshFlag);
+	disp_basic_info(get_scaled_info_y1(), refreshFlag);
 
 	if( !should_show_harbor_info() )
 		return;
@@ -517,7 +517,7 @@ int FirmHarbor::detect_det()
 //
 void FirmHarbor::disp_ship_goods(UnitMarine* shipUnit, int dispY1, int refreshFlag)
 {
-	int	x=INFO_X1+20, y=dispY1+5;
+	int	x=get_scaled_info_x1()+20, y=dispY1+5;
 	String str;
 
 	int i;
@@ -530,7 +530,7 @@ void FirmHarbor::disp_ship_goods(UnitMarine* shipUnit, int dispY1, int refreshFl
 		font_san.disp( x+25, y+2, shipUnit->raw_qty_array[i], 1, x+59 );
 	}
 
-	x =INFO_X1+20;
+	x =get_scaled_info_x1()+20;
 	y+=19;
 
 	for( i=0; i<MAX_PRODUCT; i++, x+=60)
@@ -559,7 +559,7 @@ void FirmHarbor::disp_ship_units(UnitMarine* shipUnit, int dispY1, int refreshFl
 
 	for( int i=0 ; i<MAX_UNIT_IN_SHIP ; i++ )
 	{
-		x = INFO_X1+10+i%5*37;
+		x = get_scaled_info_x1()+10+i%5*37;
 		y = dispY1+i/5*29;
 
 		if( i<shipUnit->unit_count )
@@ -837,7 +837,7 @@ static void i_disp_queue_button(ButtonCustom *button, int repaintBody)
 //
 int FirmHarbor::detect_build_menu()
 {
-	int 	 	 unitId, x=INFO_X1+2, y=INFO_Y1, rc, quitFlag, waitFlag;
+	int 	 	 unitId, x=get_scaled_info_x1()+2, y=get_scaled_info_y1(), rc, quitFlag, waitFlag;
 	UnitInfo* unitInfo;
 
 	waitFlag = 0;
@@ -1127,7 +1127,7 @@ void FirmHarbor::disp_build_info(int refreshFlag)
 	if( !build_unit_id || nation_recno!=nation_array.player_recno )
 		return;
 
-	int dispY1 = INFO_Y1+26;
+	int dispY1 = get_scaled_info_y1()+26;
 	int x=MSG_X1+3, y=MSG_Y1+3;
 
 	if( refreshFlag == INFO_REPAINT )
