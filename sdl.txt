@@ -1,0 +1,70 @@
+=== Ten Kingdoms 2.15.7 ===
+Platform: Linux
+Little endian
+Current SDL video driver: (null)
+SDL version: 2.32.56
+Compiled SDL version: 2.32.56
+
+-- Video drivers --
+0: wayland
+1: x11
+2: KMSDRM
+3: offscreen
+4: dummy
+5: evdev
+
+
+-- Renderer opengl (0) --
+Capabilities: hardware accelerated
+V-sync capable: on
+Rendering to texture supported: yes
+Pixel formats:
+	SDL_PIXELFORMAT_ARGB8888
+	SDL_PIXELFORMAT_ABGR8888
+	SDL_PIXELFORMAT_RGB888
+	SDL_PIXELFORMAT_BGR888
+
+-- Renderer opengles2 (1) --
+Capabilities: hardware accelerated
+V-sync capable: on
+Rendering to texture supported: yes
+Pixel formats:
+	SDL_PIXELFORMAT_ARGB8888
+	SDL_PIXELFORMAT_ABGR8888
+	SDL_PIXELFORMAT_RGB888
+	SDL_PIXELFORMAT_BGR888
+
+-- Renderer vulkan (2) --
+Capabilities: hardware accelerated
+V-sync capable: on
+Rendering to texture supported: yes
+Maximum texture size: 16384x16384
+Pixel formats:
+	SDL_PIXELFORMAT_ARGB8888
+	SDL_PIXELFORMAT_ABGR8888
+
+-- Renderer gpu (3) --
+Capabilities: hardware accelerated
+V-sync capable: on
+Rendering to texture supported: yes
+Maximum texture size: 16384x16384
+Pixel formats:
+	SDL_PIXELFORMAT_ARGB8888
+	SDL_PIXELFORMAT_ABGR8888
+	SDL_PIXELFORMAT_RGB888
+	SDL_PIXELFORMAT_BGR888
+
+-- Renderer software (4) --
+Capabilities: software fallback
+V-sync capable: on
+Rendering to texture supported: yes
+Pixel formats:
+	SDL_PIXELFORMAT_ARGB8888
+	SDL_PIXELFORMAT_ABGR8888
+	SDL_PIXELFORMAT_RGBA8888
+	SDL_PIXELFORMAT_BGRA8888
+	SDL_PIXELFORMAT_RGB888
+	SDL_PIXELFORMAT_BGR888
+	SDL_PIXELFORMAT_RGB565
+	SDL_PIXELFORMAT_RGB555
+

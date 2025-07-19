@@ -105,11 +105,11 @@ public:
 
 	char	skill_id;
 	char  skill_level;
-	char  skill_level_minor;
-	char  skill_potential;
+	unsigned char skill_level_minor;
+	unsigned char skill_potential;
 
 	char  combat_level;
-	char  combat_level_minor;
+	unsigned char combat_level_minor;
 
 	short spy_recno;
 
