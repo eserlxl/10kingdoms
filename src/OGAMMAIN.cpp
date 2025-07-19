@@ -153,18 +153,20 @@ void Game::main_menu()
 				{
 					// Clamp source rectangle to bitmap size
 					char* bitmapPtr = main_option_flag[i] ? menuBitmap : darkBitmap;
-					int bmp_w = *((short*)bitmapPtr);
-					int bmp_h = *(((short*)bitmapPtr)+1);
-					int src_x1 = std::max(0, main_option_array[i].x1 - SWORD1_X);
-					int src_y1 = std::max(0, main_option_array[i].y1 - SWORD1_Y);
-					int src_x2 = std::min(bmp_w-1, main_option_array[i].x2 - SWORD1_X);
-					int src_y2 = std::min(bmp_h-1, main_option_array[i].y2 - SWORD1_Y);
-					if (src_x1 <= src_x2 && src_y1 <= src_y2) {
-						mouse.hide_area(main_option_array[i].x1, main_option_array[i].y1,
-							main_option_array[i].x2, main_option_array[i].y2);
-						vga_front.put_bitmap_area(SWORD1_X, SWORD1_Y, bitmapPtr,
-							src_x1, src_y1, src_x2, src_y2);
-						mouse.show_area();
+					if (bitmapPtr) {
+						int bmp_w = *((short*)bitmapPtr);
+						int bmp_h = *(((short*)bitmapPtr)+1);
+						int src_x1 = std::max(0, main_option_array[i].x1 - SWORD1_X);
+						int src_y1 = std::max(0, main_option_array[i].y1 - SWORD1_Y);
+						int src_x2 = std::min(bmp_w-1, main_option_array[i].x2 - SWORD1_X);
+						int src_y2 = std::min(bmp_h-1, main_option_array[i].y2 - SWORD1_Y);
+						if (src_x1 <= src_x2 && src_y1 <= src_y2) {
+							mouse.hide_area(main_option_array[i].x1, main_option_array[i].y1,
+								main_option_array[i].x2, main_option_array[i].y2);
+							vga_front.put_bitmap_area(SWORD1_X, SWORD1_Y, bitmapPtr,
+								src_x1, src_y1, src_x2, src_y2);
+							mouse.show_area();
+						}
 					}
 				}
 			}
@@ -175,10 +177,14 @@ void Game::main_menu()
 		// --- BEGIN: Safe menu bitmap drawing and optional scaling ---
 		const int SCALE_MENU_BITMAP = 1; // Always scale
 		auto scale_bitmap = [](char* src, int src_w, int src_h, char* dst, int dst_w, int dst_h) {
+			if (!src || !dst || src_w <= 0 || src_h <= 0 || dst_w <= 0 || dst_h <= 0)
+				return;
 			for (int y = 0; y < dst_h; ++y) {
 				int src_y = y * src_h / dst_h;
+				if (src_y >= src_h) src_y = src_h - 1;
 				for (int x = 0; x < dst_w; ++x) {
 					int src_x = x * src_w / dst_w;
+					if (src_x >= src_w) src_x = src_w - 1;
 					dst[y * dst_w + x] = src[src_y * src_w + src_x];
 				}
 			}
@@ -188,20 +194,27 @@ void Game::main_menu()
 			mouse_cursor.set_icon(CURSOR_NORMAL);
 			char* bitmapPtr = menuBitmap;
 			if (bitmapPtr) {
+				// Add bounds checking for bitmap header - use a more reasonable check
 				int bmp_w = *((short*)bitmapPtr);
 				int bmp_h = *(((short*)bitmapPtr)+1);
-				char* bmp_data = bitmapPtr + 4;
-				static char* scaled_buf = nullptr;
-				static int scaled_buf_size = 0;
-				int needed_size = VGA_WIDTH * VGA_HEIGHT;
-				if (!scaled_buf || scaled_buf_size < needed_size) {
-					if (scaled_buf) delete[] scaled_buf;
-					scaled_buf = new char[needed_size];
-					scaled_buf_size = needed_size;
+				
+				// Validate bitmap dimensions - allow reasonable sizes
+				if (bmp_w <= 0 || bmp_h <= 0 || bmp_w > 2000 || bmp_h > 2000) {
+					vga_front.bar(0, 0, VGA_WIDTH-1, VGA_HEIGHT-1, V_BLACK);
+				} else {
+					char* bmp_data = bitmapPtr + 4;
+					static char* scaled_buf = nullptr;
+					static int scaled_buf_size = 0;
+					int needed_size = VGA_WIDTH * VGA_HEIGHT;
+					if (!scaled_buf || scaled_buf_size < needed_size) {
+						if (scaled_buf) delete[] scaled_buf;
+						scaled_buf = new char[needed_size];
+						scaled_buf_size = needed_size;
+					}
+					scale_bitmap(bmp_data, bmp_w, bmp_h, scaled_buf, VGA_WIDTH, VGA_HEIGHT);
+					vga_front.bar(0, 0, VGA_WIDTH-1, VGA_HEIGHT-1, V_BLACK);
+					vga_front.put_bitmap2(0, 0, VGA_WIDTH, VGA_HEIGHT, scaled_buf);
 				}
-				scale_bitmap(bmp_data, bmp_w, bmp_h, scaled_buf, VGA_WIDTH, VGA_HEIGHT);
-				vga_front.bar(0, 0, VGA_WIDTH-1, VGA_HEIGHT-1, V_BLACK);
-				vga_front.put_bitmap2(0, 0, VGA_WIDTH, VGA_HEIGHT, scaled_buf);
 			} else {
 				vga_front.bar(0, 0, VGA_WIDTH-1, VGA_HEIGHT-1, V_BLACK);
 			}
@@ -253,24 +266,58 @@ void Game::main_menu()
 			i = pointingOption;
 			if( i >= 0 && i < MAIN_OPTION_COUNT )
 			{
-				mouse.hide_area(main_option_array[i].x1, main_option_array[i].y1,
-					main_option_array[i].x2, main_option_array[i].y2);
-				vga_front.put_bitmap_area(SWORD1_X, SWORD1_Y, menuBitmap,
-					main_option_array[i].x1 - SWORD1_X, main_option_array[i].y1 - SWORD1_Y,
-					main_option_array[i].x2 - SWORD1_X, main_option_array[i].y2 - SWORD1_Y);
-				mouse.show_area();
+				// Add bounds checking for bitmap access - use more reasonable checks
+				if (menuBitmap) {
+					int bmp_w = *((short*)menuBitmap);
+					int bmp_h = *(((short*)menuBitmap)+1);
+					int src_x1 = main_option_array[i].x1 - SWORD1_X;
+					int src_y1 = main_option_array[i].y1 - SWORD1_Y;
+					int src_x2 = main_option_array[i].x2 - SWORD1_X;
+					int src_y2 = main_option_array[i].y2 - SWORD1_Y;
+					
+					// Clamp source coordinates to bitmap bounds
+					if (src_x1 < 0) src_x1 = 0;
+					if (src_y1 < 0) src_y1 = 0;
+					if (src_x2 >= bmp_w) src_x2 = bmp_w - 1;
+					if (src_y2 >= bmp_h) src_y2 = bmp_h - 1;
+					
+					if (src_x1 <= src_x2 && src_y1 <= src_y2) {
+						mouse.hide_area(main_option_array[i].x1, main_option_array[i].y1,
+							main_option_array[i].x2, main_option_array[i].y2);
+						vga_front.put_bitmap_area(SWORD1_X, SWORD1_Y, menuBitmap,
+							src_x1, src_y1, src_x2, src_y2);
+						mouse.show_area();
+					}
+				}
 			}
 
 			// put new hightlighted option
 			i = newPointingOption;
 			if( i >= 0 && i < MAIN_OPTION_COUNT )
 			{
-				mouse.hide_area(main_option_array[i].x1, main_option_array[i].y1,
-					main_option_array[i].x2, main_option_array[i].y2);
-				vga_front.put_bitmap_area(SWORD1_X, SWORD1_Y, brightBitmap,
-					main_option_array[i].x1 - SWORD1_X, main_option_array[i].y1 - SWORD1_Y,
-					main_option_array[i].x2 - SWORD1_X, main_option_array[i].y2 - SWORD1_Y);
-				mouse.show_area();
+				// Add bounds checking for bitmap access - use more reasonable checks
+				if (brightBitmap) {
+					int bmp_w = *((short*)brightBitmap);
+					int bmp_h = *(((short*)brightBitmap)+1);
+					int src_x1 = main_option_array[i].x1 - SWORD1_X;
+					int src_y1 = main_option_array[i].y1 - SWORD1_Y;
+					int src_x2 = main_option_array[i].x2 - SWORD1_X;
+					int src_y2 = main_option_array[i].y2 - SWORD1_Y;
+					
+					// Clamp source coordinates to bitmap bounds
+					if (src_x1 < 0) src_x1 = 0;
+					if (src_y1 < 0) src_y1 = 0;
+					if (src_x2 >= bmp_w) src_x2 = bmp_w - 1;
+					if (src_y2 >= bmp_h) src_y2 = bmp_h - 1;
+					
+					if (src_x1 <= src_x2 && src_y1 <= src_y2) {
+						mouse.hide_area(main_option_array[i].x1, main_option_array[i].y1,
+							main_option_array[i].x2, main_option_array[i].y2);
+						vga_front.put_bitmap_area(SWORD1_X, SWORD1_Y, brightBitmap,
+							src_x1, src_y1, src_x2, src_y2);
+						mouse.show_area();
+					}
+				}
 			}
 			pointingOption = newPointingOption;
 		}
