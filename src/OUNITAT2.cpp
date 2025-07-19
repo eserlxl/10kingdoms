@@ -2311,7 +2311,7 @@ void Unit::process_attack_wall()
 static void invalidate_attack_target(Unit *unitPtr)
 {
 	if( unitPtr->action_mode2 == unitPtr->action_mode &&
-		unitPtr->action_para2 == unitPtr->action_para2 &&
+		unitPtr->action_para2 == unitPtr->action_para &&
 		unitPtr->action_x_loc2 == unitPtr->action_x_loc &&
 		unitPtr->action_y_loc2 == unitPtr->action_y_loc )
 	{
