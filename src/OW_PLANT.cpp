@@ -291,7 +291,8 @@ void World::plant_death(int scanDensity)
 				if( x > 0)
 				{
 					totalSpace++;
-					if( (locPtr-1)->is_plant() )
+					Location *westLoc = get_loc(x-1,y);
+					if( westLoc && westLoc->is_plant() )
 						neighbour++;
 				}
 
@@ -299,24 +300,26 @@ void World::plant_death(int scanDensity)
 				if( x < max_x_loc-1)
 				{
 					totalSpace++;
-					if( (locPtr+1)->is_plant() )
+					Location *eastLoc = get_loc(x+1,y);
+					if( eastLoc && eastLoc->is_plant() )
 						neighbour++;
 				}
 
 				if( y > 0)
 				{
-					locPtr = get_loc(x,y-1);
+					Location *northLoc = get_loc(x,y-1);
 
 					// north square
 					totalSpace++;
-					if( locPtr->is_plant() )
+					if( northLoc && northLoc->is_plant() )
 						neighbour++;
 				
 					// north west
 					if( x > 0)
 					{
 						totalSpace++;
-						if( (locPtr-1)->is_plant() )
+						Location *northWestLoc = get_loc(x-1,y-1);
+						if( northWestLoc && northWestLoc->is_plant() )
 							neighbour++;
 					}
 
@@ -324,25 +327,27 @@ void World::plant_death(int scanDensity)
 					if( x < max_x_loc-1)
 					{
 						totalSpace++;
-						if( (locPtr+1)->is_plant() )
+						Location *northEastLoc = get_loc(x+1,y-1);
+						if( northEastLoc && northEastLoc->is_plant() )
 							neighbour++;
 					}
 				}
 
-				if( y < max_x_loc-1)
+				if( y < max_y_loc-1)
 				{
-					locPtr = get_loc(x,y+1);
+					Location *southLoc = get_loc(x,y+1);
 
 					// south square
 					totalSpace++;
-					if( locPtr->is_plant() )
+					if( southLoc && southLoc->is_plant() )
 						neighbour++;
 				
 					// south west
 					if( x > 0)
 					{
 						totalSpace++;
-						if( (locPtr-1)->is_plant() )
+						Location *southWestLoc = get_loc(x-1,y+1);
+						if( southWestLoc && southWestLoc->is_plant() )
 							neighbour++;
 					}
 
@@ -350,7 +355,8 @@ void World::plant_death(int scanDensity)
 					if( x < max_x_loc-1)
 					{
 						totalSpace++;
-						if( (locPtr+1)->is_plant() )
+						Location *southEastLoc = get_loc(x+1,y+1);
+						if( southEastLoc && southEastLoc->is_plant() )
 							neighbour++;
 					}
 				}
@@ -391,6 +397,9 @@ void World::plant_init()
 		int x = 1+misc.random(max_x_loc-2);
 
 		Location *l = get_loc(x,y);
+		if (!l)
+			continue;
+			
 		int build_flag = 1;
 		char teraType = terrain_res[l->terrain_id]->average_type;
 
@@ -399,6 +408,11 @@ void World::plant_init()
 			for( int x1 = x-1; x1 <= x+1; ++x1)
 			{
 				l = get_loc(x1,y1);
+				if (!l)
+				{
+					build_flag = 0;
+					break;
+				}
 				// #### begin Gilbert 6/3 #######//
 				if( !l->can_add_plant() || terrain_res[l->terrain_id]->average_type != teraType)
 					build_flag = 0;
@@ -438,7 +452,13 @@ void World::plant_spray(short *plantArray, char strength, short x, short y)
 
 	//---------- if the space is empty put a plant on it ----------//
 	Location *newl = get_loc(x, y);
+	if (!newl)
+		return;
+		
 	short basePlantId = plantArray[misc.random(PLANT_ARRAY_SIZE)];
+	if (basePlantId <= 0)
+		return;
+		
 	short plantSize = misc.random(plant_res[basePlantId]->bitmap_count);
 	if( plantSize > strength)
 		plantSize = strength;
