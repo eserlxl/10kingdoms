@@ -616,6 +616,9 @@ void Unit::hit_firm(Unit* attackUnit, int targetXLoc, int targetYLoc, float atta
 		war_point_array.add_point(targetFirm->center_x, targetFirm->center_y);
 	// ###### end Gilbert 6/10 #######//
 
+	// update attack date in case being_attacked() is not called
+	targetFirm->last_attacked_date = info.game_date;
+
 	//---------- damage to the firm ------------//
 
 	targetFirm->hit_points -= attackDamage/3;		// /3 so that it takes longer to destroy a firm
