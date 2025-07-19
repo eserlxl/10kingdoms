@@ -264,13 +264,17 @@ void Info::next_day()
 //
 void Info::disp_panel()
 {
+	// First, ensure the entire screen is properly initialized
 	image_interface.put_to_buf( &vga_back, "MAINSCR" );
-
 	//------ keep a copy of bitmap of the panel texture -----//
 
 	if( !info_background_bitmap ) 
+	{
+		// Allocate memory for the background bitmap
 		info_background_bitmap = mem_add( 4 + (INFO_X2-INFO_X1+1)*(INFO_Y2-INFO_Y1+1) );
+	}
 
+	// Read the current state of the info panel area
 	vga_back.read_bitmap( INFO_X1, INFO_Y1, INFO_X2, INFO_Y2, info_background_bitmap );
 }
 //--------- End of function Info::disp_panel ---------//
@@ -293,8 +297,8 @@ void Info::disp()
 	if( option_menu.is_active() )
 		return;
 
-	vga_back.put_bitmap( INFO_X1, INFO_Y1, info_background_bitmap );
-	vga_front.put_bitmap( INFO_X1, INFO_Y1, info_background_bitmap );
+	vga_back.put_bitmap( get_scaled_info_x1(), get_scaled_info_y1(), info_background_bitmap );
+	vga_front.put_bitmap( get_scaled_info_x1(), get_scaled_info_y1(), info_background_bitmap );
 
 	//------- use front buffer -------//
 

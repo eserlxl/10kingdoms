@@ -39,10 +39,11 @@ enum { INFO_REPAINT=10, INFO_UPDATE, INFO_SPECIAL };
 
 #define TOP_MENU_X1	 4
 #define TOP_MENU_Y1   4
-#define TOP_MENU_X2   (ZOOM_X2-4)
+#define TOP_MENU_X2   (ZOOM_X2-4)  // End at zoom window boundary
 #define TOP_MENU_Y2	 30
 
-#define INFO_X1 (WORLD_WIDTH-MAX_MAP_WIDTH-4)
+// Info panel positioning - positioned to the right of the zoom window
+#define INFO_X1 (ZOOM_X2+1)  // Start right after the zoom window ends
 #define INFO_Y1   265
 #define INFO_X2   (WORLD_WIDTH-1)  // Extend to the right edge of the screen
 #define INFO_Y2	800
