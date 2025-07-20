@@ -3,12 +3,10 @@ License Synopsis
 The source code and game data of Ten Kingdoms: Ancient Adversaries
 is under the GPL version 3, which is given in full below.
 
-NOTE: Seven Kingdoms is a trademark of Enlight Software Ltd. and the
-7kfans project is using the trademark with permission. 
- * Ten Kingdoms is only a public fork of Seven Kingdoms project for 7kfans. *
-This license does not constitute a transfer of any ownership, rights, or
-authority to the trademarks owned by Enlight. Any questions
-regarding use must be directed to Enlight.
+NOTE: Seven Kingdoms is a trademark of Enlight Software Ltd., used with permission by the 7kfans community.  
+Ten Kingdoms is a community continuation of the Seven Kingdoms project.  
+This license does not transfer any rights to the trademarks owned by Enlight.  
+For questions regarding trademark use, please contact Enlight Software Ltd.
 
 Additional works included within (licenses below):
 * Contains a subset of libuuid, modified for platform compatibility
