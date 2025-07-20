@@ -202,7 +202,11 @@ bool WavStream::seek(size_t frame_no)
 
 void WavStream::close()
 {
-   delete this->in;
+   if (this->in)
+   {
+      delete this->in;
+      this->in = NULL;
+   }
    this->clear();
 }
 

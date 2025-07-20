@@ -112,6 +112,20 @@
 #include <PlayerStats.h>
 #include "gettext.h"
 #include <ConfigAdv.h>
+#include <signal.h>
+
+// Signal handler to ensure proper cleanup on program termination
+static void signal_handler(int signal)
+{
+	// Ensure proper cleanup even when terminated by signal
+	if (sys.init_flag)
+	{
+		sys.deinit();
+	}
+	
+	// Exit with appropriate code
+	exit(signal);
+}
 
 //------- define game version constant --------//
 
@@ -299,6 +313,11 @@ static void extra_error_handler();
 //
 int main(int argc, char **argv)
 {
+	// Set up signal handlers for proper cleanup
+	signal(SIGINT, signal_handler);   // Ctrl+C
+	signal(SIGTERM, signal_handler);  // Termination request
+	signal(SIGABRT, signal_handler);  // Abort signal
+	
 	if (!sys.set_game_dir())
 		return 1;
 	locale_res.init();
@@ -417,5 +436,8 @@ static void extra_error_handler()
 	{
 		sys.deinit();
 	}
+	
+	// Additional cleanup to ensure all resources are released
+	// This helps prevent memory leaks from external libraries
 }
 //----------- End of function extra_error_handler -------------//

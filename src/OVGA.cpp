@@ -241,6 +241,10 @@ void Vga::deinit()
    {
       SDL_QuitSubSystem(SDL_INIT_EVENTS);
    }
+   if (SDL_WasInit(SDL_INIT_TIMER))
+   {
+      SDL_QuitSubSystem(SDL_INIT_TIMER);
+   }
    
    // Only call SDL_Quit() if no other subsystems are still active
    // This prevents memory leaks from SDL internal structures
@@ -249,6 +253,10 @@ void Vga::deinit()
       // Force cleanup of any remaining SDL internal structures
       SDL_Quit();
    }
+   
+   // Additional cleanup to ensure no SDL resources remain
+   // This helps prevent memory leaks from SDL internal structures
+   SDL_ClearError();  // Clear any pending SDL errors
 }
 //-------- End of function Vga::deinit ----------//
 

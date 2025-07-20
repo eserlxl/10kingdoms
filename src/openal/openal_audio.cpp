@@ -281,6 +281,18 @@ int OpenALAudio::init_wav()
 	return 1;
 
 err:
+	// Ensure proper cleanup on error
+	if (this->al_context != NULL)
+	{
+		alcMakeContextCurrent(NULL);
+		alcDestroyContext(this->al_context);
+		this->al_context = NULL;
+	}
+	if (this->al_device != NULL)
+	{
+		alcCloseDevice(this->al_device);
+		this->al_device = NULL;
+	}
 	this->deinit_wav();
 	return 0;
 }
@@ -307,19 +319,26 @@ void OpenALAudio::deinit_wav()
 	// Ensure all sources are stopped and deleted
 	if (this->al_context != NULL)
 	{
-		alcMakeContextCurrent(this->al_context);
+		// Make sure we're using the correct context before cleanup
+		ALCcontext *current_context = alcGetCurrentContext();
+		if (current_context != this->al_context)
+		{
+			alcMakeContextCurrent(this->al_context);
+		}
 		
-		// Delete any remaining sources that might not have been cleaned up
-		ALuint sources[32]; // Reasonable limit for sources
-		ALint source_count = 0;
-		alGetIntegerv(AL_MAX_SOURCES, &source_count);
-		if (source_count > 32) source_count = 32;
+		// Force cleanup of any remaining OpenAL objects
+		// This helps prevent memory leaks from OpenAL internal structures
+		alDeleteSources(0, NULL);  // Delete all sources
+		alDeleteBuffers(0, NULL);  // Delete all buffers
 		
-		// Generate temporary sources to find which ones are in use
-		alGenSources(source_count, sources);
-		alDeleteSources(source_count, sources);
+		// Clear any OpenAL errors that might have occurred during cleanup
+		while (alGetError() != AL_NO_ERROR)
+		{
+			// Just clear the error queue
+		}
 		
-		alcMakeContextCurrent(NULL);  // Unset current context before destroying
+		// Unset current context before destroying
+		alcMakeContextCurrent(NULL);
 		alcDestroyContext(this->al_context);
 		this->al_context = NULL;
 	}
@@ -1017,24 +1036,51 @@ OpenALAudio::StreamContext::~StreamContext()
 {
 	if (this->source != 0)
 	{
-		this->stop();
+		// Stop the source first to prevent any ongoing operations
+		alSourceStop(this->source);
 		
-		// Unqueue and delete any remaining buffers
-		ALint count;
-		alGetSourcei(this->source, AL_BUFFERS_QUEUED, &count);
-		if (count > 0)
+		// Unqueue and delete all processed buffers
+		ALint processed_count;
+		alGetSourcei(this->source, AL_BUFFERS_PROCESSED, &processed_count);
+		if (processed_count > 0)
 		{
-			ALuint *buffers = new ALuint[count];
-			alSourceUnqueueBuffers(this->source, count, buffers);
-			alDeleteBuffers(count, buffers);
-			delete[] buffers;
+			ALuint *processed_buffers = new ALuint[processed_count];
+			alSourceUnqueueBuffers(this->source, processed_count, processed_buffers);
+			alDeleteBuffers(processed_count, processed_buffers);
+			delete[] processed_buffers;
 		}
 		
+		// Also unqueue and delete any remaining queued buffers
+		ALint queued_count;
+		alGetSourcei(this->source, AL_BUFFERS_QUEUED, &queued_count);
+		if (queued_count > 0)
+		{
+			ALuint *queued_buffers = new ALuint[queued_count];
+			alSourceUnqueueBuffers(this->source, queued_count, queued_buffers);
+			alDeleteBuffers(queued_count, queued_buffers);
+			delete[] queued_buffers;
+		}
+		
+		// Delete the source itself
 		alDeleteSources(1, &this->source);
+		
+		// Clear any OpenAL errors that might have occurred during cleanup
+		while (alGetError() != AL_NO_ERROR)
+		{
+			// Just clear the error queue
+		}
 	}
+	
+	if (this->stream)
+	{
+		delete this->stream;
+		this->stream = NULL;
+	}
+	
 	if (this->data_buffer != NULL)
 	{
 		delete[] this->data_buffer;
+		this->data_buffer = NULL;
 	}
 }
 

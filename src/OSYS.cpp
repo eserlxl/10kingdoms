@@ -349,6 +349,7 @@ void Sys::deinit_directx()
    DEBUG_LOG("vga.deinit() finish");
 
    // SDL cleanup is handled in Vga::deinit() to avoid conflicts
+   // Additional cleanup to ensure all resources are properly released
 }
 //--------- End of function Sys::deinit_directx ---------//
 

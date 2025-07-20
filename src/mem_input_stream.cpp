@@ -38,6 +38,7 @@ void MemInputStream::open(void *data, long length, bool own_data)
    this->data = static_cast<uint8_t *>(data);
    this->length = length;
    this->own_data = own_data;
+   this->pos = 0;  // Reset position when opening new data
 }
 
 long MemInputStream::read(void *buffer, long length)
@@ -87,4 +88,7 @@ void MemInputStream::close()
       delete[] this->data;
 
    this->data = NULL;
+   this->length = 0;
+   this->pos = 0;
+   this->own_data = false;
 }
