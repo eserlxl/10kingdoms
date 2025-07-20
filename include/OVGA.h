@@ -36,6 +36,10 @@
 #define VGA_BPP                 8
 #define VGA_PALETTE_SIZE      256
 
+// UI-specific resolution for better menu readability
+#define VGA_UI_WIDTH          800
+#define VGA_UI_HEIGHT         600
+
 #define MAX_BRIGHTNESS_ADJUST_DEGREE 10
 
 #define IF_LIGHT_BORDER_COLOR     V_WHITE
@@ -47,6 +51,10 @@
 
 #define get_bitmap_width(bitmapPtr)  (*(short*)bitmapPtr)
 #define get_bitmap_height(bitmapPtr) (*((short*)bitmapPtr+1))
+
+// Helper macros to get current effective resolution
+#define get_vga_width()  (vga.is_ui_mode() ? VGA_UI_WIDTH : VGA_WIDTH)
+#define get_vga_height() (vga.is_ui_mode() ? VGA_UI_HEIGHT : VGA_HEIGHT)
 
 //-------- Define modes --------//
 
@@ -113,6 +121,9 @@ public:
 
 	void use_front() { use_back_buf=0; active_buf = &vga_front; }
 	void use_back()  { use_back_buf=1; active_buf = &vga_back;  }
+
+	// UI mode detection
+	char   is_ui_mode() const;
 
 	void   handle_messages();
 	void   flag_redraw();

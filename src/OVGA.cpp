@@ -26,6 +26,7 @@
 #include <OMOUSE.h>
 #include <OCOLTBL.h>
 #include <OSYS.h>
+#include <OGAME.h>
 #include <dbglog.h>
 #include <version.h>
 #include <FilePath.h>
@@ -973,6 +974,33 @@ void Vga::get_window_scale(float *xscale, float *yscale)
    }
 }
 //-------- End of function Vga::get_window_scale ----------//
+
+
+//-------- Begin of function Vga::is_ui_mode ----------//
+//
+// Returns 1 if the game is currently in UI mode (menus, etc.)
+// Returns 0 if the game is in gameplay mode
+//
+char Vga::is_ui_mode() const
+{
+   // Check if we're in pregame mode or other UI modes
+   char result = (game.game_mode == GAME_PREGAME || 
+           game.game_mode == GAME_ENCYCLOPEDIA ||
+           game.game_mode == GAME_CREDITS ||
+           game.game_mode == GAME_DEMO);
+   
+   printf("is_ui_mode(): game_mode=%d, result=%d\n", game.game_mode, result);
+   
+   // Force full resolution if we're in single player or multiplayer mode
+   if( game.game_mode == GAME_SINGLE_PLAYER || game.game_mode == GAME_MULTI_PLAYER )
+   {
+      printf("is_ui_mode(): Forcing gameplay mode (full resolution)\n");
+      return 0;  // Force gameplay mode
+   }
+   
+   return result;
+}
+//-------- End of function Vga::is_ui_mode ----------//
 
 
 #ifdef USE_WINDOWS
