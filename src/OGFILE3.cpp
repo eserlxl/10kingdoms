@@ -283,6 +283,13 @@ int Unit::read_file(File* filePtr)
 			mem_del(node_record_array);
 			return 0;
 		}
+		
+		// Free existing memory if it exists to prevent memory leaks
+		if (result_node_array)
+		{
+			mem_del(result_node_array);
+		}
+		
 		result_node_array = (ResultNode*) mem_add(sizeof(ResultNode) * result_node_count);
 		for( int i=0; i<result_node_count; i++ )
 		{
@@ -302,6 +309,13 @@ int Unit::read_file(File* filePtr)
 			mem_del(node_record_array);
 			return 0;
 		}
+		
+		// Free existing memory if it exists to prevent memory leaks
+		if (way_point_array)
+		{
+			mem_del(way_point_array);
+		}
+		
 		way_point_array = (ResultNode*) mem_add(sizeof(ResultNode)*way_point_array_size);
 		for( int i=0; i<way_point_array_size; i++ )
 		{
@@ -316,6 +330,13 @@ int Unit::read_file(File* filePtr)
 	{
 		if( !filePtr->file_read(&gf_rec, sizeof(TeamInfoGF)) )
 			return 0;
+		
+		// Free existing memory if it exists to prevent memory leaks
+		if (team_info)
+		{
+			mem_del(team_info);
+		}
+		
 		team_info = (TeamInfo*) mem_add(sizeof(TeamInfo));
 		team_info->read_record(&gf_rec.team_info);
 	}
@@ -1748,6 +1769,13 @@ static void read_ai_info(File* filePtr, short** aiInfoArrayPtr, short& aiInfoCou
 	// Use the minimum of aiInfoCount and aiInfoSize to prevent buffer overflow
 	short actualSize = (aiInfoCount < aiInfoSize) ? aiInfoCount : aiInfoSize;
 	
+	// Free existing memory if it exists to prevent memory leaks
+	if (*aiInfoArrayPtr)
+	{
+		mem_del(*aiInfoArrayPtr);
+		*aiInfoArrayPtr = NULL;
+	}
+	
 	*aiInfoArrayPtr = (short*) mem_add( actualSize * sizeof(short) );
 
 	filePtr->file_get_short_array( *aiInfoArrayPtr, actualSize );
@@ -2209,6 +2237,12 @@ int RegionArray::read_file(File* filePtr)
 			return 0;
 		}
 
+		// Free existing memory if it exists to prevent memory leaks
+		if (region_info_array)
+		{
+			mem_del(region_info_array);
+		}
+
 		region_info_array = (RegionInfo *) mem_add(sizeof(RegionInfo)*region_info_count);
 
 		for( int i=0; i<region_info_count; i++ )
@@ -2219,7 +2253,14 @@ int RegionArray::read_file(File* filePtr)
 		mem_del(region_info_record_array);
 	}
 	else
+	{
+		// Free existing memory if it exists to prevent memory leaks
+		if (region_info_array)
+		{
+			mem_del(region_info_array);
+		}
 		region_info_array = NULL;
+	}
 
 	//-------- read RegionStat ----------//
 
@@ -2230,6 +2271,12 @@ int RegionArray::read_file(File* filePtr)
 	{
 		mem_del(region_stat_record_array);
 		return 0;
+	}
+
+	// Free existing memory if it exists to prevent memory leaks
+	if (region_stat_array)
+	{
+		mem_del(region_stat_array);
 	}
 
 	region_stat_array = (RegionStat*) mem_add(region_stat_count*sizeof(RegionStat) );
@@ -2248,12 +2295,23 @@ int RegionArray::read_file(File* filePtr)
 
 	if( connectByte > 0)
 	{
+		// Free existing memory if it exists to prevent memory leaks
+		if (connect_bits)
+		{
+			mem_del(connect_bits);
+		}
+		
 		connect_bits = (unsigned char *)mem_add(connectByte);
 		if( !filePtr->file_read(connect_bits, connectByte) )
 			return 0;
 	}
 	else
 	{
+		// Free existing memory if it exists to prevent memory leaks
+		if (connect_bits)
+		{
+			mem_del(connect_bits);
+		}
 		connect_bits = NULL;
 	}
 

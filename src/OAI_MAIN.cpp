@@ -129,6 +129,13 @@ void Nation::init_all_ai_info()
 //
 void Nation::init_ai_info(short** aiInfoArrayPtr, short& aiInfoCount, short& aiInfoSize, int arrayInitSize )
 {
+	// Free existing memory if it exists to prevent memory leaks
+	if (*aiInfoArrayPtr)
+	{
+		mem_del(*aiInfoArrayPtr);
+		*aiInfoArrayPtr = NULL;
+	}
+	
 	*aiInfoArrayPtr = (short*) mem_add( sizeof(short) * arrayInitSize );
 
 	memset( *aiInfoArrayPtr, 0, sizeof(short) * arrayInitSize );
