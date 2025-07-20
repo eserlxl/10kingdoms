@@ -123,10 +123,6 @@ static void signal_handler(int signal)
 		sys.deinit();
 	}
 	
-	// Additional cleanup to ensure all resources are released
-	// This helps prevent memory leaks from external libraries
-	SDL_Quit();
-	
 	// Exit with appropriate code
 	exit(signal);
 }
@@ -418,10 +414,6 @@ int main(int argc, char **argv)
 
 	sys.deinit();
 
-	// Final cleanup to ensure all resources are properly released
-	// This helps prevent memory leaks from external libraries
-	SDL_Quit();
-	
 	return 0;
 }
 //---------- End of function main ----------//
@@ -447,6 +439,5 @@ static void extra_error_handler()
 	
 	// Additional cleanup to ensure all resources are released
 	// This helps prevent memory leaks from external libraries
-	SDL_Quit();
 }
 //----------- End of function extra_error_handler -------------//

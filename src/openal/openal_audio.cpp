@@ -195,13 +195,6 @@ void OpenALAudio::deinit()
 	this->deinit_wav();
 	this->deinit_mid();
 	this->deinit_cd();
-	
-	// Final cleanup to ensure all OpenAL resources are released
-	// This addresses the memory leaks from OpenAL internal structures
-	while (alGetError() != AL_NO_ERROR)
-	{
-		// Clear any remaining OpenAL errors
-	}
 }
 
 // Initialize digitized wav driver
@@ -285,13 +278,6 @@ int OpenALAudio::init_wav()
 	normal_sources = 0; long_sources = 0; loop_sources = 0;
 
 	this->wav_init_flag = true;
-	
-	// Clear any OpenAL errors that might have occurred during initialization
-	while (alGetError() != AL_NO_ERROR)
-	{
-		// Just clear the error queue
-	}
-	
 	return 1;
 
 err:
@@ -307,16 +293,6 @@ err:
 		alcCloseDevice(this->al_device);
 		this->al_device = NULL;
 	}
-	
-	// Clear any OpenAL errors that might have occurred during initialization
-	while (alGetError() != AL_NO_ERROR)
-	{
-		// Just clear the error queue
-	}
-	
-	// Reset initialization flag to ensure proper state
-	this->wav_init_flag = false;
-	
 	return 0;
 }
 
@@ -370,13 +346,6 @@ void OpenALAudio::deinit_wav()
 	{
 		alcCloseDevice(this->al_device);
 		this->al_device = NULL;
-	}
-	
-	// Final cleanup to ensure all OpenAL resources are released
-	// This addresses the memory leaks from OpenAL internal structures
-	while (alGetError() != AL_NO_ERROR)
-	{
-		// Clear any remaining OpenAL errors
 	}
 }
 
@@ -1099,11 +1068,6 @@ OpenALAudio::StreamContext::~StreamContext()
 		{
 			// Just clear the error queue
 		}
-		
-		// Force cleanup of any remaining OpenAL objects
-		// This addresses the memory leaks from OpenAL internal structures
-		alDeleteSources(0, NULL);  // Delete all sources
-		alDeleteBuffers(0, NULL);  // Delete all buffers
 	}
 	
 	if (this->stream)
