@@ -345,7 +345,7 @@ void Game::init_remap_table()
       { 0xB8, 0xD8 },   // nation 7
       { 0xC8, 0xA8 },   // nation 8: V_DARK_GREEN (0xC8+3=0xCB), secondary light green (0xA8)
       { 0x90, 0xB8 },   // nation 9: V_GRAY (0x90+1=0x91), secondary brown
-      { 0xA2, 0xA4 },   // nation 10: V_CYAN (0xA2+1=0xA3), secondary light blue
+      { 0xA2, 0xA6 },   // nation 10: V_CYAN (0xA2+1=0xA3), secondary light cyan
 	};
 
    //---- define the main color code for each color scheme ----//
