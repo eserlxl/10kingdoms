@@ -102,6 +102,12 @@ void TownNetwork::remove_town(int townRecno)
 //
 void TownNetwork::merge_in(TownNetwork const * pNetwork)
 {
+	if (pNetwork == NULL)
+	{
+		if (DEBUG_CHECK) throw "pNetwork is NULL in merge_in";
+		else return; // Nothing to merge
+	}
+	
 	std::vector<int> const *pTowns = &pNetwork->_Towns;
 
 	if (DEBUG_CHECK && ((void*)pNetwork == (void*)this)) throw "Attempted to merge_in self";
@@ -129,6 +135,13 @@ void TownNetwork::merge_in(TownNetwork const * pNetwork)
 //
 TownNetwork* TownNetwork::split_by_pulsed(TownNetwork *splitDestination, bool movePulsedTowns)
 {
+	// Check if splitDestination is valid
+	if (splitDestination == NULL)
+	{
+		if (DEBUG_CHECK) throw "splitDestination is NULL in split_by_pulsed";
+		else return this; // Return this network unchanged if destination is invalid
+	}
+	
 	// TODO: Change for greater efficiency: set _Towns[i] to 0 at first whilst splitting, then compact vector
 	//       by performing a one-pass copy operation to move non-zero elements to the top, then call resize()
 
@@ -277,7 +290,13 @@ int TownNetworkArray::town_created(int townRecno, int nationRecno, short const *
 			if (tnRecno == 0)
 			{
 				tnRecno = pTown->town_network_recno;
-				network(tnRecno)->add_town(townRecno);
+				TownNetwork *pNetwork = network(tnRecno);
+				if (pNetwork == NULL)
+				{
+					if (DEBUG_CHECK) throw "Linked town has invalid town_network_recno";
+					else continue; // Skip this town and try the next one
+				}
+				pNetwork->add_town(townRecno);
 			}
 			else if (pTown->town_network_recno != tnRecno)
 			{
@@ -346,6 +365,14 @@ void TownNetworkArray::verify_town_network_before_merge(int nationRecno, int tow
 int TownNetworkArray::merge(int tn1, int tn2)
 {
 	TownNetwork *pTN1 = network(tn1), *pTN2 = network(tn2), *pSwap;
+	
+	// Check if both networks exist
+	if (pTN1 == NULL || pTN2 == NULL)
+	{
+		if (DEBUG_CHECK) throw "Attempted to merge invalid town networks";
+		else return (pTN1 != NULL) ? tn1 : tn2; // Return the valid one, or tn1 if both are invalid
+	}
+	
 	if (pTN2->size() > pTN1->size())
 		pSwap = pTN1, pTN1 = pTN2, pTN2 = pSwap;
 
@@ -388,6 +415,15 @@ void TownNetworkArray::town_destroyed(int townRecno)
 
 
 	TownNetwork *pNetwork = network(pTown->town_network_recno); // The currently 'active' network (the one being pulsed), may change during the loop
+	
+	// Check if the network exists and is valid
+	if (pNetwork == NULL)
+	{
+		// Network doesn't exist, which means the town wasn't properly connected to a network
+		// This can happen during cleanup or when data is corrupted
+		if (DEBUG_CHECK) throw "Town has invalid town_network_recno";
+		else return;
+	}
 	
 	// Remove the town from the town-network, before starting the rebuild. If this was the only town in it, then remove the network and return
 	pNetwork->remove_town(townRecno);
