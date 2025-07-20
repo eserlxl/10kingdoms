@@ -144,6 +144,15 @@ void UnitRes::load_info()
 
 	memset( unit_info_array, 0, sizeof(UnitInfo)*unit_info_count );
 
+	// Explicitly initialize the nation arrays to ensure they are properly zeroed
+	for( int i=0 ; i<unit_info_count ; i++ )
+	{
+		UnitInfo* unitInfo = unit_info_array + i;
+		memset(unitInfo->nation_tech_level_array, 0, sizeof(unitInfo->nation_tech_level_array));
+		memset(unitInfo->nation_unit_count_array, 0, sizeof(unitInfo->nation_unit_count_array));
+		memset(unitInfo->nation_general_count_array, 0, sizeof(unitInfo->nation_general_count_array));
+	}
+
 	//--------- read in frame information ---------//
 
 	for( i=0 ; i<dbUnit->rec_count() ; i++ )
@@ -375,7 +384,7 @@ void UnitInfo::inc_nation_unit_count(int nationRecno)
 
 void UnitInfo::dec_nation_unit_count(int nationRecno)
 {
-	err_when( nationRecno<0 || nationRecno>MAX_NATION );
+	err_when( nationRecno<1 || nationRecno>MAX_NATION );
 
 	if( nationRecno )
 	{
@@ -434,7 +443,7 @@ void UnitInfo::inc_nation_general_count(int nationRecno)
 
 void UnitInfo::dec_nation_general_count(int nationRecno)
 {
-	err_when( nationRecno<0 || nationRecno>MAX_NATION );
+	err_when( nationRecno<1 || nationRecno>MAX_NATION );
 
 	if( nationRecno )
 	{

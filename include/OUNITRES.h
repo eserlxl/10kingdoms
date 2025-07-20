@@ -222,6 +222,7 @@ struct UnitAttackRec
 
 //-------- Define struct UnitInfo ----------//
 
+#pragma pack(1)
 struct UnitInfo
 {
 	//-------- define constant ---------//
@@ -303,6 +304,7 @@ public:
 
 	void 	unit_change_nation(int newNationRecno, int oldNationRecno, int rankId);
 };
+#pragma pack()
 
 //--------- Define struct AttackInfo ----------//
 
