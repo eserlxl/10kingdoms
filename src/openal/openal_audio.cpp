@@ -281,7 +281,7 @@ int OpenALAudio::init_wav()
 	return 1;
 
 err:
-	// Ensure proper cleanup on error
+	// Clean up on initialization failure to prevent memory leaks
 	if (this->al_context != NULL)
 	{
 		alcMakeContextCurrent(NULL);
@@ -293,7 +293,6 @@ err:
 		alcCloseDevice(this->al_device);
 		this->al_device = NULL;
 	}
-	this->deinit_wav();
 	return 0;
 }
 

@@ -792,10 +792,14 @@ int UnitRes::write_file(File* filePtr)
 	for( int i=1 ; i<=unit_res.unit_info_count ; i++, unitInfo++ )
 	{
 		// Ensure arrays are properly initialized before writing
+		// If arrays are not initialized, initialize them with zeros to prevent uninitialized memory writes
 		if (!unitInfo->nation_tech_level_array || !unitInfo->nation_unit_count_array || !unitInfo->nation_general_count_array)
 		{
-			err.msg("UnitInfo arrays not properly initialized for unit %d\n", i);
-			return 0;
+			err.msg("UnitInfo arrays not properly initialized for unit %d, initializing with zeros\n", i);
+			// Initialize arrays with zeros to prevent uninitialized memory writes
+			memset(unitInfo->nation_tech_level_array, 0, sizeof(unitInfo->nation_tech_level_array));
+			memset(unitInfo->nation_unit_count_array, 0, sizeof(unitInfo->nation_unit_count_array));
+			memset(unitInfo->nation_general_count_array, 0, sizeof(unitInfo->nation_general_count_array));
 		}
 
 		if( !filePtr->file_write( unitInfo->nation_tech_level_array, sizeof(unitInfo->nation_tech_level_array) ) )

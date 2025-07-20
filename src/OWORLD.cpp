@@ -55,6 +55,7 @@ int   World::max_x_loc=220, World::max_y_loc=250;
 
 World::World()
 {
+	// Initialize all member variables to prevent uninitialized memory usage
 	loc_matrix = NULL;
 	next_scroll_time = 0;
 	scan_fire_x = 0;
