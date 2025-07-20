@@ -348,19 +348,7 @@ void Sys::deinit_directx()
    vga.deinit();
    DEBUG_LOG("vga.deinit() finish");
 
-   // Ensure all SDL subsystems are properly cleaned up
-   if (SDL_WasInit(SDL_INIT_VIDEO))
-   {
-      SDL_QuitSubSystem(SDL_INIT_VIDEO);
-   }
-   if (SDL_WasInit(SDL_INIT_AUDIO))
-   {
-      SDL_QuitSubSystem(SDL_INIT_AUDIO);
-   }
-   if (SDL_WasInit(SDL_INIT_EVENTS))
-   {
-      SDL_QuitSubSystem(SDL_INIT_EVENTS);
-   }
+   // SDL cleanup is handled in Vga::deinit() to avoid conflicts
 }
 //--------- End of function Sys::deinit_directx ---------//
 

@@ -300,6 +300,11 @@ void OpenALAudio::deinit_wav()
 	}
 	this->streams.clear();
 
+	// Reset source counters
+	normal_sources = 0; 
+	long_sources = 0; 
+	loop_sources = 0;
+
 	if (this->al_context != NULL)
 	{
 		alcMakeContextCurrent(NULL);  // Unset current context before destroying

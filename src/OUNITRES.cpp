@@ -243,6 +243,13 @@ void UnitRes::load_info()
 		// Initialize nation arrays to prevent uninitialized memory issues
 		memset( unitInfo->nation_unit_count_array, 0, sizeof(unitInfo->nation_unit_count_array) );
 		memset( unitInfo->nation_general_count_array, 0, sizeof(unitInfo->nation_general_count_array) );
+		
+		// Additional safety check to ensure arrays are properly initialized
+		if (!unitInfo->nation_tech_level_array || !unitInfo->nation_unit_count_array || !unitInfo->nation_general_count_array)
+		{
+			err.msg("Failed to initialize UnitInfo arrays for unit %d\n", i+1);
+			return;
+		}
 	}
 
 	//--------- set vehicle info  ---------//

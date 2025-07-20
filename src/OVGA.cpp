@@ -228,7 +228,25 @@ void Vga::deinit()
    }
 
    // Ensure all SDL subsystems are properly shut down
-   SDL_Quit();
+   // Only quit SDL if we initialized it
+   if (SDL_WasInit(SDL_INIT_VIDEO))
+   {
+      SDL_QuitSubSystem(SDL_INIT_VIDEO);
+   }
+   if (SDL_WasInit(SDL_INIT_AUDIO))
+   {
+      SDL_QuitSubSystem(SDL_INIT_AUDIO);
+   }
+   if (SDL_WasInit(SDL_INIT_EVENTS))
+   {
+      SDL_QuitSubSystem(SDL_INIT_EVENTS);
+   }
+   
+   // Only call SDL_Quit() if no other subsystems are still active
+   if (!SDL_WasInit(0))
+   {
+      SDL_Quit();
+   }
 }
 //-------- End of function Vga::deinit ----------//
 

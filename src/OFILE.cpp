@@ -332,6 +332,16 @@ int File::file_put_short_array(int16_t *out, int count)
 {
 	err_when( !file_handle );
 
+	// Validate input parameters
+	if (!out || count <= 0)
+	{
+		if (handle_error)
+			err.run("[File::file_put_short_array] invalid parameters: out=%p, count=%d\n", out, count);
+		else
+			ERR("[File::file_put_short_array] invalid parameters: out=%p, count=%d\n", out, count);
+		return 0;
+	}
+
 	unsigned dataSize = count*sizeof(int16_t);
 	if( file_type == File::STRUCTURED )
 	{
