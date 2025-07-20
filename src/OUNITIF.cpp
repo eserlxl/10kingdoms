@@ -219,8 +219,8 @@ bool Unit::is_in_build_menu()
 //
 void Unit::disp_main_menu(int refreshFlag)
 {
-	disp_basic_info(INFO_Y1, refreshFlag);
-	disp_unit_profile( INFO_Y1+52, refreshFlag );
+	disp_basic_info(get_scaled_info_y1(), refreshFlag);
+	disp_unit_profile( get_scaled_info_y1()+52, refreshFlag );
 
 	if( !should_show_info() )
 		return;
@@ -919,7 +919,7 @@ void Unit::disp_build_menu(int refreshFlag)
 	if( refreshFlag == INFO_REPAINT )
 	{
 		// ####### begin Gilbert 3/10 ########//
-		int firmId, x=INFO_X1, y=INFO_Y1, addedCount=0;
+		int firmId, x=get_scaled_info_x1(), y=get_scaled_info_y1(), addedCount=0;
 		String str;
 
 		for( int i = 0; i < MAX_FIRM_TYPE; ++i )
@@ -1039,14 +1039,14 @@ void Unit::disp_build(int refreshFlag)
 		str = _(select_where_to_build[power.command_para-1]);
 
 		int dispLines, totalLines;
-		font_san.count_line( INFO_X1+7, INFO_Y1+5, INFO_X2-7, INFO_Y2-5, str, 0, dispLines, totalLines );
+		font_san.count_line( get_scaled_info_x1()+7, get_scaled_info_y1()+5, get_scaled_info_x2()-7, get_scaled_info_y2()-5, str, 0, dispLines, totalLines );
 		int textHeight = font_san.text_height()*dispLines+14;
 
-		vga_util.d3_panel_up( INFO_X1, INFO_Y1, INFO_X2, INFO_Y1+textHeight );
+		vga_util.d3_panel_up( get_scaled_info_x1(), get_scaled_info_y1(), get_scaled_info_x2(), get_scaled_info_y1()+textHeight );
 
-		font_san.put_paragraph( INFO_X1+7, INFO_Y1+5, INFO_X2-7, INFO_Y2-5, str );
+		font_san.put_paragraph( get_scaled_info_x1()+7, get_scaled_info_y1()+5, get_scaled_info_x2()-7, get_scaled_info_y2()-5, str );
 
-		button_cancel2.paint_text( INFO_X1, INFO_Y1+textHeight+3, INFO_X2, INFO_Y1+textHeight+28, _("Cancel") );
+		button_cancel2.paint_text( get_scaled_info_x1(), get_scaled_info_y1()+textHeight+3, get_scaled_info_x2(), get_scaled_info_y1()+textHeight+28, _("Cancel") );
 	}
 }
 //----------- End of function Unit::disp_build -----------//
@@ -1077,12 +1077,12 @@ void Unit::disp_settle(int refreshFlag)
 {
 	if( refreshFlag == INFO_REPAINT )
 	{
-		vga_util.d3_panel_up( INFO_X1, INFO_Y1, INFO_X2, INFO_Y1+42 );
+				vga_util.d3_panel_up( get_scaled_info_x1(), get_scaled_info_y1(), get_scaled_info_x2(), get_scaled_info_y1()+42 );
 
-		font_san.put_paragraph( INFO_X1+7, INFO_Y1+5, INFO_X2-7, INFO_Y2-5,
-										_("Please select a location to settle.") );
+		font_san.put_paragraph( get_scaled_info_x1()+7, get_scaled_info_y1()+5, get_scaled_info_x2()-7, get_scaled_info_y2()-5,
+													_("Please select a location to settle.") );
 
-		button_cancel2.paint_text( INFO_X1, INFO_Y1+45, INFO_X2, INFO_Y1+70, _("Cancel") );
+		button_cancel2.paint_text( get_scaled_info_x1(), get_scaled_info_y1()+45, get_scaled_info_x2(), get_scaled_info_y1()+70, _("Cancel") );
 	}
 }
 //----------- End of function Unit::disp_settle -----------//
@@ -1118,24 +1118,24 @@ void Unit::disp_unit_info(int dispY1, int refreshFlag)
 		{
 			if(unit_res[unit_id]->unit_class == UNIT_CLASS_MONSTER)
 			{
-				int 	 x=INFO_X1+4, y=dispY1+20;
+				int 	 x=get_scaled_info_x1()+4, y=dispY1+20;
 				y+=20;
-				font_san.field( x, y, " " , x+2, sprite_recno, 1, INFO_X2-2, refreshFlag);
-				font_san.field( x+20, y, " " , x+22, next_x_loc(), 1, INFO_X2-2, refreshFlag);
-				font_san.field( x+50, y, " " , x+52, next_y_loc(), 1, INFO_X2-2, refreshFlag);
-				font_san.field( x+70, y, " " , x+72, nation_recno, 1, INFO_X2-2, refreshFlag);
+				font_san.field( x, y, " " , x+2, sprite_recno, 1, get_scaled_info_x2()-2, refreshFlag);
+				font_san.field( x+20, y, " " , x+22, next_x_loc(), 1, get_scaled_info_x2()-2, refreshFlag);
+				font_san.field( x+50, y, " " , x+52, next_y_loc(), 1, get_scaled_info_x2()-2, refreshFlag);
+				font_san.field( x+70, y, " " , x+72, nation_recno, 1, get_scaled_info_x2()-2, refreshFlag);
 
-				font_san.field( x+100, y, " " , x+102, action_mode, 1, INFO_X2-2, refreshFlag);
-				font_san.field( x+120, y, " " , x+122, action_para, 1, INFO_X2-2, refreshFlag);
-				font_san.field( x+140, y, " " , x+142, action_x_loc, 1, INFO_X2-2, refreshFlag);
-				font_san.field( x+160, y, " " , x+162, action_y_loc, 1, INFO_X2-2, refreshFlag);
+				font_san.field( x+100, y, " " , x+102, action_mode, 1, get_scaled_info_x2()-2, refreshFlag);
+				font_san.field( x+120, y, " " , x+122, action_para, 1, get_scaled_info_x2()-2, refreshFlag);
+				font_san.field( x+140, y, " " , x+142, action_x_loc, 1, get_scaled_info_x2()-2, refreshFlag);
+				font_san.field( x+160, y, " " , x+162, action_y_loc, 1, get_scaled_info_x2()-2, refreshFlag);
 				y-=20;
-				font_san.field( x+100, y, " " , x+102, action_mode2, 1, INFO_X2-2, refreshFlag);
-				font_san.field( x+120, y, " " , x+122, action_para2, 1, INFO_X2-2, refreshFlag);
-				font_san.field( x+140, y, " " , x+142, action_x_loc2, 1, INFO_X2-2, refreshFlag);
-				font_san.field( x+160, y, " " , x+162, action_y_loc2, 1, INFO_X2-2, refreshFlag);
+				font_san.field( x+100, y, " " , x+102, action_mode2, 1, get_scaled_info_x2()-2, refreshFlag);
+				font_san.field( x+120, y, " " , x+122, action_para2, 1, get_scaled_info_x2()-2, refreshFlag);
+				font_san.field( x+140, y, " " , x+142, action_x_loc2, 1, get_scaled_info_x2()-2, refreshFlag);
+				font_san.field( x+160, y, " " , x+162, action_y_loc2, 1, get_scaled_info_x2()-2, refreshFlag);
 				y-=20;
-				font_san.field( x+160, y, " " , x+162, cur_action, 1, INFO_X2-2, refreshFlag);
+				font_san.field( x+160, y, " " , x+162, cur_action, 1, get_scaled_info_x2()-2, refreshFlag);
 			}
 		}
 	#endif
@@ -1146,9 +1146,9 @@ void Unit::disp_unit_info(int dispY1, int refreshFlag)
 		return;
 
 	if( refreshFlag==INFO_REPAINT )
-		vga_util.d3_panel_up( INFO_X1, dispY1, INFO_X2, dispY1+87 );
+		vga_util.d3_panel_up( get_scaled_info_x1(), dispY1, get_scaled_info_x2(), dispY1+87 );
 
-	int 	 x=INFO_X1+4, y=dispY1+4;
+	int 	 x=get_scaled_info_x1()+4, y=dispY1+4;
 	String str;
 
 	//--------- display loyalty ---------//
@@ -1158,7 +1158,7 @@ void Unit::disp_unit_info(int dispY1, int refreshFlag)
 		if( spy_recno &&			// only display spy loyalty instead of unit loyalty if this is a spy and this spy is ours
 			 true_nation_recno() == nation_array.player_recno )
 		{
-			font_san.field( x, y, _("Loyalty"), x+92, spy_array[spy_recno]->spy_loyalty, 1, INFO_X2-2, refreshFlag);
+			font_san.field( x, y, _("Loyalty"), x+92, spy_array[spy_recno]->spy_loyalty, 1, get_scaled_info_x2()-2, refreshFlag);
 		}
 		else if( nation_recno )
 		{
@@ -1170,7 +1170,7 @@ void Unit::disp_unit_info(int dispY1, int refreshFlag)
 
 	//--------- display combat level ----------//
 
-	font_san.field( x, y, _("Combat") , x+92, skill.combat_level, 1, INFO_X2-2, refreshFlag);
+	font_san.field( x, y, _("Combat") , x+92, skill.combat_level, 1, get_scaled_info_x2()-2, refreshFlag);
 
 	y+=16;
 
@@ -1179,9 +1179,9 @@ void Unit::disp_unit_info(int dispY1, int refreshFlag)
 	if( skill.skill_id )
 	{
 		if( refreshFlag == INFO_REPAINT )
-			font_san.field( x, y, skill.skill_des(), x+92, skill.skill_level , 1, INFO_X2-2, refreshFlag);
+			font_san.field( x, y, skill.skill_des(), x+92, skill.skill_level , 1, get_scaled_info_x2()-2, refreshFlag);
 		else
-			font_san.field( x, y, skill.skill_des(), x+92, skill.skill_level , 1, INFO_X2-2, refreshFlag);
+			font_san.field( x, y, skill.skill_des(), x+92, skill.skill_level , 1, get_scaled_info_x2()-2, refreshFlag);
 
 		y+=16;
 	}
@@ -1190,7 +1190,7 @@ void Unit::disp_unit_info(int dispY1, int refreshFlag)
 
 	if( spy_recno && spy_array[spy_recno]->true_nation_recno == nation_array.player_recno )		// only spies of the player's nation can see the spy skill details
 	{
-		font_san.field( x, y, _("Spying"), x+92, spy_array[spy_recno]->spy_skill, 1, INFO_X2-2, refreshFlag);
+		font_san.field( x, y, _("Spying"), x+92, spy_array[spy_recno]->spy_skill, 1, get_scaled_info_x2()-2, refreshFlag);
 
 		y+=16;
 	}
@@ -1198,7 +1198,7 @@ void Unit::disp_unit_info(int dispY1, int refreshFlag)
 	//--------- display debug info ---------//
 
 	if( !is_civilian() && rank_id != RANK_KING )
-		font_san.field( x, y, _("Contribution"), x+92, nation_contribution, 1, INFO_X2-2, refreshFlag);
+		font_san.field( x, y, _("Contribution"), x+92, nation_contribution, 1, get_scaled_info_x2()-2, refreshFlag);
 }
 //----------- End of function Unit::disp_unit_info -----------//
 
@@ -1212,7 +1212,7 @@ void Unit::disp_unit_profile(int dispY1, int refreshFlag)
 {
 	//--------- set help parameters --------//
 
-	int x=INFO_X1+4;
+	int x=get_scaled_info_x1()+4;
 
 	if( mouse.in_area(x, dispY1+3, x+UNIT_LARGE_ICON_WIDTH-1, dispY1+UNIT_LARGE_ICON_HEIGHT+2) )
 		help.set_unit_help( unit_id, rank_id, x, dispY1+3, x+UNIT_LARGE_ICON_WIDTH-1, dispY1+UNIT_LARGE_ICON_HEIGHT+2 );
@@ -1301,7 +1301,7 @@ void Unit::disp_unit_profile(int dispY1, int refreshFlag)
 
 	//---------------- paint the panel --------------//
 
-	vga_util.d3_panel_up( INFO_X1, dispY1, INFO_X2, dispY1+44);
+	vga_util.d3_panel_up( get_scaled_info_x1(), dispY1, get_scaled_info_x2(), dispY1+44);
 
 	vga_front.put_bitmap( x, dispY1+3, unit_res[unit_id]->get_large_icon_ptr(rank_id) );
 
@@ -1311,12 +1311,12 @@ void Unit::disp_unit_profile(int dispY1, int refreshFlag)
 
 	if( str )
 	{
-		font_san.center_put( x, dispY1+4, INFO_X2-2, dispY1+21, str );
-		font_san.center_put( x, dispY1+22, INFO_X2-2, dispY1+40, unit_name(0) );		// 0-without title
+		font_san.center_put( x, dispY1+4, get_scaled_info_x2()-2, dispY1+21, str );
+		font_san.center_put( x, dispY1+22, get_scaled_info_x2()-2, dispY1+40, unit_name(0) );		// 0-without title
 	}
 	else
 	{
-		font_san.center_put( x, dispY1, INFO_X2-2, dispY1+44, unit_name() );		// non-human units
+		font_san.center_put( x, dispY1, get_scaled_info_x2()-2, dispY1+44, unit_name() );		// non-human units
 	}
 }
 //----------- End of function Unit::disp_unit_profile -----------//
@@ -1326,7 +1326,7 @@ void Unit::disp_unit_profile(int dispY1, int refreshFlag)
 //
 int Unit::detect_unit_profile()
 {
-	if( is_visible() && mouse.single_click( INFO_X1, INFO_Y1+54, INFO_X2, INFO_Y1+97 ) )
+	if( is_visible() && mouse.single_click( get_scaled_info_x1(), get_scaled_info_y1()+54, get_scaled_info_x2(), get_scaled_info_y1()+97 ) )
 	{
 		world.go_loc( next_x_loc(), next_y_loc() );
 		return 1;
@@ -1376,8 +1376,8 @@ void Unit::disp_spy_menu(int dispY1, int refreshFlag)
 	{
 		if( refreshFlag==INFO_REPAINT )
 		{
-			vga_util.d3_panel_up( INFO_X1, dispY1, INFO_X2, dispY1+26 );
-			font_san.center_put( INFO_X1, dispY1, INFO_X2-2, dispY1+26, _("Enemies Nearby") );
+			vga_util.d3_panel_up( get_scaled_info_x1(), dispY1, get_scaled_info_x2(), dispY1+26 );
+			font_san.center_put( get_scaled_info_x1(), dispY1, get_scaled_info_x2()-2, dispY1+26, _("Enemies Nearby") );
 		}
 
 		return;
@@ -1387,12 +1387,12 @@ void Unit::disp_spy_menu(int dispY1, int refreshFlag)
 
 	if( refreshFlag==INFO_REPAINT )
 	{
-		vga_util.d3_panel_up( INFO_X1, dispY1, INFO_X2, dispY1+spyMenuHeight-1 );
-		font_san.put( INFO_X1+6, dispY1+6, _("Spy Cloak:") );
+		vga_util.d3_panel_up( get_scaled_info_x1(), dispY1, get_scaled_info_x2(), dispY1+spyMenuHeight-1 );
+		font_san.put( get_scaled_info_x1()+6, dispY1+6, _("Spy Cloak:") );
 	}
 
 	Nation* nationPtr = nation_array[true_nation_recno()];
-	int x=INFO_X1+80, y=dispY1+4, nationColor;
+	int x=get_scaled_info_x1()+80, y=dispY1+4, nationColor;
 
 	for( int i=1 ; i<=nation_array.size()+1 ; i++ )
 	{
