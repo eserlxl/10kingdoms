@@ -1432,7 +1432,7 @@ void Unit::disp_spy_menu(int dispY1, int refreshFlag)
 		if( x+SPY_CLOAK_WIDTH > INFO_X2 )
 		{
 			x  = INFO_X1+80;
-			y += 22;
+			y += 25;
 		}
 	}
 }
@@ -1460,8 +1460,15 @@ int Unit::spy_menu_height()
 			cloakCount++;
 	}
 
-	if( cloakCount > 4 )
-		return 47;
+	// Add 1 for the independent (white) square
+	cloakCount++;
+
+	// Calculate how many rows we need
+	// Each row can fit 5 squares (based on available width)
+	int rowsNeeded = (cloakCount + 4) / 5; // Ceiling division
+
+	if( rowsNeeded > 1 )
+		return 25 + (rowsNeeded - 1) * 25; // 25 pixels per row
 	else
 		return 27;
 }
@@ -1510,7 +1517,7 @@ void Unit::detect_spy_menu(int dispY1)
 
 		//---------------------------//
 
-		if( mouse.single_click(x, y, x+SPY_CLOAK_WIDTH-1, y+22) )
+		if( mouse.single_click(x, y, x+SPY_CLOAK_WIDTH-1, y+25) )
 		{
 			changeFlag=1;
 			break;
@@ -1521,7 +1528,7 @@ void Unit::detect_spy_menu(int dispY1)
 		if( x+SPY_CLOAK_WIDTH > INFO_X2 )
 		{
 			x  = INFO_X1+80;
-			y += 22;
+			y += 25;
 		}
 	}
 
