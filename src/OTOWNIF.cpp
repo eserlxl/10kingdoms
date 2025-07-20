@@ -387,11 +387,11 @@ void Town::disp_main_menu(int refreshFlag)
 			#ifdef DEBUG
 			if(debug2_enable_flag)
 			{
-				font_san.d3_put( INFO_X1, INFO_Y2-30, INFO_X2, INFO_Y2, "" );
-				font_san.field( INFO_X1+10, INFO_Y2-20, " ", INFO_X1+20, town_recno, 1, INFO_X2-10, refreshFlag);
-				font_san.field( INFO_X1+40, INFO_Y2-20, " ", INFO_X1+50, loc_x1, 1, INFO_X2-10, refreshFlag);
-				font_san.field( INFO_X1+70, INFO_Y2-20, " ", INFO_X1+80, loc_y1, 1, INFO_X2-10, refreshFlag);
-				font_san.field( INFO_X1+100, INFO_Y2-20, " ", INFO_X1+110, ai_link_checked, 1, INFO_X2-10, refreshFlag);
+				font_san.d3_put( get_scaled_info_x1(), get_scaled_info_y2()-30, get_scaled_info_x2(), get_scaled_info_y2(), "" );
+				font_san.field( get_scaled_info_x1()+10, get_scaled_info_y2()-20, " ", get_scaled_info_x1()+20, town_recno, 1, get_scaled_info_x2()-10, refreshFlag);
+				font_san.field( get_scaled_info_x1()+40, get_scaled_info_y2()-20, " ", get_scaled_info_x1()+50, loc_x1, 1, get_scaled_info_x2()-10, refreshFlag);
+				font_san.field( get_scaled_info_x1()+70, get_scaled_info_y2()-20, " ", get_scaled_info_x1()+80, loc_y1, 1, get_scaled_info_x2()-10, refreshFlag);
+				font_san.field( get_scaled_info_x1()+100, get_scaled_info_y2()-20, " ", get_scaled_info_x1()+110, ai_link_checked, 1, get_scaled_info_x2()-10, refreshFlag);
 			}
 			#endif
 		}
@@ -523,7 +523,7 @@ int Town::detect_main_menu()
 {
 	//--- detect clicking on the name area to center the map on it ---//
 
-	if( mouse.single_click(INFO_X1, INFO_Y1, INFO_X2, INFO_Y1+21) )
+	if( mouse.single_click(get_scaled_info_x1(), get_scaled_info_y1(), get_scaled_info_x2(), get_scaled_info_y1()+21) )
 	{
 		world.go_loc( center_x, center_y );
 		return 1;
@@ -678,19 +678,19 @@ void Town::disp_basic_info(int refreshFlag)
 {
 	if( refreshFlag == INFO_REPAINT )
 	{
-		vga_util.d3_panel_up( INFO_X1, INFO_Y1, INFO_X2, INFO_Y1+21 );
+		vga_util.d3_panel_up( get_scaled_info_x1(), get_scaled_info_y1(), get_scaled_info_x2(), get_scaled_info_y1()+21 );
 
 		if( nation_recno )
 		{
-			font_san.center_put( INFO_X1+21, INFO_Y1, INFO_X2-2, INFO_Y1+21, town_name() );
+			font_san.center_put( get_scaled_info_x1()+21, get_scaled_info_y1(), get_scaled_info_x2()-2, get_scaled_info_y1()+21, town_name() );
 
 			char *nationPict = image_button.get_ptr("V_COLCOD");
 
-			vga_front.put_bitmap_trans_remap_decompress(INFO_X1+3, INFO_Y1+2, nationPict, game.get_color_remap_table(nation_recno, 0) );
+			vga_front.put_bitmap_trans_remap_decompress(get_scaled_info_x1()+3, get_scaled_info_y1()+2, nationPict, game.get_color_remap_table(nation_recno, 0) );
 		}
 		else
 		{
-			font_san.center_put( INFO_X1, INFO_Y1, INFO_X2-2, INFO_Y1+21, town_name() );
+			font_san.center_put( get_scaled_info_x1(), get_scaled_info_y1(), get_scaled_info_x2()-2, get_scaled_info_y1()+21, town_name() );
 		}
 	}
 }
@@ -704,7 +704,7 @@ void Town::disp_train_info(int refreshFlag)
 	if( !train_unit_recno || nation_recno!=nation_array.player_recno )
 		return;
 
-	int dispY1 = INFO_Y1+26;
+	int dispY1 = get_scaled_info_y1()+26;
 
 	Unit* unitPtr = unit_array[train_unit_recno];
 	int	x=MSG_X1+4, y=MSG_Y1+4;
@@ -1253,19 +1253,19 @@ void Town::disp_auto_menu(int modeCollectTax)
 	headingStr += "\n";
 	headingStr += _("(Left-click below to apply to this village. Right-click below to apply to all your villages.)");
 
-	vga_util.d3_panel_up( INFO_X1, INFO_Y1, INFO_X2, INFO_Y1+110 );
+	vga_util.d3_panel_up( get_scaled_info_x1(), get_scaled_info_y1(), get_scaled_info_x2(), get_scaled_info_y1()+110 );
 
-	font_san.put_paragraph( INFO_X1+7, INFO_Y1+8, INFO_X2-7, INFO_Y2-5, headingStr );
+	font_san.put_paragraph( get_scaled_info_x1()+7, get_scaled_info_y1()+8, get_scaled_info_x2()-7, get_scaled_info_y2()-5, headingStr );
 
-	int i, loyaltyLevel, y=INFO_Y1+114;
+	int i, loyaltyLevel, y=get_scaled_info_y1()+114;
 
 	for( i=0, loyaltyLevel=30 ; i<BUTTON_LOYALTY_COUNT ; loyaltyLevel+=10, i++, y+=20 )
-		button_loyalty_array[i].paint_text( INFO_X1, y, INFO_X2, y+18, misc.format(loyaltyLevel), 0, loyaltyLevel==curAutoLoyalty );
+		button_loyalty_array[i].paint_text( get_scaled_info_x1(), y, get_scaled_info_x2(), y+18, misc.format(loyaltyLevel), 0, loyaltyLevel==curAutoLoyalty );
 
-	button_loyalty_disabled.paint_text( INFO_X1, y, INFO_X2, y+18, _("Disabled"), 0, curAutoLoyalty==0 );
+	button_loyalty_disabled.paint_text( get_scaled_info_x1(), y, get_scaled_info_x2(), y+18, _("Disabled"), 0, curAutoLoyalty==0 );
 	y+=20;
 
-	button_cancel2.paint_text( INFO_X1, y, INFO_X2, y+18, _("Cancel") );
+	button_cancel2.paint_text( get_scaled_info_x1(), y, get_scaled_info_x2(), y+18, _("Cancel") );
 }
 //----------- End of function Town::disp_auto_menu -----------//
 
@@ -2186,11 +2186,11 @@ void Town::disp_debug_resistance(int refreshFlag)
 		return;
 
 	if( refreshFlag==INFO_REPAINT )
-		vga_util.d3_panel_up( INFO_X1, INFO_Y2-50, INFO_X2, INFO_Y2 );
+		vga_util.d3_panel_up( get_scaled_info_x1(), get_scaled_info_y2()-50, get_scaled_info_x2(), get_scaled_info_y2() );
 
 	//------ display resistance (only for independent town) -----//
 
-	int x=INFO_X1+10, y=INFO_Y2-47;
+	int x=get_scaled_info_x1()+10, y=get_scaled_info_y2()-47;
 
 	if( nation_recno ==0 )
 	{
@@ -2217,22 +2217,22 @@ void Town::disp_debug_resistance(int refreshFlag)
 		str = "Base: ";
 		str += is_base_town;
 
-		font_san.put( INFO_X1+10, y, str );
+		font_san.put( get_scaled_info_x1()+10, y, str );
 
 		str = "Town recno: ";
 		str += town_recno;
 
-		font_san.put( INFO_X1+70, y, str );
+		font_san.put( get_scaled_info_x1()+70, y, str );
 
 		str = "no_neighbor_space: ";
 		str += no_neighbor_space;
 
-		font_san.put( INFO_X1+10, y+16, str );
+		font_san.put( get_scaled_info_x1()+10, y+16, str );
 
 		str = "quality of life: ";
 		str += quality_of_life;
 
-		font_san.disp( INFO_X1+10, y+32, str, INFO_X2-10 );
+		font_san.disp( get_scaled_info_x1()+10, y+32, str, get_scaled_info_x2()-10 );
 	}
 }
 //----------- End of function Town::disp_debug_resistance -----------//
