@@ -423,7 +423,18 @@ void FirmResearch::disp_research_info(int dispY1, int refreshFlag)
 	if( refreshFlag == INFO_REPAINT )
 	{
 		vga_util.d3_panel_down( x, y, x+TECH_LARGE_ICON_WIDTH+3, y+TECH_LARGE_ICON_HEIGHT+3, 2 );
-		vga_front.put_bitmap( x+2, y+2, techInfo->tech_large_icon() );
+		
+		// Check if the icon pointer is valid before using it
+		char* iconPtr = techInfo->tech_large_icon();
+		if( iconPtr )
+		{
+			vga_front.put_bitmap( x+2, y+2, iconPtr );
+		}
+		else
+		{
+			// If no icon is available, display a placeholder or skip icon display
+			// This prevents crashes when icon data is corrupted or missing
+		}
 
 		//----------- display text ------------//
 

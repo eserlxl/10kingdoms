@@ -192,11 +192,29 @@ char* TechClass::tech_icon()
 char* TechInfo::tech_large_icon()
 {
 	if( unit_id )
+	{
 		// ######## begin Gilbert 8/8 #########//
-		return unit_res[unit_id]->get_large_icon_ptr(0);
+		char* icon_ptr = unit_res[unit_id]->get_large_icon_ptr(0);
+		// Simple validation: just check if the pointer is not NULL
+		if( icon_ptr )
+		{
+			return icon_ptr;
+		}
+		// If validation fails, return NULL to prevent crashes
+		return NULL;
 		// ######## end Gilbert 8/8 #########//
+	}
 	else
-		return tech_res.res_bitmap.get_data(icon_index);
+	{
+		char* icon_ptr = tech_res.res_bitmap.get_data(icon_index);
+		// Simple validation: just check if the pointer is not NULL
+		if( icon_ptr )
+		{
+			return icon_ptr;
+		}
+		// If validation fails, return NULL to prevent crashes
+		return NULL;
+	}
 }
 //---------- End of function TechInfo::tech_large_icon -----------//
 
@@ -206,11 +224,29 @@ char* TechInfo::tech_large_icon()
 char* TechInfo::tech_small_icon()
 {
 	if( unit_id )
+	{
 		// ####### begin Gilbert 17/10 #########//
-		return unit_res[unit_id]->get_small_icon_ptr(RANK_SOLDIER);
+		char* icon_ptr = unit_res[unit_id]->get_small_icon_ptr(RANK_SOLDIER);
+		// Simple validation: just check if the pointer is not NULL
+		if( icon_ptr )
+		{
+			return icon_ptr;
+		}
+		// If validation fails, return NULL to prevent crashes
+		return NULL;
 		// ####### end Gilbert 17/10 #########//
+	}
 	else
-		return tech_res.res_bitmap.get_data(icon_index);
+	{
+		char* icon_ptr = tech_res.res_bitmap.get_data(icon_index);
+		// Simple validation: just check if the pointer is not NULL
+		if( icon_ptr )
+		{
+			return icon_ptr;
+		}
+		// If validation fails, return NULL to prevent crashes
+		return NULL;
+	}
 }
 //---------- End of function TechInfo::tech_small_icon -----------//
 
