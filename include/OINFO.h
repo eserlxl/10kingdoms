@@ -43,8 +43,8 @@ enum { INFO_REPAINT=10, INFO_UPDATE, INFO_SPECIAL };
 
 #define INFO_X1 (WORLD_WIDTH-MAX_MAP_WIDTH-4)
 #define INFO_Y1   265
-#define INFO_X2   WORLD_WIDTH
-#define INFO_Y2	589
+#define INFO_X2   (WORLD_WIDTH-1)  // Extend to the right edge of the screen
+#define INFO_Y2	800
 
 #define MSG_X1		INFO_X1
 #define MSG_Y1 	(INFO_Y2-29)

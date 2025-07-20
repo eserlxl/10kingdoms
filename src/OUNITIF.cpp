@@ -227,7 +227,7 @@ void Unit::disp_main_menu(int refreshFlag)
 
 	//---------------------------------//
 
-	int y=INFO_Y1+98;
+	int y=get_scaled_info_y1()+98;
 
 	if( race_id )
 	{
@@ -253,7 +253,7 @@ void Unit::disp_main_menu(int refreshFlag)
 
 	#ifdef DEBUG
 		if( sys.debug_session || sys.testing_session )
-			disp_debug_info(this, INFO_Y2-68, refreshFlag);
+			disp_debug_info(this, get_scaled_info_y2()-68, refreshFlag);
 	#endif
 }
 //----------- End of function Unit::disp_main_menu -----------//
@@ -290,7 +290,13 @@ void Unit::detect_main_menu()
 		return;
 
 	if( is_own_spy() )
-		detect_spy_menu(INFO_Y1+187);
+	{
+		// Calculate the same y position as used in disp_main_menu
+		int y = get_scaled_info_y1()+98;
+		if( race_id )
+			y += 89;
+		detect_spy_menu(y);
+	}
 
 	if( is_own() )
 		detect_button();
@@ -308,27 +314,27 @@ void Unit::disp_basic_info(int dispY1, int refreshFlag)
 	{
 		int dispName = unit_id == UNIT_CARAVAN || unit_res[unit_id]->unit_class == UNIT_CLASS_SHIP;		// only display names for caravans and ships as their names are not displayed in the other part of the interface
 
-		vga_util.d3_panel_up( INFO_X1, dispY1, INFO_X2, dispY1+21 );
+		vga_util.d3_panel_up( get_scaled_info_x1(), dispY1, get_scaled_info_x2(), dispY1+21 );
 
 		if( nation_recno )
 		{
 			int dispTitle = is_own() || nation_recno==0;		// only display title for own units or independent units (which is for rebel leader only)
 
 			if( dispName )
-				font_san.center_put( INFO_X1+21, dispY1, INFO_X2-2, dispY1+21, unit_name(dispTitle) );
+				font_san.center_put( get_scaled_info_x1()+21, dispY1, get_scaled_info_x2()-2, dispY1+21, unit_name(dispTitle) );
 
-			vga_util.d3_panel_down( INFO_X1+3, dispY1+3, INFO_X1+20, dispY1+18 );
+			vga_util.d3_panel_down( get_scaled_info_x1()+3, dispY1+3, get_scaled_info_x1()+20, dispY1+18 );
 
 			//------- display the nation color box -------//
 
 			char *nationPict = image_button.get_ptr("V_COLCOD");
 
-			vga_front.put_bitmap_remap(INFO_X1+3, dispY1+2, nationPict, game.get_color_remap_table(nation_recno, 0) );
+			vga_front.put_bitmap_remap(get_scaled_info_x1()+3, dispY1+2, nationPict, game.get_color_remap_table(nation_recno, 0) );
 		}
 		else
 		{
 			if( dispName )
-				font_san.center_put( INFO_X1, dispY1, INFO_X2-2, dispY1+21, unit_name() );
+				font_san.center_put( get_scaled_info_x1(), dispY1, get_scaled_info_x2()-2, dispY1+21, unit_name() );
 		}
 	}
 
@@ -338,12 +344,12 @@ void Unit::disp_basic_info(int dispY1, int refreshFlag)
 
 	if( refreshFlag == INFO_REPAINT )
 	{
-		vga_util.d3_panel_up( INFO_X1, dispY1, INFO_X2, dispY1+27 );
+		vga_util.d3_panel_up( get_scaled_info_x1(), dispY1, get_scaled_info_x2(), dispY1+27 );
 
 		if( nation_recno == nation_array.player_recno &&
 			 can_resign())
 		{
-			button_resign.paint( INFO_X1+4, dispY1+1, "V_X-U", "V_X-D" );
+			button_resign.paint( get_scaled_info_x1()+4, dispY1+1, "V_X-U", "V_X-D" );
 			button_resign.set_help_code( "RESIGN" );
 		}
 	}
@@ -362,7 +368,7 @@ int Unit::detect_basic_info()
 	//--- detect pressing on the name to center the unit on the screen ---//
 
 	if( is_visible() && ( ISKEY(KEYEVENT_GOTO_SELECTED) ||
-		mouse.single_click(INFO_X1, INFO_Y1, INFO_X2, INFO_Y1+21) ) )
+		mouse.single_click(get_scaled_info_x1(), get_scaled_info_y1(), get_scaled_info_x2(), get_scaled_info_y1()+21) ) )
 	{
 		world.go_loc( next_x_loc(), next_y_loc() );
 		return 1;
@@ -391,7 +397,7 @@ int Unit::detect_basic_info()
 //
 void Unit::disp_button(int dispY1)
 {
-	int x=INFO_X1;
+	int x=get_scaled_info_x1();
 
 	//---- if currently in the mode of selecting a unit to succeed the king ----//
 
@@ -469,9 +475,9 @@ void Unit::disp_button(int dispY1)
 			}
 		}
 
-		if( x+BUTTON_ACTION_WIDTH-5 > INFO_X2 )
+		if( x+BUTTON_ACTION_WIDTH-5 > get_scaled_info_x2() )
 		{
-			x  = INFO_X1;
+			x  = get_scaled_info_x1();
 			dispY1 += BUTTON_ACTION_HEIGHT;
 		}
 
@@ -483,9 +489,9 @@ void Unit::disp_button(int dispY1)
 			button_reward.paint( x, dispY1, 'A', "REWARD" );
 			x += BUTTON_ACTION_WIDTH;
 
-			if( x+BUTTON_ACTION_WIDTH-5 > INFO_X2 )
+			if( x+BUTTON_ACTION_WIDTH-5 > get_scaled_info_x2() )
 			{
-				x  = INFO_X1;
+				x  = get_scaled_info_x1();
 				dispY1 += BUTTON_ACTION_HEIGHT;
 			}
 		}
@@ -518,9 +524,9 @@ void Unit::disp_button(int dispY1)
 		button_return_camp.paint( x, dispY1, 'A', "RETCAMP" );
 		x += BUTTON_ACTION_WIDTH;
 
-		if( x+BUTTON_ACTION_WIDTH-5 > INFO_X2 )
+		if( x+BUTTON_ACTION_WIDTH-5 > get_scaled_info_x2() )
 		{
-			x  = INFO_X1;
+			x  = get_scaled_info_x1();
 			dispY1 += BUTTON_ACTION_HEIGHT;
 		}
 	}
@@ -534,9 +540,9 @@ void Unit::disp_button(int dispY1)
 		button_spy_notify.paint( x, dispY1, 'A', notifyFlag ? (char*)"SPYNOTI1" : (char*)"SPYNOTI0" );
 		x += BUTTON_ACTION_WIDTH;
 
-		if( x+BUTTON_ACTION_WIDTH-5 > INFO_X2 )
+		if( x+BUTTON_ACTION_WIDTH-5 > get_scaled_info_x2() )
 		{
-			x  = INFO_X1;
+			x  = get_scaled_info_x1();
 			dispY1 += BUTTON_ACTION_HEIGHT;
 		}
 
@@ -551,7 +557,7 @@ void Unit::disp_button(int dispY1)
 	//---- display button for changing nation color scheme ----//
 
 	if( sys.debug_session )
-		button_change_color.paint_text( INFO_X1, INFO_Y2-20, "Change Nation Color" );
+		button_change_color.paint_text( get_scaled_info_x1(), get_scaled_info_y2()-20, "Change Nation Color" );
 }
 //----------- End of function Unit::disp_button -----------//
 
@@ -1429,9 +1435,9 @@ void Unit::disp_spy_menu(int dispY1, int refreshFlag)
 
 		x+=SPY_CLOAK_WIDTH+4;
 
-		if( x+SPY_CLOAK_WIDTH > INFO_X2 )
+		if( x+SPY_CLOAK_WIDTH > get_scaled_info_x2() )
 		{
-			x  = INFO_X1+80;
+			x  = get_scaled_info_x1()+80;
 			y += 25;
 		}
 	}
@@ -1464,8 +1470,14 @@ int Unit::spy_menu_height()
 	cloakCount++;
 
 	// Calculate how many rows we need
-	// Each row can fit 5 squares (based on available width)
-	int rowsNeeded = (cloakCount + 4) / 5; // Ceiling division
+	// Each row can fit fewer squares when UI is scaled down
+	int availableWidth = get_scaled_info_x2() - (get_scaled_info_x1() + 80);
+	int squaresPerRow = availableWidth / (SPY_CLOAK_WIDTH + 4);
+	
+	if( squaresPerRow < 1 )
+		squaresPerRow = 1; // Ensure at least 1 square per row
+	
+	int rowsNeeded = (cloakCount + squaresPerRow - 1) / squaresPerRow; // Ceiling division
 
 	if( rowsNeeded > 1 )
 		return 25 + (rowsNeeded - 1) * 25; // 25 pixels per row
@@ -1481,7 +1493,7 @@ void Unit::detect_spy_menu(int dispY1)
 {
 	Nation* nationPtr = nation_array[true_nation_recno()];
 
-	int x=INFO_X1+80, y=dispY1+4, nationRecno, changeFlag=0;
+	int x=get_scaled_info_x1()+80, y=dispY1+4, nationRecno, changeFlag=0;
 
 	char canChangeAnyCloak = can_spy_change_nation();
 	char canChangeOwnCloak = canChangeAnyCloak;		// change back to its own cloak
@@ -1525,9 +1537,9 @@ void Unit::detect_spy_menu(int dispY1)
 
 		x+=SPY_CLOAK_WIDTH+4;
 
-		if( x+SPY_CLOAK_WIDTH > INFO_X2 )
+		if( x+SPY_CLOAK_WIDTH > get_scaled_info_x2() )
 		{
-			x  = INFO_X1+80;
+			x  = get_scaled_info_x1()+80;
 			y += 25;
 		}
 	}
@@ -1565,7 +1577,7 @@ void Unit::disp_hit_point(int dispY1)
 	else
 		hitPoints = (int) hit_points;
 
-	Vga::active_buf->indicator(0x0f, INFO_X1+30, dispY1+1, hit_points, max_hit_points, 0);
+	Vga::active_buf->indicator(0x0f, get_scaled_info_x1()+30, dispY1+1, hit_points, max_hit_points, 0);
 }
 //----------- End of function Unit::disp_hit_point -----------//
 
@@ -1672,21 +1684,21 @@ static void disp_debug_info(Unit* unitPtr, int dispY1, int refreshFlag)
 	};
 
 	if( refreshFlag == INFO_REPAINT )
-		vga_util.d3_panel_up( INFO_X1, dispY1, INFO_X2, dispY1+65 );
+		vga_util.d3_panel_up( get_scaled_info_x1(), dispY1, get_scaled_info_x2(), dispY1+65 );
 
-	int x=INFO_X1+3, y=dispY1+3;
+	int x=get_scaled_info_x1()+3, y=dispY1+3;
 
-	font_san.disp( INFO_X2-80, y   , unitPtr->sprite_recno, 1, INFO_X2-41 );
-	font_san.disp( INFO_X2-80, y+16, unitPtr->ai_action_id, 1, INFO_X2-41 );
-	font_san.disp( INFO_X2-80, y+32, unitPtr->home_camp_firm_recno, 1, INFO_X2-41 );
-	font_san.disp( INFO_X2-80, y+48, unitPtr->original_action_mode, 1, INFO_X2-41 );
+	font_san.disp( get_scaled_info_x2()-80, y   , unitPtr->sprite_recno, 1, get_scaled_info_x2()-41 );
+	font_san.disp( get_scaled_info_x2()-80, y+16, unitPtr->ai_action_id, 1, get_scaled_info_x2()-41 );
+	font_san.disp( get_scaled_info_x2()-80, y+32, unitPtr->home_camp_firm_recno, 1, get_scaled_info_x2()-41 );
+	font_san.disp( get_scaled_info_x2()-80, y+48, unitPtr->original_action_mode, 1, get_scaled_info_x2()-41 );
 
-	font_san.disp( INFO_X2-40, y   , unitPtr->leader_unit_recno, 1, INFO_X2-3 );
+	font_san.disp( get_scaled_info_x2()-40, y   , unitPtr->leader_unit_recno, 1, get_scaled_info_x2()-3 );
 
-	font_san.disp( x, y	  , action_mode_str_array[unitPtr->action_mode] , INFO_X2-81 );
-	font_san.disp( x, y+=16, action_mode_str_array[unitPtr->action_mode2], INFO_X2-81 );
-	font_san.disp( x, y+=16, unit_mode_str_array  [unitPtr->unit_mode]   , INFO_X2-81 );
-	font_san.disp( x, y+=16, cur_action_str_array [unitPtr->cur_action-1]  , INFO_X2-81 );
+	font_san.disp( x, y	  , action_mode_str_array[unitPtr->action_mode] , get_scaled_info_x2()-81 );
+	font_san.disp( x, y+=16, action_mode_str_array[unitPtr->action_mode2], get_scaled_info_x2()-81 );
+	font_san.disp( x, y+=16, unit_mode_str_array  [unitPtr->unit_mode]   , get_scaled_info_x2()-81 );
+	font_san.disp( x, y+=16, cur_action_str_array [unitPtr->cur_action-1]  , get_scaled_info_x2()-81 );
 }
 //----------- End of static function disp_debug_info -----------//
 
