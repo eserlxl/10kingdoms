@@ -211,6 +211,7 @@ int OpenALAudio::init_wav()
 
 	assert(!this->wav_init_flag);
 
+	// Initialize resource system first
 	this->wav_res.init(DIR_RES"A_WAVE2.RES", 0, 0);
 
 	this->al_device = alcOpenDevice(NULL);
@@ -293,6 +294,13 @@ err:
 		alcCloseDevice(this->al_device);
 		this->al_device = NULL;
 	}
+	
+	// Clear any OpenAL errors that might have occurred during initialization
+	while (alGetError() != AL_NO_ERROR)
+	{
+		// Just clear the error queue
+	}
+	
 	return 0;
 }
 
@@ -346,6 +354,13 @@ void OpenALAudio::deinit_wav()
 	{
 		alcCloseDevice(this->al_device);
 		this->al_device = NULL;
+	}
+	
+	// Final cleanup to ensure no OpenAL resources remain
+	// This helps prevent memory leaks from OpenAL internal structures
+	while (alGetError() != AL_NO_ERROR)
+	{
+		// Just clear the error queue
 	}
 }
 

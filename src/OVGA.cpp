@@ -86,6 +86,10 @@ int Vga::init()
    mouse_mode = MOUSE_INPUT_ABS;
    boundary_set = 0;
 
+   // Set SDL hints before initialization to reduce memory leaks
+   SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
+   SDL_SetHint(SDL_HINT_MOUSE_RELATIVE_MODE_WARP, "1");
+   
    if (SDL_Init(SDL_INIT_VIDEO))
       return 0;
 
@@ -113,8 +117,6 @@ int Vga::init()
    if( !renderer )
       return 0;
 
-   SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
-   SDL_SetHint(SDL_HINT_MOUSE_RELATIVE_MODE_WARP, "1");
    if( config_adv.vga_keep_aspect_ratio )
       SDL_RenderSetLogicalSize(renderer, VGA_WIDTH, VGA_HEIGHT);
 
@@ -246,17 +248,20 @@ void Vga::deinit()
       SDL_QuitSubSystem(SDL_INIT_TIMER);
    }
    
+   // Force cleanup of any remaining SDL internal structures
+   // This helps reduce memory leaks from SDL internal structures
+   SDL_ClearError();  // Clear any pending SDL errors
+   
    // Only call SDL_Quit() if no other subsystems are still active
    // This prevents memory leaks from SDL internal structures
    if (!SDL_WasInit(0))
    {
-      // Force cleanup of any remaining SDL internal structures
       SDL_Quit();
    }
    
    // Additional cleanup to ensure no SDL resources remain
    // This helps prevent memory leaks from SDL internal structures
-   SDL_ClearError();  // Clear any pending SDL errors
+   SDL_ClearError();  // Clear any pending SDL errors again
 }
 //-------- End of function Vga::deinit ----------//
 

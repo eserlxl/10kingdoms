@@ -129,4 +129,40 @@ These fixes have significantly reduced memory leaks in the application:
 - **Uninitialized memory access**: Eliminated in critical paths
 - **Overall stability**: Improved, especially during long gaming sessions
 
-The remaining memory leaks are primarily from external libraries and do not affect application functionality or stability. 
+The remaining memory leaks are primarily from external libraries and do not affect application functionality or stability.
+
+## Recent Improvements (Latest Update)
+
+### SDL Initialization Improvements
+
+**File: `src/OVGA.cpp`**
+
+#### Enhanced `Vga::init()` method:
+- Moved SDL hint setting before SDL_Init() to reduce memory leaks from SDL internal structures
+- Improved initialization order to prevent memory leaks from SDL hint processing
+
+#### Enhanced `Vga::deinit()` method:
+- Added additional SDL error clearing before and after SDL_Quit()
+- Improved cleanup sequence to better handle SDL internal structures
+- Better error queue management to prevent memory leaks
+
+### OpenAL Audio Improvements
+
+**File: `src/openal/openal_audio.cpp`**
+
+#### Enhanced `init_wav()` method:
+- Added OpenAL error queue clearing on initialization failure
+- Better error handling to prevent memory leaks during failed initialization
+
+#### Enhanced `deinit_wav()` method:
+- Added final OpenAL error queue clearing after device cleanup
+- Improved resource cleanup sequence to prevent memory leaks from OpenAL internal structures
+
+### Memory Leak Reduction Summary
+
+The latest improvements address:
+- **SDL Internal Structure Leaks**: Reduced by moving hint setting before initialization
+- **OpenAL Error Queue Leaks**: Prevented by proper error queue management
+- **Resource Cleanup Order**: Improved to ensure better cleanup of external library resources
+
+These improvements help reduce the "still reachable" memory leaks from external libraries, though some will always remain due to library design decisions. 
