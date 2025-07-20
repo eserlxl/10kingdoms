@@ -348,6 +348,19 @@ void Sys::deinit_directx()
    vga.deinit();
    DEBUG_LOG("vga.deinit() finish");
 
+   // Ensure all SDL subsystems are properly cleaned up
+   if (SDL_WasInit(SDL_INIT_VIDEO))
+   {
+      SDL_QuitSubSystem(SDL_INIT_VIDEO);
+   }
+   if (SDL_WasInit(SDL_INIT_AUDIO))
+   {
+      SDL_QuitSubSystem(SDL_INIT_AUDIO);
+   }
+   if (SDL_WasInit(SDL_INIT_EVENTS))
+   {
+      SDL_QuitSubSystem(SDL_INIT_EVENTS);
+   }
 }
 //--------- End of function Sys::deinit_directx ---------//
 
@@ -509,6 +522,9 @@ void Sys::deinit_objects()
    // Need to deinit hall_of_fame *after* game_file_array to persist the last savegame filename
    game_file_array.deinit();
    hall_of_fame.deinit();
+   
+   // Deinit locale system last to ensure proper cleanup of iconv handles
+   locale_res.deinit();
 }
 //------- End of function Sys::deinit_objects -----------//
 

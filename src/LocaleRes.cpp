@@ -113,8 +113,11 @@ void LocaleRes::deinit()
 		iconv_close(cd);
 	if( cd_latin != (iconv_t)-1 )
 		iconv_close(cd_latin);
+	if( cd_from_sdl != (iconv_t)-1 )
+		iconv_close(cd_from_sdl);
 	cd = (iconv_t)-1;
 	cd_latin = (iconv_t)-1;
+	cd_from_sdl = (iconv_t)-1;
 #endif
 	if( in_buf )
 		mem_del(in_buf);

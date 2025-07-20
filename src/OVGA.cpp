@@ -205,19 +205,29 @@ void Vga::deinit()
       mem_del(custom_pal);
    custom_pal = NULL;
 
+   // Clean up SDL resources in reverse order of creation
    if( target )
+   {
       SDL_FreeSurface(target);
-   target = NULL;
+      target = NULL;
+   }
    if( texture )
+   {
       SDL_DestroyTexture(texture);
-   texture = NULL;
+      texture = NULL;
+   }
    if( renderer )
+   {
       SDL_DestroyRenderer(renderer);
-   renderer = NULL;
+      renderer = NULL;
+   }
    if( window )
+   {
       SDL_DestroyWindow(window);
-   window = NULL;
+      window = NULL;
+   }
 
+   // Ensure all SDL subsystems are properly shut down
    SDL_Quit();
 }
 //-------- End of function Vga::deinit ----------//

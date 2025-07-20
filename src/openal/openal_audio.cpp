@@ -292,8 +292,17 @@ void OpenALAudio::deinit_wav()
 
 	this->stop_wav();
 
+	// Clear all streams to ensure proper cleanup
+	StreamMap::iterator itr;
+	for (itr = this->streams.begin(); itr != this->streams.end(); ++itr)
+	{
+		delete itr->second;
+	}
+	this->streams.clear();
+
 	if (this->al_context != NULL)
 	{
+		alcMakeContextCurrent(NULL);  // Unset current context before destroying
 		alcDestroyContext(this->al_context);
 		this->al_context = NULL;
 	}
