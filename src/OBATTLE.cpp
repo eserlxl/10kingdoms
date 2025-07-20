@@ -387,20 +387,40 @@ void Battle::create_ai_nation(int aiNationCount)
 {
 	int raceId;
 
-	// Original random selection logic
-	for( int i=0 ; i<aiNationCount ; i++ )
+	// If race_create_all is enabled, create one nation of each race (except player's race)
+	if( config_adv.race_create_all )
 	{
-		err_when( nation_array.size() == MAX_NATION );
+		int playerRaceId = nation_array.player_recno ? nation_array[nation_array.player_recno]->race_id : 0;
+		
+		for( int raceId = 1; raceId <= MAX_RACE; raceId++ )
+		{
+			// Skip player's race
+			if( raceId == playerRaceId )
+				continue;
+				
+			err_when( nation_array.size() == MAX_NATION );
+			
+			int nationRecno;
+			nationRecno = nation_array.new_nation( NATION_AI, raceId, nation_array.random_unused_color() );
+		}
+	}
+	else
+	{
+		// Original random selection logic
+		for( int i=0 ; i<aiNationCount ; i++ )
+		{
+			err_when( nation_array.size() == MAX_NATION );
 
-		if( config.random_start_up )
-			raceId = random_race();
-		else
-			raceId = nation_array.random_unused_race();
+			if( config.random_start_up )
+				raceId = random_race();
+			else
+				raceId = nation_array.random_unused_race();
 
-		err_when( raceId < 1 || raceId > MAX_RACE );
+			err_when( raceId < 1 || raceId > MAX_RACE );
 
-		int nationRecno;
-		nationRecno = nation_array.new_nation( NATION_AI, raceId, nation_array.random_unused_color() );     // 2nd parameter = the race id., 3rd parameters = color scheme id.
+			int nationRecno;
+			nationRecno = nation_array.new_nation( NATION_AI, raceId, nation_array.random_unused_color() );     // 2nd parameter = the race id., 3rd parameters = color scheme id.
+		}
 	}
 }
 //--------- End of function Battle::create_ai_nation ---------//
