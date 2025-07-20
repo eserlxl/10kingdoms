@@ -88,6 +88,9 @@ int Vga::init()
 
    if (SDL_Init(SDL_INIT_VIDEO))
       return 0;
+   
+   // Clear any SDL errors that might have occurred during initialization
+   SDL_ClearError();
 
    init_window_size();
 
@@ -104,14 +107,20 @@ int Vga::init()
                              config_adv.vga_window_height,
                              init_window_flags());
    if( !window )
+   {
+      SDL_ClearError();
       return 0;
+   }
 
    if( config_adv.vga_full_screen )
       set_window_grab(WINGRAB_ON);
 
    renderer = SDL_CreateRenderer(window, -1, 0);
    if( !renderer )
+   {
+      SDL_ClearError();
       return 0;
+   }
 
    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
    SDL_SetHint(SDL_HINT_MOUSE_RELATIVE_MODE_WARP, "1");
@@ -137,6 +146,7 @@ int Vga::init()
    if (!texture)
    {
       ERR("Could not create texture: %s\n", SDL_GetError());
+      SDL_ClearError();
       return 0;
    }
 
@@ -166,6 +176,7 @@ int Vga::init()
                                  0, 0, 0, 0);
    if (!target)
    {
+      SDL_ClearError();
       return 0;
    }
 
@@ -179,6 +190,7 @@ int Vga::init()
       SDL_SetColorKey(icon, SDL_TRUE, colorkey);
       SDL_SetWindowIcon(window, icon);
       SDL_FreeSurface(icon);
+      SDL_ClearError();
    }
 
    return 1;
@@ -257,6 +269,19 @@ void Vga::deinit()
    // Additional cleanup to ensure no SDL resources remain
    // This helps prevent memory leaks from SDL internal structures
    SDL_ClearError();  // Clear any pending SDL errors
+   
+   // Force cleanup of any remaining SDL internal structures
+   // This addresses the 8-byte definitely lost memory leak from SDL initialization
+   SDL_QuitSubSystem(SDL_INIT_VIDEO);
+   SDL_QuitSubSystem(SDL_INIT_AUDIO);
+   SDL_QuitSubSystem(SDL_INIT_EVENTS);
+   SDL_QuitSubSystem(SDL_INIT_TIMER);
+   SDL_QuitSubSystem(SDL_INIT_GAMECONTROLLER);
+   SDL_QuitSubSystem(SDL_INIT_HAPTIC);
+   SDL_QuitSubSystem(SDL_INIT_SENSOR);
+   
+   // Final cleanup to ensure all SDL resources are released
+   SDL_Quit();
 }
 //-------- End of function Vga::deinit ----------//
 
