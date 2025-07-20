@@ -391,13 +391,15 @@ int TownArray::independent_town_resistance()
 //
 int TownArray::think_town_loc(int maxTries, int& xLoc, int& yLoc)
 {
-	// Calculate minimum distance based on world size and expected number of players
-	// For optimal spacing: use sqrt(world_area / max_players) / 2
+	// Calculate minimum distance based on world size and actual number of players
+	// For optimal spacing: use sqrt(world_area / actual_players) / 2
 	// This ensures players are distributed evenly across the map
+	// For 220x250 map with 2 players: sqrt(55000/2)/2 = sqrt(27500)/2 ≈ 83 tiles
 	// For 220x250 map with 10 players: sqrt(55000/10)/2 = sqrt(5500)/2 ≈ 37 tiles
 	int worldArea = MAX_WORLD_X_LOC * MAX_WORLD_Y_LOC;
-	int maxPlayers = MAX_NATION;  // Maximum possible players (10)
-	int optimalDistance = (int)sqrt((double)worldArea / maxPlayers) / 2;
+	int actualPlayers = nation_array.nation_count;  // Actual number of players
+	if( actualPlayers < 1 ) actualPlayers = 1;  // Prevent division by zero
+	int optimalDistance = (int)sqrt((double)worldArea / actualPlayers) / 2;
 	int minInterTownDistance = MAX(16, optimalDistance);  // At least 16 tiles minimum
 	
 	#define BUILD_TOWN_LOC_WIDTH     16
