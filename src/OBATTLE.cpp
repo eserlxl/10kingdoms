@@ -391,11 +391,17 @@ void Battle::create_ai_nation(int aiNationCount)
 	int raceId;
 
 	// If race_create_all is enabled, create one nation of each race (except player's race)
+	// BUT respect the aiNationCount limit if it's smaller than the number of available races
 	if( config_adv.race_create_all )
 	{
 		int playerRaceId = nation_array.player_recno ? nation_array[nation_array.player_recno]->race_id : 0;
+		int availableRaces = MAX_RACE - (playerRaceId ? 1 : 0); // Total races minus player's race
 		
-		for( int raceId = 1; raceId <= MAX_RACE; raceId++ )
+		// Use the smaller of aiNationCount or available races
+		int nationsToCreate = (aiNationCount < availableRaces) ? aiNationCount : availableRaces;
+		
+		int createdCount = 0;
+		for( int raceId = 1; raceId <= MAX_RACE && createdCount < nationsToCreate; raceId++ )
 		{
 			// Skip player's race
 			if( raceId == playerRaceId )
@@ -405,6 +411,7 @@ void Battle::create_ai_nation(int aiNationCount)
 			
 			int nationRecno;
 			nationRecno = nation_array.new_nation( NATION_AI, raceId, nation_array.random_unused_color() );
+			createdCount++;
 		}
 	}
 	else
