@@ -66,8 +66,14 @@ void VgaUtil::blt_buf(int x1, int y1, int x2, int y2, int putBackCursor)
 
    //--------------------------------------//
 
-   IMGcopy( vga_front.buf_ptr(), vga_front.buf_pitch(),
-      vga_back.buf_ptr(), vga_back.buf_pitch(), x1, y1, x2, y2 );
+   // Check bounds to prevent buffer overflow - ensure entire rectangle fits within both buffers
+   if( x1 >= 0 && y1 >= 0 && x2 >= x1 && y2 >= y1 && 
+       x2 < vga_front.buf_width() && y2 < vga_front.buf_height() && 
+       x2 < vga_back.buf_width() && y2 < vga_back.buf_height() )
+   {
+      IMGcopy( vga_front.buf_ptr(), vga_front.buf_pitch(),
+         vga_back.buf_ptr(), vga_back.buf_pitch(), x1, y1, x2, y2 );
+   }
 
    //--------------------------------------//
 
@@ -89,7 +95,10 @@ void VgaUtil::blt_buf(int x1, int y1, int x2, int y2, int putBackCursor)
 //
 void VgaUtil::d3_panel_up(int x1,int y1,int x2,int y2,int vgaFrontOnly,int drawBorderOnly)
 {
-   err_when( x1>x2 || y1>y2 || x1<0 || y1<0 || x2>=VGA_WIDTH || y2>=VGA_HEIGHT );
+   // Use actual surface dimensions instead of hardcoded constants
+   int maxWidth = vgaFrontOnly ? vga_front.buf_width() : vga_back.buf_width();
+   int maxHeight = vgaFrontOnly ? vga_front.buf_height() : vga_back.buf_height();
+   err_when( x1>x2 || y1>y2 || x1<0 || y1<0 || x2>=maxWidth || y2>=maxHeight );
 
    VgaBuf* vgaBuf;
 
@@ -98,34 +107,38 @@ void VgaUtil::d3_panel_up(int x1,int y1,int x2,int y2,int vgaFrontOnly,int drawB
    else
       vgaBuf = &vga_back;
 
-   if( !drawBorderOnly )
+   // Check bounds before any drawing operations
+   if( x1 >= 0 && y1 >= 0 && x2 < maxWidth && y2 < maxHeight )
    {
-      if( Vga::opaque_flag )
-         vgaBuf->bar(x1+1, y1+1, x2-1, y2-1, UP_OPAQUE_COLOR);
-      else
-         vgaBuf->adjust_brightness(x1+1, y1+1, x2-1, y2-1, IF_UP_BRIGHTNESS_ADJUST);
+      if( !drawBorderOnly )
+      {
+         if( Vga::opaque_flag )
+            vgaBuf->bar(x1+1, y1+1, x2-1, y2-1, UP_OPAQUE_COLOR);
+         else
+            vgaBuf->adjust_brightness(x1+1, y1+1, x2-1, y2-1, IF_UP_BRIGHTNESS_ADJUST);
+      }
+
+      mouse.hide_area( x1,y1,x2,y2 );
+
+      //--------- white border on top and left sides -----------//
+
+      IMGbar( vgaBuf->buf_ptr(), vgaBuf->buf_pitch(), x1+1,y1,x2,y1, IF_LIGHT_BORDER_COLOR );    // top side
+      IMGbar( vgaBuf->buf_ptr(), vgaBuf->buf_pitch(), x1,y1,x1,y2  , IF_LIGHT_BORDER_COLOR );    // left side
+
+      //--------- black border on bottom and right sides -----------//
+
+      IMGbar( vgaBuf->buf_ptr(), vgaBuf->buf_pitch(), x1+1,y2,x2,y2, IF_DARK_BORDER_COLOR );     // bottom side
+      IMGbar( vgaBuf->buf_ptr(), vgaBuf->buf_pitch(), x2,y1+1,x2,y2, IF_DARK_BORDER_COLOR );     // right side
+
+      //-------------------------------------------//
+
+      mouse.show_area();
+
+      //----- blt the area from the back buffer to the front buffer ------//
+
+      if( !vgaFrontOnly && !vga.use_back_buf )      // only blt the back to the front is the active buffer is the front
+         blt_buf(x1, y1, x2, y2, 0);
    }
-
-   mouse.hide_area( x1,y1,x2,y2 );
-
-   //--------- white border on top and left sides -----------//
-
-   IMGbar( vgaBuf->buf_ptr(), vgaBuf->buf_pitch(), x1+1,y1,x2,y1, IF_LIGHT_BORDER_COLOR );    // top side
-   IMGbar( vgaBuf->buf_ptr(), vgaBuf->buf_pitch(), x1,y1,x1,y2  , IF_LIGHT_BORDER_COLOR );    // left side
-
-   //--------- black border on bottom and right sides -----------//
-
-   IMGbar( vgaBuf->buf_ptr(), vgaBuf->buf_pitch(), x1+1,y2,x2,y2, IF_DARK_BORDER_COLOR );     // bottom side
-   IMGbar( vgaBuf->buf_ptr(), vgaBuf->buf_pitch(), x2,y1+1,x2,y2, IF_DARK_BORDER_COLOR );     // right side
-
-   //-------------------------------------------//
-
-   mouse.show_area();
-
-   //----- blt the area from the back buffer to the front buffer ------//
-
-   if( !vgaFrontOnly && !vga.use_back_buf )      // only blt the back to the front is the active buffer is the front
-      blt_buf(x1, y1, x2, y2, 0);
 }
 //------------- End of function VgaUtil::d3_panel_up ------------//
 
@@ -140,7 +153,10 @@ void VgaUtil::d3_panel_up(int x1,int y1,int x2,int y2,int vgaFrontOnly,int drawB
 //
 void VgaUtil::d3_panel_down(int x1,int y1,int x2,int y2,int vgaFrontOnly,int drawBorderOnly)
 {
-   err_when( x1>x2 || y1>y2 || x1<0 || y1<0 || x2>=VGA_WIDTH || y2>=VGA_HEIGHT );
+   // Use actual surface dimensions instead of hardcoded constants
+   int maxWidth = vgaFrontOnly ? vga_front.buf_width() : vga_back.buf_width();
+   int maxHeight = vgaFrontOnly ? vga_front.buf_height() : vga_back.buf_height();
+   err_when( x1>x2 || y1>y2 || x1<0 || y1<0 || x2>=maxWidth || y2>=maxHeight );
 
    VgaBuf* vgaBuf;
 
@@ -149,34 +165,38 @@ void VgaUtil::d3_panel_down(int x1,int y1,int x2,int y2,int vgaFrontOnly,int dra
    else
       vgaBuf = &vga_back;
 
-   if( !drawBorderOnly )
+   // Check bounds before any drawing operations
+   if( x1 >= 0 && y1 >= 0 && x2 < maxWidth && y2 < maxHeight )
    {
-      if( Vga::opaque_flag )
-         vgaBuf->bar(x1+1, y1+1, x2-1, y2-1, DOWN_OPAQUE_COLOR);
-      else
-         vgaBuf->adjust_brightness(x1+1, y1+1, x2-1, y2-1, IF_DOWN_BRIGHTNESS_ADJUST);
+      if( !drawBorderOnly )
+      {
+         if( Vga::opaque_flag )
+            vgaBuf->bar(x1+1, y1+1, x2-1, y2-1, DOWN_OPAQUE_COLOR);
+         else
+            vgaBuf->adjust_brightness(x1+1, y1+1, x2-1, y2-1, IF_DOWN_BRIGHTNESS_ADJUST);
+      }
+
+      mouse.hide_area( x1,y1,x2,y2 );
+
+      //--------- white border on top and left sides -----------//
+
+      IMGbar( vgaBuf->buf_ptr(), vgaBuf->buf_pitch(), x1+1,y1,x2,y1, IF_DARK_BORDER_COLOR );    // top side
+      IMGbar( vgaBuf->buf_ptr(), vgaBuf->buf_pitch(), x1,y1,x1,y2  , IF_DARK_BORDER_COLOR );    // left side
+
+      //--------- black border on bottom and right sides -----------//
+
+      IMGbar( vgaBuf->buf_ptr(), vgaBuf->buf_pitch(), x1+1,y2,x2,y2, IF_LIGHT_BORDER_COLOR );   // bottom side
+      IMGbar( vgaBuf->buf_ptr(), vgaBuf->buf_pitch(), x2,y1+1,x2,y2, IF_LIGHT_BORDER_COLOR );   // right side
+
+      //-------------------------------------------//
+
+      mouse.show_area();
+
+      //----- blt the area from the back buffer to the front buffer ------//
+
+      if( !vgaFrontOnly && !vga.use_back_buf )      // only blt the back to the front is the active buffer is the front
+         blt_buf(x1, y1, x2, y2, 0);
    }
-
-   mouse.hide_area( x1,y1,x2,y2 );
-
-   //--------- white border on top and left sides -----------//
-
-   IMGbar( vgaBuf->buf_ptr(), vgaBuf->buf_pitch(), x1+1,y1,x2,y1, IF_DARK_BORDER_COLOR );    // top side
-   IMGbar( vgaBuf->buf_ptr(), vgaBuf->buf_pitch(), x1,y1,x1,y2  , IF_DARK_BORDER_COLOR );    // left side
-
-   //--------- black border on bottom and right sides -----------//
-
-   IMGbar( vgaBuf->buf_ptr(), vgaBuf->buf_pitch(), x1+1,y2,x2,y2, IF_LIGHT_BORDER_COLOR );   // bottom side
-   IMGbar( vgaBuf->buf_ptr(), vgaBuf->buf_pitch(), x2,y1+1,x2,y2, IF_LIGHT_BORDER_COLOR );   // right side
-
-   //-------------------------------------------//
-
-   mouse.show_area();
-
-   //----- blt the area from the back buffer to the front buffer ------//
-
-   if( !vgaFrontOnly && !vga.use_back_buf )      // only blt the back to the front is the active buffer is the front
-      blt_buf(x1, y1, x2, y2, 0);
 }
 //------------- End of function VgaUtil::d3_panel_down ------------//
 
@@ -191,7 +211,10 @@ void VgaUtil::d3_panel_down(int x1,int y1,int x2,int y2,int vgaFrontOnly,int dra
 //
 void VgaUtil::d3_panel2_up(int x1,int y1,int x2,int y2,int vgaFrontOnly,int drawBorderOnly)
 {
-   err_when( x1>x2 || y1>y2 || x1<0 || y1<0 || x2>=VGA_WIDTH || y2>=VGA_HEIGHT );
+   // Use actual surface dimensions instead of hardcoded constants
+   int maxWidth = vgaFrontOnly ? vga_front.buf_width() : vga_back.buf_width();
+   int maxHeight = vgaFrontOnly ? vga_front.buf_height() : vga_back.buf_height();
+   err_when( x1>x2 || y1>y2 || x1<0 || y1<0 || x2>=maxWidth || y2>=maxHeight );
 
    VgaBuf* vgaBuf;
 
@@ -200,43 +223,47 @@ void VgaUtil::d3_panel2_up(int x1,int y1,int x2,int y2,int vgaFrontOnly,int draw
    else
       vgaBuf = &vga_back;
 
-   if( !drawBorderOnly )
-      vgaBuf->adjust_brightness(x1+2, y1+2, x2-3, y2-3, IF_UP_BRIGHTNESS_ADJUST);
+   // Check bounds before any drawing operations
+   if( x1 >= 0 && y1 >= 0 && x2 < maxWidth && y2 < maxHeight )
+   {
+      if( !drawBorderOnly )
+         vgaBuf->adjust_brightness(x1+2, y1+2, x2-3, y2-3, IF_UP_BRIGHTNESS_ADJUST);
 
-   mouse.hide_area( x1,y1,x2,y2 );
+      mouse.hide_area( x1,y1,x2,y2 );
 
-   //--------- white border on top and left sides -----------//
+      //--------- white border on top and left sides -----------//
 
-   IMGbar( vgaBuf->buf_ptr(), vgaBuf->buf_pitch(), x1,y1,x2-3,y1+1,0x9a );
-   vgaBuf->draw_pixel(x2-2, y1, 0x9a);
-   IMGbar( vgaBuf->buf_ptr(), vgaBuf->buf_pitch(), x1,y1+2,x1+1,y2-3, 0x9a );    // left side
-   vgaBuf->draw_pixel(x1, y2-2, 0x9a);
+      IMGbar( vgaBuf->buf_ptr(), vgaBuf->buf_pitch(), x1,y1,x2-3,y1+1,0x9a );
+      vgaBuf->draw_pixel(x2-2, y1, 0x9a);
+      IMGbar( vgaBuf->buf_ptr(), vgaBuf->buf_pitch(), x1,y1+2,x1+1,y2-3, 0x9a );    // left side
+      vgaBuf->draw_pixel(x1, y2-2, 0x9a);
 
-   //--------- black border on bottom and right sides -----------//
+      //--------- black border on bottom and right sides -----------//
 
-   IMGbar( vgaBuf->buf_ptr(), vgaBuf->buf_pitch(), x2-2,y1+2,x2-1,y2-1, 0x90 );     // bottom side
-   vgaBuf->draw_pixel(x2-1, y1+1, 0x90);
-   IMGbar( vgaBuf->buf_ptr(), vgaBuf->buf_pitch(), x1+2,y2-2,x2-3,y2-1, 0x90 );      // right side
-   vgaBuf->draw_pixel(x1+1, y2-1, 0x90);
+      IMGbar( vgaBuf->buf_ptr(), vgaBuf->buf_pitch(), x2-2,y1+2,x2-1,y2-1, 0x90 );     // bottom side
+      vgaBuf->draw_pixel(x2-1, y1+1, 0x90);
+      IMGbar( vgaBuf->buf_ptr(), vgaBuf->buf_pitch(), x1+2,y2-2,x2-3,y2-1, 0x90 );      // right side
+      vgaBuf->draw_pixel(x1+1, y2-1, 0x90);
 
-   //--------- junction between white and black border --------//
-   vgaBuf->draw_pixel(x2-1, y1, 0x97);
-   vgaBuf->draw_pixel(x2-2, y1+1, 0x97);
-   vgaBuf->draw_pixel(x1, y2-1, 0x97);
-   vgaBuf->draw_pixel(x1+1, y2-2, 0x97);
+      //--------- junction between white and black border --------//
+      vgaBuf->draw_pixel(x2-1, y1, 0x97);
+      vgaBuf->draw_pixel(x2-2, y1+1, 0x97);
+      vgaBuf->draw_pixel(x1, y2-1, 0x97);
+      vgaBuf->draw_pixel(x1+1, y2-2, 0x97);
 
-   //--------- gray shadow on bottom and right sides -----------//
-   IMGbar( vgaBuf->buf_ptr(), vgaBuf->buf_pitch(), x2, y1+1, x2, y2, 0x97);
-   IMGbar( vgaBuf->buf_ptr(), vgaBuf->buf_pitch(), x1+1, y2, x2-1, y2, 0x97);
+      //--------- gray shadow on bottom and right sides -----------//
+      IMGbar( vgaBuf->buf_ptr(), vgaBuf->buf_pitch(), x2, y1+1, x2, y2, 0x97);
+      IMGbar( vgaBuf->buf_ptr(), vgaBuf->buf_pitch(), x1+1, y2, x2-1, y2, 0x97);
 
-   //-------------------------------------------//
+      //-------------------------------------------//
 
-   mouse.show_area();
+      mouse.show_area();
 
-   //----- blt the area from the back buffer to the front buffer ------//
+      //----- blt the area from the back buffer to the front buffer ------//
 
-   if( !vgaFrontOnly && !vga.use_back_buf )      // only blt the back to the front is the active buffer is the front
-      blt_buf(x1, y1, x2, y2, 0);
+      if( !vgaFrontOnly && !vga.use_back_buf )      // only blt the back to the front is the active buffer is the front
+         blt_buf(x1, y1, x2, y2, 0);
+   }
 }
 //------------- End of function VgaUtil::d3_panel_up ------------//
 
@@ -251,7 +278,10 @@ void VgaUtil::d3_panel2_up(int x1,int y1,int x2,int y2,int vgaFrontOnly,int draw
 //
 void VgaUtil::d3_panel2_down(int x1,int y1,int x2,int y2,int vgaFrontOnly,int drawBorderOnly)
 {
-   err_when( x1>x2 || y1>y2 || x1<0 || y1<0 || x2>=VGA_WIDTH || y2>=VGA_HEIGHT );
+   // Use actual surface dimensions instead of hardcoded constants
+   int maxWidth = vgaFrontOnly ? vga_front.buf_width() : vga_back.buf_width();
+   int maxHeight = vgaFrontOnly ? vga_front.buf_height() : vga_back.buf_height();
+   err_when( x1>x2 || y1>y2 || x1<0 || y1<0 || x2>=maxWidth || y2>=maxHeight );
 
    VgaBuf* vgaBuf;
 
@@ -260,41 +290,45 @@ void VgaUtil::d3_panel2_down(int x1,int y1,int x2,int y2,int vgaFrontOnly,int dr
    else
       vgaBuf = &vga_back;
 
-   if( !drawBorderOnly )
-      vgaBuf->adjust_brightness(x1+2, y1+2, x2-3, y2-3, IF_DOWN_BRIGHTNESS_ADJUST);
+   // Check bounds before any drawing operations
+   if( x1 >= 0 && y1 >= 0 && x2 < maxWidth && y2 < maxHeight )
+   {
+      if( !drawBorderOnly )
+         vgaBuf->adjust_brightness(x1+2, y1+2, x2-3, y2-3, IF_DOWN_BRIGHTNESS_ADJUST);
 
-   mouse.hide_area( x1,y1,x2,y2 );
+      mouse.hide_area( x1,y1,x2,y2 );
 
-   //--------- black border on top and left sides -----------//
+      //--------- black border on top and left sides -----------//
 
-   IMGbar( vgaBuf->buf_ptr(), vgaBuf->buf_pitch(), x1,y1,x2-3,y1+1,0x90 );
-   vgaBuf->draw_pixel(x2-2, y1, 0x90);
-   IMGbar( vgaBuf->buf_ptr(), vgaBuf->buf_pitch(), x1,y1+2,x1+1,y2-3, 0x90 );    // left side
-   vgaBuf->draw_pixel(x1, y2-2, 0x90);
+      IMGbar( vgaBuf->buf_ptr(), vgaBuf->buf_pitch(), x1,y1,x2-3,y1+1,0x90 );
+      vgaBuf->draw_pixel(x2-2, y1, 0x90);
+      IMGbar( vgaBuf->buf_ptr(), vgaBuf->buf_pitch(), x1,y1+2,x1+1,y2-3, 0x90 );    // left side
+      vgaBuf->draw_pixel(x1, y2-2, 0x90);
 
-   //--------- while border on bottom and right sides -----------//
+      //--------- while border on bottom and right sides -----------//
 
-   IMGbar( vgaBuf->buf_ptr(), vgaBuf->buf_pitch(), x2-2,y1+2,x2-1,y2-1, 0x9a );     // bottom side
-   vgaBuf->draw_pixel(x2-1, y1+1, 0x9a);
-   IMGbar( vgaBuf->buf_ptr(), vgaBuf->buf_pitch(), x1+2,y2-2,x2-3,y2-1, 0x9a );      // right side
-   vgaBuf->draw_pixel(x1+1, y2-1, 0x9a);
+      IMGbar( vgaBuf->buf_ptr(), vgaBuf->buf_pitch(), x2-2,y1+2,x2-1,y2-1, 0x9a );     // bottom side
+      vgaBuf->draw_pixel(x2-1, y1+1, 0x9a);
+      IMGbar( vgaBuf->buf_ptr(), vgaBuf->buf_pitch(), x1+2,y2-2,x2-3,y2-1, 0x9a );      // right side
+      vgaBuf->draw_pixel(x1+1, y2-1, 0x9a);
 
-   //--------- junction between white and black border --------//
-   vgaBuf->draw_pixel(x2-1, y1, 0x97);
-   vgaBuf->draw_pixel(x2-2, y1+1, 0x97);
-   vgaBuf->draw_pixel(x1, y2-1, 0x97);
-   vgaBuf->draw_pixel(x1+1, y2-2, 0x97);
+      //--------- junction between white and black border --------//
+      vgaBuf->draw_pixel(x2-1, y1, 0x97);
+      vgaBuf->draw_pixel(x2-2, y1+1, 0x97);
+      vgaBuf->draw_pixel(x1, y2-1, 0x97);
+      vgaBuf->draw_pixel(x1+1, y2-2, 0x97);
 
-   //--------- remove shadow, copy from back  -----------//
-   IMGbar( vgaBuf->buf_ptr(), vgaBuf->buf_pitch(), x2, y1+1, x2, y2, 0x9c);
-   IMGbar( vgaBuf->buf_ptr(), vgaBuf->buf_pitch(), x1+1, y2, x2-1, y2, 0x9c);
+      //--------- remove shadow, copy from back  -----------//
+      IMGbar( vgaBuf->buf_ptr(), vgaBuf->buf_pitch(), x2, y1+1, x2, y2, 0x9c);
+      IMGbar( vgaBuf->buf_ptr(), vgaBuf->buf_pitch(), x1+1, y2, x2-1, y2, 0x9c);
 
-   mouse.show_area();
+      mouse.show_area();
 
-   //----- blt the area from the back buffer to the front buffer ------//
+      //----- blt the area from the back buffer to the front buffer ------//
 
-   if( !vgaFrontOnly && !vga.use_back_buf )      // only blt the back to the front is the active buffer is the front
-      blt_buf(x1, y1, x2, y2, 0);
+      if( !vgaFrontOnly && !vga.use_back_buf )      // only blt the back to the front is the active buffer is the front
+         blt_buf(x1, y1, x2, y2, 0);
+   }
 }
 //------------- End of function VgaUtil::d3_panel2_down ------------//
 
@@ -310,17 +344,24 @@ void VgaUtil::d3_panel2_down(int x1,int y1,int x2,int y2,int vgaFrontOnly,int dr
 //
 void VgaUtil::separator(int x1, int y1, int x2, int y2)
 {
-   err_when( x1>x2 || y1>y2 || x1<0 || y1<0 || x2>=VGA_WIDTH || y2>=VGA_HEIGHT );
+   // Use actual surface dimensions instead of hardcoded constants
+   int maxWidth = vga_front.buf_width();
+   int maxHeight = vga_front.buf_height();
+   err_when( x1>x2 || y1>y2 || x1<0 || y1<0 || x2>=maxWidth || y2>=maxHeight );
 
-   if( y1+1==y2 )       // horizontal line
+   // Check bounds before any drawing operations
+   if( x1 >= 0 && y1 >= 0 && x2 < maxWidth && y2 < maxHeight )
    {
-      vga_front.adjust_brightness(x1, y1, x2, y1, IF_UP_BRIGHTNESS_ADJUST);
-      vga_front.adjust_brightness(x1, y2, x2, y2, IF_DOWN_BRIGHTNESS_ADJUST);
-   }
-   else
-   {
-      vga_front.adjust_brightness(x1, y1, x1, y2, IF_UP_BRIGHTNESS_ADJUST);
-      vga_front.adjust_brightness(x2, y1, x2, y2, IF_DOWN_BRIGHTNESS_ADJUST);
+      if( y1+1==y2 )       // horizontal line
+      {
+         vga_front.adjust_brightness(x1, y1, x2, y1, IF_UP_BRIGHTNESS_ADJUST);
+         vga_front.adjust_brightness(x1, y2, x2, y2, IF_DOWN_BRIGHTNESS_ADJUST);
+      }
+      else
+      {
+         vga_front.adjust_brightness(x1, y1, x1, y2, IF_UP_BRIGHTNESS_ADJUST);
+         vga_front.adjust_brightness(x2, y1, x2, y2, IF_DOWN_BRIGHTNESS_ADJUST);
+      }
    }
 }
 //--------------- End of function VgaUtil::separator --------------//

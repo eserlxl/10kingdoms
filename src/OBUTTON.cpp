@@ -41,6 +41,7 @@ Button::Button()
 	enable_flag  = 1;
 	button_key   = 0;    // set by set_key()
 	button_wait = 0;
+	is_pushed    = 0;    // initialize to not pushed
 	use_texture_flag  = 0;
 
 	help_code[0] = '\0';

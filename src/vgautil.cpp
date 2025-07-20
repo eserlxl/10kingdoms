@@ -74,7 +74,7 @@ void VgaUtil::disp_image_file(const char* fileName, int x1, int y1)
 
 	//------ turn screen dark and blt the buffer ---------//
 
-	vga_front.bar( 0, 0, VGA_WIDTH-1, VGA_HEIGHT-1, 0 );
+	vga_front.bar( 0, 0, vga_front.buf_width()-1, vga_front.buf_height()-1, 0 );
 	sys.blt_virtual_buf();
 
 	//------- Set custom palette -------//
@@ -103,7 +103,7 @@ void VgaUtil::finish_disp_image_file()
 {
 	//------- exiting: turn dark --------//
 
-	vga_front.bar( 0, 0, VGA_WIDTH-1, VGA_HEIGHT-1, 0 );
+	vga_front.bar( 0, 0, vga_front.buf_width()-1, vga_front.buf_height()-1, 0 );
 	sys.blt_virtual_buf();
 
 	//----- palette restore when back_up_pal destruct ----//

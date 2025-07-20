@@ -75,14 +75,13 @@ UnitCaravan::UnitCaravan()
 //
 void UnitCaravan::disp_info(int refreshFlag)
 {
-	disp_basic_info(INFO_Y1, refreshFlag);
+	disp_basic_info(get_scaled_info_y1(), refreshFlag);
 
 	if( !config.show_ai_info && !is_own() )
 		return;
 
-	disp_stop(INFO_Y1+54, refreshFlag);
-
-	disp_goods(INFO_Y1+234, refreshFlag);
+	disp_stop(get_scaled_info_y1()+54, refreshFlag);
+	disp_goods(get_scaled_info_y1()+234, refreshFlag);
 }
 //---------- End of function UnitCaravan::disp_info ----------//
 
@@ -155,7 +154,7 @@ void UnitCaravan::disp_stop(int dispY1, int refreshFlag)
 		{
 			if( refreshFlag == INFO_REPAINT )
 			{
-				vga_util.d3_panel_up(x, y, INFO_X2, y+58);
+				vga_util.d3_panel_up(x, y, get_scaled_info_x2(), y+58);
 #if(defined(FRENCH))
 				button_set_stop[i].paint_text( x+4, y+37, x+86, y+56, "Set Stop" );
 #else
@@ -168,7 +167,7 @@ void UnitCaravan::disp_stop(int dispY1, int refreshFlag)
 		{
 			if( refreshFlag == INFO_REPAINT )
 			{
-				vga_util.d3_panel_up(x, y, INFO_X2, y+58);
+				vga_util.d3_panel_up(x, y, get_scaled_info_x2(), y+58);
 
 				//-------- display name of the stop --------//
 
@@ -192,7 +191,7 @@ void UnitCaravan::disp_stop(int dispY1, int refreshFlag)
 #endif
 				button_go_stop[i].set_help_code( "CGOSTOP" );
 
-				button_cancel_stop[i].paint_text( x+184, y+37, INFO_X2-4, y+56, "X" );
+				button_cancel_stop[i].paint_text( x+184, y+37, get_scaled_info_x2()-4, y+56, "X" );
 				button_cancel_stop[i].set_help_code( "CDELSTOP" );
 			}
 
@@ -485,9 +484,9 @@ void UnitCaravan::set_stop_pick_up(int stopId, int newPickUpType, int remoteActi
 void UnitCaravan::disp_goods(int dispY1, int refreshFlag)
 {
 	if( refreshFlag == INFO_REPAINT )
-		vga_util.d3_panel_up( INFO_X1, dispY1, INFO_X2, dispY1+42 );
+		vga_util.d3_panel_up( get_scaled_info_x1(), dispY1, get_scaled_info_x2(), dispY1+42 );
 
-	int	x=INFO_X1+20, y=dispY1+5;
+	int	x=get_scaled_info_x1()+20, y=dispY1+5;
 	String str;
 
 	int i;
@@ -500,7 +499,7 @@ void UnitCaravan::disp_goods(int dispY1, int refreshFlag)
 		font_san.disp( x+25, y+2, raw_qty_array[i], 1, x+59 );
 	}
 
-	x =INFO_X1+20;
+	x =get_scaled_info_x1()+20;
 	y+=19;
 
 	for( i=0; i<MAX_PRODUCT; i++, x+=60)

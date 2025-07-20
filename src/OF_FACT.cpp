@@ -206,25 +206,25 @@ void FirmFactory::put_info(int refreshFlag)
 {
 	//---------- display info ------------//
 
-	disp_basic_info(INFO_Y1, refreshFlag);
+	disp_basic_info(get_scaled_info_y1(), refreshFlag);
 
-	if( !should_show_info() )
-		return;
-
-	disp_factory_info(INFO_Y1+54, refreshFlag);
-	disp_worker_list(INFO_Y1+126, refreshFlag);
-	disp_worker_info(INFO_Y1+190, refreshFlag);
+	if( should_show_info() )
+	{
+		disp_factory_info(get_scaled_info_y1()+54, refreshFlag);
+		disp_worker_list(get_scaled_info_y1()+126, refreshFlag);
+		disp_worker_info(get_scaled_info_y1()+190, refreshFlag);
+	}
 
 	//------ display mobilize button -------//
 
-	int x = INFO_X1;
+	int x = get_scaled_info_x1();
 
 	if(own_firm())
 	{
 		if (refreshFlag == INFO_REPAINT)
 		{
-			button_change_production.paint(INFO_X1, INFO_Y1 + 248, 'A', "CHGPROD");
-			button_vacate_firm.paint(INFO_X1 + BUTTON_ACTION_WIDTH, INFO_Y1 + 248, 'A', "RECRUIT");
+			button_change_production.paint(get_scaled_info_x1(), get_scaled_info_y1() + 248, 'A', "CHGPROD");
+			button_vacate_firm.paint(get_scaled_info_x1() + BUTTON_ACTION_WIDTH, get_scaled_info_y1() + 248, 'A', "RECRUIT");
 			button_vacate_firm.set_help_code("MOBILIZE");
 		}
 
@@ -238,7 +238,7 @@ void FirmFactory::put_info(int refreshFlag)
 
 	//---------- display spy button ----------//
 
-	disp_spy_button(x, INFO_Y1+248, refreshFlag);
+	disp_spy_button(x, get_scaled_info_y1()+248, refreshFlag);
 }
 //----------- End of function FirmFactory::put_info -----------//
 
@@ -369,11 +369,11 @@ void FirmFactory::disp_factory_info(int dispY1, int refreshFlag)
 	//---------------- paint the panel --------------//
 
 	if( refreshFlag == INFO_REPAINT )
-		vga_util.d3_panel_up( INFO_X1, dispY1, INFO_X2, dispY1+70);
+		vga_util.d3_panel_up( get_scaled_info_x1(), dispY1, get_scaled_info_x2(), dispY1+70);
 
 	//---------- display production info -------------//
 
-	int x=INFO_X1+4, y=dispY1+4;
+	int x=get_scaled_info_x1()+4, y=dispY1+4;
 
 	vga_front.put_bitmap_trans( x+1, y+1, raw_res.small_product_icon(product_raw_id) );
 
@@ -383,28 +383,28 @@ void FirmFactory::disp_factory_info(int dispY1, int refreshFlag)
 
 	font_san.use_max_height();							// make sure the old text is replaced completely
 #if(defined(FRENCH) || defined(SPANISH))
-	font_san.disp( x+15, y, str, INFO_X2-1);
+	font_san.disp( x+15, y, str, get_scaled_info_x2()-1);
 #else
-	font_san.disp( x+20, y, str, INFO_X2-2);
+	font_san.disp( x+20, y, str, get_scaled_info_x2()-2);
 #endif
 	font_san.use_std_height();
 
 	y+=16;
 
-	font_san.field( x, y, _("Monthly Production"), x+133, (int) production_30days(), 1, INFO_X2-2, refreshFlag, "FC_PROD" );
+	font_san.field( x, y, _("Monthly Production"), x+133, (int) production_30days(), 1, get_scaled_info_x2()-2, refreshFlag, "FC_PROD" );
 	y+=16;
 
 	str  = (int) raw_stock_qty;
 	str += " / ";
 	str += (int) max_raw_stock_qty;
-	font_san.field( x, y, _("Raw Material Stock"), x+133, str, INFO_X2-2, refreshFlag, "FC_RAW" );
+	font_san.field( x, y, _("Raw Material Stock"), x+133, str, get_scaled_info_x2()-2, refreshFlag, "FC_RAW" );
 	y+=16;
 
 	str  = (int) stock_qty;
 	str += " / ";
 	str += (int) max_stock_qty;
 
-	font_san.field( x, y, _("Product Stock"), x+133, str, INFO_X2-2, refreshFlag, "FC_PROD");
+	font_san.field( x, y, _("Product Stock"), x+133, str, get_scaled_info_x2()-2, refreshFlag, "FC_PROD");
 }
 //----------- End of function FirmFactory::disp_factory_info -----------//
 

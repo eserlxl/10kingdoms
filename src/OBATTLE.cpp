@@ -223,6 +223,9 @@ void Battle::run(NewNationPara *mpGame, int mpPlayerCount)
 
 	//--- give the control to the system main loop, start the game now ---//
 
+	// Reinitialize VGA system for gameplay mode (switch from UI to full resolution)
+	vga.reinit_for_mode();
+	
 	sys.run();
 }
 //--------- End of function Battle::run ---------//
@@ -249,7 +252,7 @@ void Battle::run_sim()
 
 	//--------- refresh world ---------//
 	world.refresh();
-	vga_util.blt_buf(0, 0, VGA_WIDTH-1, VGA_HEIGHT-1);
+	vga_util.blt_buf(0, 0, vga_back.buf_width()-1, vga_back.buf_height()-1);
 	world.paint();
 
 	//------- create player nation --------//
@@ -676,6 +679,9 @@ void Battle::run_loaded()
 
 	//--- give the control to the system main loop, start the game now ---//
 
+	// Reinitialize VGA system for gameplay mode (switch from UI to full resolution)
+	vga.reinit_for_mode();
+	
 	sys.run(1);
 }
 //--------- End of function Battle::run_loaded ---------//
@@ -723,7 +729,7 @@ void Battle::run_test()
 
 	world.refresh();
 
-	vga_util.blt_buf(0, 0, VGA_WIDTH-1, VGA_HEIGHT-1);
+	vga_util.blt_buf(0, 0, vga_back.buf_width()-1, vga_back.buf_height()-1);
 
 	world.paint();
 
@@ -744,6 +750,9 @@ void Battle::run_test()
 
 	//--- give the control to the system main loop, start the game now ---//
 
+	// Reinitialize VGA system for gameplay mode (switch from UI to full resolution)
+	vga.reinit_for_mode();
+	
 	sys.run();
 }
 //--------- End of function Battle::run_test ---------//

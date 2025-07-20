@@ -1077,10 +1077,10 @@ void Unit::disp_settle(int refreshFlag)
 {
 	if( refreshFlag == INFO_REPAINT )
 	{
-				vga_util.d3_panel_up( get_scaled_info_x1(), get_scaled_info_y1(), get_scaled_info_x2(), get_scaled_info_y1()+42 );
+		vga_util.d3_panel_up( get_scaled_info_x1(), get_scaled_info_y1(), get_scaled_info_x2(), get_scaled_info_y1()+42 );
 
 		font_san.put_paragraph( get_scaled_info_x1()+7, get_scaled_info_y1()+5, get_scaled_info_x2()-7, get_scaled_info_y2()-5,
-													_("Please select a location to settle.") );
+										_("Please select a location to settle.") );
 
 		button_cancel2.paint_text( get_scaled_info_x1(), get_scaled_info_y1()+45, get_scaled_info_x2(), get_scaled_info_y1()+70, _("Cancel") );
 	}

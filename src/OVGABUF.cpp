@@ -64,9 +64,9 @@ VgaBuf::~VgaBuf()
 void VgaBuf::init(char front, int w, int h)
 {
 	if( !w )
-		w = VGA_WIDTH;
+		w = vga.is_ui_mode() ? VGA_UI_WIDTH : VGA_WIDTH;
 	if( !h )
-		h = VGA_HEIGHT;
+		h = vga.is_ui_mode() ? VGA_UI_HEIGHT : VGA_HEIGHT;
 	
 	// Add bounds checking for surface dimensions
 	if (w <= 0 || h <= 0 || w > 32768 || h > 32768)

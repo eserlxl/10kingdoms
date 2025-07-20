@@ -241,21 +241,16 @@ void FirmMarket::next_year()
 //
 void FirmMarket::put_info(int refreshFlag)
 {
-	disp_basic_info(INFO_Y1, refreshFlag);
+	disp_basic_info(get_scaled_info_y1(), refreshFlag);
 
-	//--- only display market info if the player is allowed to trade with this market ---//
-
-	put_market_info(INFO_Y1+50, refreshFlag);
-
-	//------------------------------------------------//
-
-	if( !config.show_ai_info && nation_recno!=nation_array.player_recno )
+	if( !should_show_info() )
 		return;
 
-	disp_income(INFO_Y1+209, refreshFlag );	  // 1-display income figure
+	put_market_info(get_scaled_info_y1()+50, refreshFlag);
 
-	if( refreshFlag == INFO_REPAINT )
-		button_hire_caravan.paint( INFO_X1, INFO_Y1+251, 'A', "HIRECARA" );
+	disp_income(get_scaled_info_y1()+209, refreshFlag );	  // 1-display income figure
+
+	button_hire_caravan.paint( get_scaled_info_x1(), get_scaled_info_y1()+251, 'A', "HIRECARA" );
 
 	if( can_hire_caravan() )
 		button_hire_caravan.enable();
@@ -426,8 +421,8 @@ void FirmMarket::put_market_info(int dispY1, int refreshFlag)
 	{
 		if( refreshFlag == INFO_REPAINT )
 		{
-			vga_util.d3_panel_up( INFO_X1, dispY1, INFO_X2, dispY1+51 );
-			font_san.put_paragraph( INFO_X1, dispY1+8, INFO_X2, dispY1+51, _("You're not permitted to trade with this market."), 4, 1, 1, Font::CENTER_JUSTIFY );
+			vga_util.d3_panel_up( get_scaled_info_x1(), dispY1, get_scaled_info_x2(), dispY1+51 );
+			font_san.put_paragraph( get_scaled_info_x1(), dispY1+8, get_scaled_info_x2(), dispY1+51, _("You're not permitted to trade with this market."), 4, 1, 1, Font::CENTER_JUSTIFY );
 		}
 
 		return;
@@ -444,7 +439,7 @@ void FirmMarket::put_market_info(int dispY1, int refreshFlag)
 	for( i=0, marketGoods=market_goods_array ; i<MAX_MARKET_GOODS ; i++, marketGoods++, y+=53 )
 	{
 		if( refreshFlag == INFO_REPAINT )
-			vga_util.d3_panel_up( INFO_X1, y, INFO_X2, y+51 );
+			vga_util.d3_panel_up( get_scaled_info_x1(), y, get_scaled_info_x2(), y+51 );
 
 		if( marketGoods->raw_id )
 		{
@@ -481,7 +476,7 @@ void FirmMarket::put_market_info(int dispY1, int refreshFlag)
 
 			if( nation_recno == nation_array.player_recno )
 			{
-				button_clear_stock[i].paint_text( INFO_X2-46, y+2, INFO_X2-3, y+19, _("Clear") );	// Clear Stock
+				button_clear_stock[i].paint_text( get_scaled_info_x2()-46, y+2, get_scaled_info_x2()-3, y+19, _("Clear") );	// Clear Stock
 				button_clear_stock[i].set_help_code( "MK_CLEAR" );
 			}
 		}
@@ -501,10 +496,8 @@ void FirmMarket::put_market_info(int dispY1, int refreshFlag)
 		x+=105;
 
 		// ####### patch begin Gilbert 16/3 #########//
-		//font_san.field( x, ty+16, "Demand", x+70, (int) marketGoods->month_demand, 1,
-		//					 INFO_X2-2, refreshFlag, "MK_DEMAN" );
 		font_san.field( x, ty+16, _("Demand"), x+67, (int) marketGoods->month_demand, 1,
-							 INFO_X2-1, refreshFlag, "MK_DEMAN" );
+							 get_scaled_info_x2()-1, refreshFlag, "MK_DEMAN" );
 		// ####### patch end Gilbert 16/3 #########//
 	}
 }
@@ -524,17 +517,16 @@ const char *restocking_msg[] =
 //
 void FirmMarket::disp_income(int dispY1, int refreshFlag)
 {
-	if( refreshFlag == INFO_REPAINT )
-		vga_util.d3_panel_up( INFO_X1, dispY1, INFO_X2, dispY1+39 );
+	vga_util.d3_panel_up( get_scaled_info_x1(), dispY1, get_scaled_info_x2(), dispY1+39 );
 
-	int x=INFO_X1+4, y=dispY1+4;
+	int x=get_scaled_info_x1()+4, y=dispY1+4;
 
 	font_san.field( x, y, _("Yearly Income"), x+110, (int) income_365days(), 2, x+200, refreshFlag, "MK_INCOM" );
 	font_san.field( x, y+16, _("Restock From"), x+110, restocking_msg[restock_type], x+200, refreshFlag, "MK_RSTKF" );
 
 	if( nation_recno == nation_array.player_recno )
 	{
-		button_switch_restock.paint_text( INFO_X2-20, y+18, INFO_X2-3, y+36, ">" );	// change restocking
+		button_switch_restock.paint_text( get_scaled_info_x2()-20, y+18, get_scaled_info_x2()-3, y+36, ">" );	// change restocking
 		button_switch_restock.set_help_code( "MK_RSTKS" );
 	}
 }

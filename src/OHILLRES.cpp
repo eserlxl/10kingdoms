@@ -261,6 +261,10 @@ void HillBlockInfo::draw(int xLoc, int yLoc, int layerMask)
 	if(!(layerMask & layer))
 		return;
 
+	// Check if bitmap pointer is valid
+	if(!bitmap_ptr)
+		return;
+
 	//----------- calculate absolute positions ------------//
 
 	int absX1   = xLoc*ZOOM_LOC_WIDTH + offset_x;
@@ -278,9 +282,18 @@ void HillBlockInfo::draw(int xLoc, int yLoc, int layerMask)
 	if( y1 <= -bitmap_height() || y1 >= ZOOM_HEIGHT )
 		return;
 
+	// Check bounds to prevent buffer overflow
+	int destX = x1+ZOOM_X1;
+	int destY = y1+ZOOM_Y1;
+	int hillWidth = bitmap_width();
+	int hillHeight = bitmap_height();
+	
+	if( destX < 0 || destY < 0 || destX + hillWidth > vga_back.buf_width() || destY + hillHeight > vga_back.buf_height() )
+		return;
+
 	if( bitmap_type == 'W')
 	{
-		vga_back.put_bitmap_32x32(x1+ZOOM_X1,y1+ZOOM_Y1, bitmap_ptr);
+		vga_back.put_bitmap_32x32(destX, destY, bitmap_ptr);
 		return;
 	}
 
@@ -293,7 +306,7 @@ void HillBlockInfo::draw(int xLoc, int yLoc, int layerMask)
 
 	if( x1 < 0 || x2 >= ZOOM_WIDTH || y1 < 0 || y2 >= ZOOM_HEIGHT )
 	{
-		vga_back.put_bitmap_area_trans_decompress( x1+ZOOM_X1, y1+ZOOM_Y1, bitmap_ptr,
+		vga_back.put_bitmap_area_trans_decompress( destX, destY, bitmap_ptr,
 			MAX(0,x1)-x1, MAX(0,y1)-y1, MIN(ZOOM_WIDTH-1,x2)-x1, MIN(ZOOM_HEIGHT-1,y2)-y1 );
 	}
 
@@ -301,7 +314,7 @@ void HillBlockInfo::draw(int xLoc, int yLoc, int layerMask)
 
 	else
 	{
-		vga_back.put_bitmap_trans_decompress( x1+ZOOM_X1, y1+ZOOM_Y1, bitmap_ptr );
+		vga_back.put_bitmap_trans_decompress( destX, destY, bitmap_ptr );
 	}
 
 }
@@ -323,6 +336,10 @@ void HillBlockInfo::draw_at(int absX1, int absY1, int layerMask)
 	if(!(layerMask & layer))
 		return;
 
+	// Check if bitmap pointer is valid
+	if(!bitmap_ptr)
+		return;
+
 	//-------- check if the firm is within the view area --------//
 
 	absX1 += offset_x;
@@ -338,9 +355,18 @@ void HillBlockInfo::draw_at(int absX1, int absY1, int layerMask)
 	if( y1 <= -bitmap_height() || y1 >= ZOOM_HEIGHT )
 		return;
 
+	// Check bounds to prevent buffer overflow
+	int destX = x1+ZOOM_X1;
+	int destY = y1+ZOOM_Y1;
+	int hillWidth = bitmap_width();
+	int hillHeight = bitmap_height();
+	
+	if( destX < 0 || destY < 0 || destX + hillWidth > vga_back.buf_width() || destY + hillHeight > vga_back.buf_height() )
+		return;
+
 	if( bitmap_type == 'W')
 	{
-		vga_back.put_bitmap_32x32(x1+ZOOM_X1,y1+ZOOM_Y1, bitmap_ptr);
+		vga_back.put_bitmap_32x32(destX, destY, bitmap_ptr);
 		return;
 	}
 
@@ -353,7 +379,7 @@ void HillBlockInfo::draw_at(int absX1, int absY1, int layerMask)
 
 	if( x1 < 0 || x2 >= ZOOM_WIDTH || y1 < 0 || y2 >= ZOOM_HEIGHT )
 	{
-		vga_back.put_bitmap_area_trans_decompress( x1+ZOOM_X1, y1+ZOOM_Y1, bitmap_ptr,
+		vga_back.put_bitmap_area_trans_decompress( destX, destY, bitmap_ptr,
 			MAX(0,x1)-x1, MAX(0,y1)-y1, MIN(ZOOM_WIDTH-1,x2)-x1, MIN(ZOOM_HEIGHT-1,y2)-y1 );
 	}
 
@@ -361,7 +387,7 @@ void HillBlockInfo::draw_at(int absX1, int absY1, int layerMask)
 
 	else
 	{
-		vga_back.put_bitmap_trans_decompress( x1+ZOOM_X1, y1+ZOOM_Y1, bitmap_ptr );
+		vga_back.put_bitmap_trans_decompress( destX, destY, bitmap_ptr );
 	}
 
 }

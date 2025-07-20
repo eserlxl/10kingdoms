@@ -184,24 +184,24 @@ Location* FirmMine::scan_raw_site()
 //
 void FirmMine::put_info(int refreshFlag)
 {
-	disp_basic_info(INFO_Y1, refreshFlag);
+	disp_basic_info(get_scaled_info_y1(), refreshFlag);
 
 	if( !should_show_info() )
 		return;
 
-	disp_mine_info(INFO_Y1+52, refreshFlag);
-	disp_worker_list(INFO_Y1+127, refreshFlag);
-	disp_worker_info(INFO_Y1+191, refreshFlag);
+	disp_mine_info(get_scaled_info_y1()+52, refreshFlag);
+	disp_worker_list(get_scaled_info_y1()+127, refreshFlag);
+	disp_worker_info(get_scaled_info_y1()+191, refreshFlag);
 
 	//------ display mobilize button -------//
 
-	int x = INFO_X1;
+	int x = get_scaled_info_x1();
 
 	if (own_firm())
 	{
 		if (refreshFlag == INFO_REPAINT)
 		{
-			button_vacate_firm.paint(INFO_X1, INFO_Y1 + 249, 'A', "RECRUIT");
+			button_vacate_firm.paint(get_scaled_info_x1(), get_scaled_info_y1() + 249, 'A', "RECRUIT");
 			button_vacate_firm.set_help_code("MOBILIZE");
 		}
 
@@ -215,7 +215,7 @@ void FirmMine::put_info(int refreshFlag)
 
 	//---------- display spy button ----------//
 
-	disp_spy_button(x, INFO_Y1+249, refreshFlag);
+	disp_spy_button(x, get_scaled_info_y1()+249, refreshFlag);
 }
 //----------- End of function FirmMine::put_info -----------//
 
@@ -272,19 +272,19 @@ void FirmMine::disp_mine_info(int dispY1, int refreshFlag)
 	//---------------- paint the panel --------------//
 
 	if( refreshFlag == INFO_REPAINT )
-		vga_util.d3_panel_up( INFO_X1, dispY1, INFO_X2, dispY1+70);
+		vga_util.d3_panel_up( get_scaled_info_x1(), dispY1, get_scaled_info_x2(), dispY1+70);
 
 	//------ if there is no natural resource on this location ------//
 
 	if( !raw_id )
 	{
-		font_san.center_put( INFO_X1, dispY1, INFO_X2, dispY1+70, _("No Natural Resources") );
+		font_san.center_put( get_scaled_info_x1(), dispY1, get_scaled_info_x2(), dispY1+70, _("No Natural Resources") );
 		return;
 	}
 
 	//-------------- display mining info -----------//
 
-	int x=INFO_X1+4, y=dispY1+4;
+	int x=get_scaled_info_x1()+4, y=dispY1+4;
 
 	raw_res.put_small_raw_icon( x+1, y+1, raw_id );
 
@@ -292,20 +292,16 @@ void FirmMine::disp_mine_info(int dispY1, int refreshFlag)
 
 	str = _(mining_raw_msg[raw_id-1]);
 
-	font_san.disp( x+20, y, str, INFO_X2-2);
+	font_san.disp( x+20, y, str, get_scaled_info_x2()-2);
 	y+=16;
 
-	font_san.field( x, y, _("Monthly Production"), x+126, (int) production_30days(), 1, INFO_X2-2, refreshFlag, "MN_PROD");
+	font_san.field( x, y, _("Monthly Production"), x+126, (int) production_30days(), 1, get_scaled_info_x2()-2, refreshFlag, "MN_PROD");
 	y+=16;
 
-	str  = (int) stock_qty;
-	str += " / ";
-	str += (int) max_stock_qty;
-
-	font_san.field( x, y, _("Mined Stock"), x+126, str, INFO_X2-2, refreshFlag, "MN_STOCK");
+	font_san.field( x, y, _("Mined Stock"), x+126, str, get_scaled_info_x2()-2, refreshFlag, "MN_STOCK");
 	y+=16;
 
-	font_san.field( x, y, _("Untapped Reserve"), x+126, (int) reserve_qty, 1, INFO_X2-2, refreshFlag, "MN_UNTAP");
+	font_san.field( x, y, _("Untapped Reserve"), x+126, (int) reserve_qty, 1, get_scaled_info_x2()-2, refreshFlag, "MN_UNTAP");
 }
 //----------- End of function FirmMine::disp_mine_info -----------//
 

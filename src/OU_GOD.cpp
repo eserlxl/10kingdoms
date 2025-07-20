@@ -139,8 +139,8 @@ int UnitGod::process_attack()
 //
 void UnitGod::disp_info(int refreshFlag)
 {
-	disp_basic_info(INFO_Y1, refreshFlag);
-	disp_unit_profile( INFO_Y1+54, refreshFlag );
+	disp_basic_info(get_scaled_info_y1(), refreshFlag);
+	disp_unit_profile( get_scaled_info_y1()+54, refreshFlag );
 
 	if( !is_own() )
 		return;
@@ -190,7 +190,7 @@ void UnitGod::disp_info(int refreshFlag)
 
 		//----------- create the cast button -----------//
 
-		button_cast.paint(INFO_X1, INFO_Y1+101, 'A', buttonName );
+		button_cast.paint(get_scaled_info_x1(), get_scaled_info_y1()+101, 'A', buttonName );
 
 		if( hit_points >= god_res[god_id]->power_pray_points )
 			button_cast.enable();
@@ -201,7 +201,7 @@ void UnitGod::disp_info(int refreshFlag)
 
 		if( god_id == GOD_VIKING )
 		{
-			button_cast2.paint(INFO_X1+BUTTON_ACTION_WIDTH, INFO_Y1+101, 'A', "GODTORNA" );
+			button_cast2.paint(get_scaled_info_x1()+BUTTON_ACTION_WIDTH, get_scaled_info_y1()+101, 'A', "GODTORNA" );
 
 			if( hit_points >= god_res[god_id]->power_pray_points )
 				button_cast2.enable();

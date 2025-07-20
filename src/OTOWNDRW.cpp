@@ -65,7 +65,16 @@ void Town::draw(int displayLayer)
 		townX1 += (STD_TOWN_LOC_WIDTH  * ZOOM_LOC_WIDTH  - get_bitmap_width(townLayout->ground_bitmap_ptr))/2;		// adjust offset
 		townY1 += (STD_TOWN_LOC_HEIGHT * ZOOM_LOC_HEIGHT - get_bitmap_height(townLayout->ground_bitmap_ptr))/2;	// adjust offset
 
-		world.zoom_matrix->put_bitmap_remap_clip( townX1, townY1, townLayout->ground_bitmap_ptr );
+		// Check bounds to prevent buffer overflow
+		if( townLayout->ground_bitmap_ptr )
+		{
+			int groundWidth = get_bitmap_width(townLayout->ground_bitmap_ptr);
+			int groundHeight = get_bitmap_height(townLayout->ground_bitmap_ptr);
+			if( townX1 >= 0 && townY1 >= 0 && townX1 + groundWidth <= vga_back.buf_width() && townY1 + groundHeight <= vga_back.buf_height() )
+			{
+				world.zoom_matrix->put_bitmap_remap_clip( townX1, townY1, townLayout->ground_bitmap_ptr );
+			}
+		}
 		return;
 	}
 
@@ -118,7 +127,17 @@ void Town::draw_flag(int absBaseX, int absBaseY)
 	int drawX = absBaseX - world.view_top_x + ZOOM_X1 - 9;
 	int drawY = absBaseY - world.view_top_y + ZOOM_Y1 - 97;
 
-	world.zoom_matrix->put_bitmap_remap_clip(drawX, drawY, image_spict.get_ptr(flagName), colorRemapTable, 1);	// 1-the bitmap is compressed
+	// Check bounds to prevent buffer overflow
+	char* flagBitmapPtr = image_spict.get_ptr(flagName);
+	if( flagBitmapPtr )
+	{
+		int flagWidth = *((short*)flagBitmapPtr);
+		int flagHeight = *(((short*)flagBitmapPtr)+1);
+		if( drawX >= 0 && drawY >= 0 && drawX + flagWidth <= vga_back.buf_width() && drawY + flagHeight <= vga_back.buf_height() )
+		{
+			world.zoom_matrix->put_bitmap_remap_clip(drawX, drawY, flagBitmapPtr, colorRemapTable, 1);	// 1-the bitmap is compressed
+		}
+	}
 }
 //-------- End of function Town::draw_flag -----------//
 
@@ -138,7 +157,17 @@ void Town::draw_farm(int absBaseX, int absBaseY, int farmId)
 	int drawX = absBaseX - world.view_top_x + ZOOM_X1;
 	int drawY = absBaseY - world.view_top_y + ZOOM_Y1;
 
-	world.zoom_matrix->put_bitmap_clip(drawX, drawY, image_spict.get_ptr(farmName), 1);	// 1-the bitmap is compressed
+	// Check bounds to prevent buffer overflow
+	char* farmBitmapPtr = image_spict.get_ptr(farmName);
+	if( farmBitmapPtr )
+	{
+		int farmWidth = *((short*)farmBitmapPtr);
+		int farmHeight = *(((short*)farmBitmapPtr)+1);
+		if( drawX >= 0 && drawY >= 0 && drawX + farmWidth <= vga_back.buf_width() && drawY + farmHeight <= vga_back.buf_height() )
+		{
+			world.zoom_matrix->put_bitmap_clip(drawX, drawY, farmBitmapPtr, 1);	// 1-the bitmap is compressed
+		}
+	}
 }
 //-------- End of function Town::draw_farm -----------//
 

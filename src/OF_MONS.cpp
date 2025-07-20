@@ -162,7 +162,7 @@ char* FirmMonster::firm_name()
 //
 void FirmMonster::put_info(int refreshFlag)
 {
-	disp_basic_info(INFO_Y1, refreshFlag);
+	disp_basic_info(get_scaled_info_y1(), refreshFlag);
 
 	if( should_show_info() )
 		disp_monster_info(INFO_Y1+54, refreshFlag);

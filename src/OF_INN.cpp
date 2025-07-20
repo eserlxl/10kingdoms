@@ -149,7 +149,7 @@ void FirmInn::put_info(int refreshFlag)
 {
 	firm_inn_ptr = this;
 
-	disp_basic_info(INFO_Y1, refreshFlag);
+	disp_basic_info(get_scaled_info_y1(), refreshFlag);
 
 	if( !should_show_info() )
 		return;
@@ -191,7 +191,7 @@ void FirmInn::put_info(int refreshFlag)
 
 	//---------- display spy button ----------//
 
-	disp_spy_button(INFO_X1+BUTTON_ACTION_WIDTH, HIRE_DET_Y2+4, refreshFlag);
+	disp_spy_button(get_scaled_info_x1()+BUTTON_ACTION_WIDTH, HIRE_DET_Y2+4, refreshFlag);
 }
 //----------- End of function FirmInn::put_info -----------//
 
@@ -419,32 +419,20 @@ void FirmInn::disp_unit_info(int dispY1, InnUnit* hireInfoPtr, int refreshFlag)
 
 	//---------------- paint the panel --------------//
 
-	if( refreshFlag == INFO_REPAINT )
-	{
-		vga_util.d3_panel_up( INFO_X1, dispY1, INFO_X2, dispY1+54 );
-	}
+	vga_util.d3_panel_up( get_scaled_info_x1(), dispY1, get_scaled_info_x2(), dispY1+54 );
 
-	//------ display population composition of this resident town -----//
+	int x=get_scaled_info_x1()+4, y=dispY1+4, x1=x+100;
 
-	int x=INFO_X1+4, y=dispY1+4, x1=x+100;
-	String str;
+	font_san.field( x, y, _("Combat"), x1, skillPtr->combat_level, 1, get_scaled_info_x2()-10, refreshFlag );
+	y+=16;
 
-	font_san.field( x, y, _("Combat"), x1, skillPtr->combat_level, 1, INFO_X2-10, refreshFlag );
+	font_san.field( x, y+16, skillPtr->skill_des(), x1, skillPtr->skill_level , 1, get_scaled_info_x2()-10, refreshFlag );
+	y+=16;
 
-	if( refreshFlag == INFO_REPAINT )
-	{
-		font_san.field( x, y+16, skillPtr->skill_des(), x1, skillPtr->skill_level , 1, INFO_X2-10, refreshFlag );
-	}
-	else
-	{
-		font_san.use_max_height();
-		font_san.put( x+2, y+18, skillPtr->skill_des(), 1, x1-2 );
-		font_san.use_std_height();
+	if( refreshFlag == INFO_UPDATE )
+		font_san.update_field( x1, y+16, skillPtr->skill_level, 1, get_scaled_info_x2()-10);
 
-		font_san.update_field( x1, y+16, skillPtr->skill_level, 1, INFO_X2-10);
-	}
-
-	font_san.field( x, y+32, _("Hiring Cost"), x1, hireInfoPtr->hire_cost, 2, INFO_X2-10, refreshFlag);
+	font_san.field( x, y+32, _("Hiring Cost"), x1, hireInfoPtr->hire_cost, 2, get_scaled_info_x2()-10, refreshFlag);
 }
 //----------- End of function FirmInn::disp_unit_info -----------//
 

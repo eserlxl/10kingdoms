@@ -125,6 +125,12 @@ public:
 	// UI mode detection
 	char   is_ui_mode() const;
 
+	// Dynamic window resizing for UI/gameplay mode switching
+	void   resize_for_mode();
+
+	// Reinitialize VGA system for mode switching
+	void   reinit_for_mode();
+
 	void   handle_messages();
 	void   flag_redraw();
 	int    is_full_screen();

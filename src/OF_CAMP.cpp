@@ -352,14 +352,14 @@ void FirmCamp::update_influence()
 //
 void FirmCamp::put_info(int refreshFlag)
 {
-	disp_basic_info(INFO_Y1, refreshFlag);
+	disp_basic_info(get_scaled_info_y1(), refreshFlag);
 
 	if( !should_show_info() )
 		return;
 
-	disp_camp_info(INFO_Y1+54, refreshFlag);
-	disp_worker_list(INFO_Y1+104, refreshFlag);
-	disp_worker_info(INFO_Y1+168, refreshFlag);
+	disp_camp_info(get_scaled_info_y1()+54, refreshFlag);
+	disp_worker_list(get_scaled_info_y1()+104, refreshFlag);
+	disp_worker_info(get_scaled_info_y1()+168, refreshFlag);
 
 	//------ display button -------//
 
@@ -369,9 +369,9 @@ void FirmCamp::put_info(int refreshFlag)
 	{
 		if( refreshFlag==INFO_REPAINT )
 		{
-			button_patrol.paint( INFO_X1, INFO_Y1+242, 'A', "PATROL" );
-			button_reward.paint( INFO_X1+BUTTON_ACTION_WIDTH, INFO_Y1+242, 'A', "REWARDCB" );
-			button_defense.paint( INFO_X2-BUTTON_ACTION_WIDTH, INFO_Y1+242, 'A', defense_flag ? (char*)"DEFENSE1" : (char*)"DEFENSE0" );
+			button_patrol.paint( get_scaled_info_x1(), get_scaled_info_y1()+242, 'A', "PATROL" );
+			button_reward.paint( get_scaled_info_x1()+BUTTON_ACTION_WIDTH, get_scaled_info_y1()+242, 'A', "REWARDCB" );
+			button_defense.paint( get_scaled_info_x2()-BUTTON_ACTION_WIDTH, get_scaled_info_y1()+242, 'A', defense_flag ? (char*)"DEFENSE1" : (char*)"DEFENSE0" );
 		}
 
 		if( overseer_recno || worker_count )
@@ -390,12 +390,12 @@ void FirmCamp::put_info(int refreshFlag)
 			button_reward.disable();
 		}
 
-		x=INFO_X1+BUTTON_ACTION_WIDTH*2;
+		x=get_scaled_info_x1()+BUTTON_ACTION_WIDTH*2;
 	}
 	else
-		x=INFO_X1;
+		x=get_scaled_info_x1();
 
-	disp_spy_button(x, INFO_Y1+242, refreshFlag);
+	disp_spy_button(x, get_scaled_info_y1()+242, refreshFlag);
 
 	#ifdef DEBUG
 		if( sys.testing_session || sys.debug_session )
@@ -417,8 +417,8 @@ int FirmCamp::detect_info()
 
 	//------ detect the overseer button -----//
 
-	int rc = mouse.any_click(INFO_X1+6, INFO_Y1+58, INFO_X1+5+UNIT_LARGE_ICON_WIDTH, INFO_Y1+57+UNIT_LARGE_ICON_HEIGHT, LEFT_BUTTON) ? 1 
-		: mouse.any_click(INFO_X1+6, INFO_Y1+58, INFO_X1+5+UNIT_LARGE_ICON_WIDTH, INFO_Y1+57+UNIT_LARGE_ICON_HEIGHT, RIGHT_BUTTON) ? 2 : 0;
+	int rc = mouse.any_click(get_scaled_info_x1()+6, get_scaled_info_y1()+58, get_scaled_info_x1()+5+UNIT_LARGE_ICON_WIDTH, get_scaled_info_y1()+57+UNIT_LARGE_ICON_HEIGHT, LEFT_BUTTON) ? 1
+		: mouse.any_click(get_scaled_info_x1()+6, get_scaled_info_y1()+58, get_scaled_info_x1()+5+UNIT_LARGE_ICON_WIDTH, get_scaled_info_y1()+57+UNIT_LARGE_ICON_HEIGHT, RIGHT_BUTTON) ? 2 : 0;
 
 	if( rc==1 )		// display this overseer's info
 	{
@@ -530,7 +530,7 @@ void FirmCamp::disp_camp_info(int dispY1, int refreshFlag)
 	//---------------- paint the panel --------------//
 
 	if( refreshFlag == INFO_REPAINT )
-		vga_util.d3_panel_up( INFO_X1, dispY1, INFO_X2, dispY1+46);
+		vga_util.d3_panel_up( get_scaled_info_x1(), dispY1, get_scaled_info_x2(), dispY1+46);
 
 	if( !overseer_recno )
 		return;
@@ -539,7 +539,7 @@ void FirmCamp::disp_camp_info(int dispY1, int refreshFlag)
 
 	Unit* overseerUnit = unit_array[overseer_recno];
 
-	int x=INFO_X1+6, y=dispY1+4, x1=x+UNIT_LARGE_ICON_WIDTH+8;
+	int x=get_scaled_info_x1()+6, y=dispY1+4, x1=x+UNIT_LARGE_ICON_WIDTH+8;
 
 	if( selected_worker_id == 0 )
 	{
@@ -576,9 +576,8 @@ void FirmCamp::disp_camp_info(int dispY1, int refreshFlag)
 	}
 
 	if( refreshFlag == INFO_REPAINT )
-		font_san.put( x1, y, overseerUnit->unit_name(0), 0, INFO_X2-2 );		// 0-ask unit_name() not to return the title of the unit
-
-	y+=14;
+		font_san.put( x1, y, overseerUnit->unit_name(0), 0, get_scaled_info_x2()-2 );		// 0-ask unit_name() not to return the title of the unit
+	y+=16;
 
 	//------- display leadership -------//
 
@@ -588,7 +587,7 @@ void FirmCamp::disp_camp_info(int dispY1, int refreshFlag)
 	str += ": ";
 	str += overseerUnit->skill.get_skill(SKILL_LEADING);
 
-	font_san.disp( x1, y, str, INFO_X2-10 );
+	font_san.disp( x1, y, str, get_scaled_info_x2()-10 );
 	y+=14;
 
 	//--------- display loyalty ----------//
@@ -612,7 +611,7 @@ void FirmCamp::disp_camp_info(int dispY1, int refreshFlag)
 			}
 		}
 
-		vga_util.blt_buf( x2, y-1, INFO_X2-2, dispY1+44, 0 );
+		vga_util.blt_buf( x2, y-1, get_scaled_info_x2()-2, dispY1+44, 0 );
 	}
 }
 //----------- End of function FirmCamp::disp_camp_info -----------//

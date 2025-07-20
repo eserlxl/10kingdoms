@@ -143,25 +143,25 @@ int FirmResearch::detect_info()
 //
 void FirmResearch::disp_main_menu(int refreshFlag)
 {
-	disp_basic_info(INFO_Y1, refreshFlag);
+	disp_basic_info(get_scaled_info_y1(), refreshFlag);
 
 	if( !should_show_info() )
 		return;
 
-	disp_research_info(INFO_Y1+54, refreshFlag);
-	disp_worker_list(INFO_Y1+107, refreshFlag);
-	disp_worker_info(INFO_Y1+171, refreshFlag);
+	disp_research_info(get_scaled_info_y1()+54, refreshFlag);
+	disp_worker_list(get_scaled_info_y1()+107, refreshFlag);
+	disp_worker_info(get_scaled_info_y1()+171, refreshFlag);
 
 	//------ display mobilize button -------//
 
-	int x = INFO_X1;
+	int x = get_scaled_info_x1();
 
 	if( own_firm() )
 	{
 		if (refreshFlag == INFO_REPAINT)
 		{
-			button_select_research.paint(INFO_X1, INFO_Y1 + 235, 'A', "RESEARCH");
-			button_vacate_firm.paint(INFO_X1 + BUTTON_ACTION_WIDTH, INFO_Y1 + 235, 'A', "RECRUIT");
+			button_select_research.paint(get_scaled_info_x1(), get_scaled_info_y1() + 235, 'A', "RESEARCH");
+			button_vacate_firm.paint(get_scaled_info_x1() + BUTTON_ACTION_WIDTH, get_scaled_info_y1() + 235, 'A', "RECRUIT");
 			button_vacate_firm.set_help_code("MOBILIZE");
 		}
 
@@ -173,7 +173,7 @@ void FirmResearch::disp_main_menu(int refreshFlag)
 		x += (BUTTON_ACTION_WIDTH * 2);
 	}
 
-	disp_spy_button( x, INFO_Y1+235, refreshFlag );
+	disp_spy_button( x, get_scaled_info_y1()+235, refreshFlag );
 }
 //----------- End of function FirmResearch::disp_main_menu -----------//
 
@@ -409,12 +409,12 @@ void FirmResearch::disp_research_info(int dispY1, int refreshFlag)
 	//---------------- paint the panel --------------//
 
 	if( refreshFlag == INFO_REPAINT )
-		vga_util.d3_panel_up( INFO_X1, dispY1, INFO_X2, dispY1+50 );
+		vga_util.d3_panel_up( get_scaled_info_x1(), dispY1, get_scaled_info_x2(), dispY1+50 );
 
 	if( !tech_id )
 		return;
 
-	int x=INFO_X1+4, y=dispY1+4;
+	int x=get_scaled_info_x1()+4, y=dispY1+4;
 
 	//-------- display the icon of the researching item ---------//
 

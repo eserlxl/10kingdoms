@@ -179,27 +179,27 @@ void FirmBase::assign_overseer(int overseerRecno)
 //
 void FirmBase::put_info(int refreshFlag)
 {
-	disp_basic_info(INFO_Y1, refreshFlag);
+	disp_basic_info(get_scaled_info_y1(), refreshFlag);
 
 	if( !should_show_info() )
 		return;
 
-	disp_base_info(INFO_Y1+54, refreshFlag);
-	disp_worker_list(INFO_Y1+104, refreshFlag);
-	disp_worker_info(INFO_Y1+168, refreshFlag);
-	disp_god_info(INFO_Y1+226, refreshFlag);
+	disp_base_info(get_scaled_info_y1()+54, refreshFlag);
+	disp_worker_list(get_scaled_info_y1()+104, refreshFlag);
+	disp_worker_info(get_scaled_info_y1()+168, refreshFlag);
+	disp_god_info(get_scaled_info_y1()+226, refreshFlag);
 
 	//------ display button -------//
 
-	int x, y=INFO_Y1+279;
+	int x, y=get_scaled_info_y1()+279;
 
 	if( own_firm() )
 	{
 		if( refreshFlag==INFO_REPAINT )
 		{
-			button_invoke.paint( INFO_X1, y, 'A', "INVOKE" );
-			button_reward.paint( INFO_X1 + BUTTON_ACTION_WIDTH, y, 'A', "REWARDSP" );
-			button_vacate_firm.paint(INFO_X1 + BUTTON_ACTION_WIDTH * 2, y, 'A', "RECRUIT");
+			button_invoke.paint( get_scaled_info_x1(), y, 'A', "INVOKE" );
+			button_reward.paint( get_scaled_info_x1() + BUTTON_ACTION_WIDTH, y, 'A', "REWARDSP" );
+			button_vacate_firm.paint(get_scaled_info_x1() + BUTTON_ACTION_WIDTH * 2, y, 'A', "RECRUIT");
 			button_vacate_firm.set_help_code("MOBILIZE");
 		}
 
@@ -224,10 +224,10 @@ void FirmBase::put_info(int refreshFlag)
 		else
 			button_vacate_firm.disable();
 
-		x=INFO_X1+BUTTON_ACTION_WIDTH * 3;
+		x=get_scaled_info_x1()+BUTTON_ACTION_WIDTH * 3;
 	}
 	else
-		x=INFO_X1;
+		x=get_scaled_info_x1();
 
 	disp_spy_button(x, y, refreshFlag);
 }
@@ -246,8 +246,8 @@ int FirmBase::detect_info()
 
 	//------ detect the overseer button -----//
 
-	int rc = mouse.any_click(INFO_X1+6, INFO_Y1+58, INFO_X1+5+UNIT_LARGE_ICON_WIDTH, INFO_Y1+57+UNIT_LARGE_ICON_HEIGHT, LEFT_BUTTON) ? 1 
-		: mouse.any_click(INFO_X1+6, INFO_Y1+58, INFO_X1+5+UNIT_LARGE_ICON_WIDTH, INFO_Y1+57+UNIT_LARGE_ICON_HEIGHT, RIGHT_BUTTON) ? 2 : 0;
+	int rc = mouse.any_click(get_scaled_info_x1()+6, get_scaled_info_y1()+58, get_scaled_info_x1()+5+UNIT_LARGE_ICON_WIDTH, get_scaled_info_y1()+57+UNIT_LARGE_ICON_HEIGHT, LEFT_BUTTON) ? 1
+		: mouse.any_click(get_scaled_info_x1()+6, get_scaled_info_y1()+58, get_scaled_info_x1()+5+UNIT_LARGE_ICON_WIDTH, get_scaled_info_y1()+57+UNIT_LARGE_ICON_HEIGHT, RIGHT_BUTTON) ? 2 : 0;
 
 	if( rc==1 )		// display this overseer's info
 	{
@@ -343,7 +343,7 @@ void FirmBase::disp_base_info(int dispY1, int refreshFlag)
 	//---------------- paint the panel --------------//
 
 	if( refreshFlag == INFO_REPAINT )
-		vga_util.d3_panel_up( INFO_X1, dispY1, INFO_X2, dispY1+46);
+		vga_util.d3_panel_up( get_scaled_info_x1(), dispY1, get_scaled_info_x2(), dispY1+46);
 
 	if( !overseer_recno )
 		return;
@@ -352,7 +352,7 @@ void FirmBase::disp_base_info(int dispY1, int refreshFlag)
 
 	Unit* overseerUnit = unit_array[overseer_recno];
 
-	int x=INFO_X1+6, y=dispY1+4, x1=x+UNIT_LARGE_ICON_WIDTH+8;
+	int x=get_scaled_info_x1()+6, y=dispY1+4, x1=x+UNIT_LARGE_ICON_WIDTH+8;
 
 	if( selected_worker_id == 0 )
 	{
@@ -389,9 +389,8 @@ void FirmBase::disp_base_info(int dispY1, int refreshFlag)
 	}
 
 	if( refreshFlag == INFO_REPAINT )
-		font_san.put( x1, y, overseerUnit->unit_name(0), 0, INFO_X2-2 );		// 0-ask unit_name() not to return the title of the unit
-
-	y+=14;
+		font_san.put( x1, y, overseerUnit->unit_name(0), 0, get_scaled_info_x2()-2 );		// 0-ask unit_name() not to return the title of the unit
+	y+=16;
 
 	//------- display leadership -------//
 
@@ -401,7 +400,7 @@ void FirmBase::disp_base_info(int dispY1, int refreshFlag)
 	str += ": ";
 	str += overseerUnit->skill.get_skill(SKILL_LEADING);
 
-	font_san.disp( x1, y, str, INFO_X2-10 );
+	font_san.disp( x1, y, str, get_scaled_info_x2()-10 );
 	y+=14;
 
 	//--------- display loyalty ----------//
@@ -425,7 +424,7 @@ void FirmBase::disp_base_info(int dispY1, int refreshFlag)
 			}
 		}
 
-		vga_util.blt_buf( x2, y-1, INFO_X2-2, dispY1+44, 0 );
+		vga_util.blt_buf( x2, y-1, get_scaled_info_x2()-2, dispY1+44, 0 );
 	}
 }
 //----------- End of function FirmBase::disp_base_info -----------//
@@ -599,12 +598,9 @@ void FirmBase::disp_god_info(int dispY1, int refreshFlag)
 {
 	//---------------- paint the panel --------------//
 
-	if( refreshFlag == INFO_REPAINT )
-		vga_util.d3_panel_up( INFO_X1, dispY1, INFO_X2, dispY1+50 );
+	vga_util.d3_panel_up( get_scaled_info_x1(), dispY1, get_scaled_info_x2(), dispY1+50 );
 
-	//-------- display the icon of the mythical creature -------//
-
-	int 		 x=INFO_X1+4, y=dispY1+4;
+	int 		 x=get_scaled_info_x1()+4, y=dispY1+4;
 	UnitInfo* unitInfo = unit_res[ god_res[god_id]->unit_id ];
 
 	if( refreshFlag == INFO_REPAINT )

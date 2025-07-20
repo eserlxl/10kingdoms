@@ -54,13 +54,17 @@ void VgaBuf::bar(int x1,int y1,int x2,int y2,int colorCode)
 {
 	err_when( !buf_locked );
 
-	if( is_front )
-		mouse.hide_area(x1,y1,x2,y2);
+	// Check bounds to prevent buffer overflow
+	if( x1 >= 0 && y1 >= 0 && x2 < buf_width() && y2 < buf_height() && x1 <= x2 && y1 <= y2 )
+	{
+		if( is_front )
+			mouse.hide_area(x1,y1,x2,y2);
 
-	IMGbar(buf_ptr(), buf_pitch(), x1, y1, x2, y2, colorCode);
+		IMGbar(buf_ptr(), buf_pitch(), x1, y1, x2, y2, colorCode);
 
-	if( is_front )
-		mouse.show_area();
+		if( is_front )
+			mouse.show_area();
+	}
 }
 //--------------- End of function VgaBuf::bar --------------//
 
@@ -534,46 +538,51 @@ void VgaBuf::d3_panel_up(int x1,int y1,int x2,int y2,int t,int paintCentre)
 {
 	// int i,x,y;
 
-	err_when( x1>x2 || y1>y2 || x1<0 || y1<0 || x2>=VGA_WIDTH || y2>=VGA_HEIGHT );
+	// Use actual surface dimensions instead of hardcoded constants
+	err_when( x1>x2 || y1>y2 || x1<0 || y1<0 || x2>=buf_width() || y2>=buf_height() );
 
-	if( is_front )
-		mouse.hide_area( x1,y1,x2,y2 );
+	// Check bounds before any drawing operations
+	if( x1 >= 0 && y1 >= 0 && x2 < buf_width() && y2 < buf_height() )
+	{
+		if( is_front )
+			mouse.hide_area( x1,y1,x2,y2 );
 
-	//------------------------------------------------//
+		//------------------------------------------------//
 
-	// ####### begin Gilbert 12/7 ##########//
-	if( paintCentre )
-		bar(x1+2, y1+2, x2-3, y2-3, color_up );  // center
+		// ####### begin Gilbert 12/7 ##########//
+		if( paintCentre )
+			bar(x1+2, y1+2, x2-3, y2-3, color_up );  // center
 
-	//--------- white border on top and left sides -----------//
+		//--------- white border on top and left sides -----------//
 
-	bar(x1,y1,x2-3,y1+1,0x9a );
-	draw_pixel(x2-2, y1, 0x9a);
-	bar(x1,y1+2,x1+1,y2-3, 0x9a );    // left side
-	draw_pixel(x1, y2-2, 0x9a);
+		bar(x1,y1,x2-3,y1+1,0x9a );
+		draw_pixel(x2-2, y1, 0x9a);
+		bar(x1,y1+2,x1+1,y2-3, 0x9a );    // left side
+		draw_pixel(x1, y2-2, 0x9a);
 
-	//--------- black border on bottom and right sides -----------//
+		//--------- black border on bottom and right sides -----------//
 
-	bar(x2-2,y1+2,x2-1,y2-1, 0x90 );     // bottom side
-	draw_pixel(x2-1, y1+1, 0x90);
-	bar(x1+2,y2-2,x2-3,y2-1, 0x90 );		 // right side
-	draw_pixel(x1+1, y2-1, 0x90);
+		bar(x2-2,y1+2,x2-1,y2-1, 0x90 );     // bottom side
+		draw_pixel(x2-1, y1+1, 0x90);
+		bar(x1+2,y2-2,x2-3,y2-1, 0x90 );		 // right side
+		draw_pixel(x1+1, y2-1, 0x90);
 
-	//--------- junction between white and black border --------//
-	draw_pixel(x2-1, y1, 0x97);
-	draw_pixel(x2-2, y1+1, 0x97);
-	draw_pixel(x1, y2-1, 0x97);
-	draw_pixel(x1+1, y2-2, 0x97);
+		//--------- junction between white and black border --------//
+		draw_pixel(x2-1, y1, 0x97);
+		draw_pixel(x2-2, y1+1, 0x97);
+		draw_pixel(x1, y2-1, 0x97);
+		draw_pixel(x1+1, y2-2, 0x97);
 
-	//--------- gray shadow on bottom and right sides -----------//
-	bar(x2, y1+1, x2, y2, 0x97);
-	bar(x1+1, y2, x2-1, y2, 0x97);
+		//--------- gray shadow on bottom and right sides -----------//
+		bar(x2, y1+1, x2, y2, 0x97);
+		bar(x1+1, y2, x2-1, y2, 0x97);
 
-	//-------------------------------------------//
-	// ######## end Gilbert 12/7 ##########//
+		//-------------------------------------------//
+		// ######## end Gilbert 12/7 ##########//
 
-	if( is_front )
-		mouse.show_area();
+		if( is_front )
+			mouse.show_area();
+	}
 }
 //------------- End of function VgaBuf::d3_panel_up ------------//
 
@@ -591,46 +600,51 @@ void VgaBuf::d3_panel_up(int x1,int y1,int x2,int y2,int t,int paintCentre)
 //
 void VgaBuf::d3_panel_down(int x1,int y1,int x2,int y2,int t,int paintCentre)
 {
-	err_when( x1>x2 || y1>y2 || x1<0 || y1<0 || x2>=VGA_WIDTH || y2>=VGA_HEIGHT );
+	// Use actual surface dimensions instead of hardcoded constants
+	err_when( x1>x2 || y1>y2 || x1<0 || y1<0 || x2>=buf_width() || y2>=buf_height() );
 
-	if( is_front )
-		mouse.hide_area( x1,y1,x2,y2 );
+	// Check bounds before any drawing operations
+	if( x1 >= 0 && y1 >= 0 && x2 < buf_width() && y2 < buf_height() )
+	{
+		if( is_front )
+			mouse.hide_area( x1,y1,x2,y2 );
 
-	//---------- main center area -----------//
+		//---------- main center area -----------//
 
-	// ####### begin Gilbert 12/7 ##########//
-	if( paintCentre )
-		bar(x1+2, y1+2, x2-3, y2-3, color_down );  // center
+		// ####### begin Gilbert 12/7 ##########//
+		if( paintCentre )
+			bar(x1+2, y1+2, x2-3, y2-3, color_down );  // center
 
-	//--------- black border on top and left sides -----------//
+		//--------- black border on top and left sides -----------//
 
-	bar(x1,y1,x2-3,y1+1,0x90 );
-	draw_pixel(x2-2, y1, 0x90);
-	bar(x1,y1+2,x1+1,y2-3, 0x90 );    // left side
-	draw_pixel(x1, y2-2, 0x90);
+		bar(x1,y1,x2-3,y1+1,0x90 );
+		draw_pixel(x2-2, y1, 0x90);
+		bar(x1,y1+2,x1+1,y2-3, 0x90 );    // left side
+		draw_pixel(x1, y2-2, 0x90);
 
-	//--------- while border on bottom and right sides -----------//
+		//--------- while border on bottom and right sides -----------//
 
-	bar(x2-2,y1+2,x2-1,y2-1, 0x9a );     // bottom side
-	draw_pixel(x2-1, y1+1, 0x9a);
-	bar(x1+2,y2-2,x2-3,y2-1, 0x9a );		 // right side
-	draw_pixel(x1+1, y2-1, 0x9a);
+		bar(x2-2,y1+2,x2-1,y2-1, 0x9a );     // bottom side
+		draw_pixel(x2-1, y1+1, 0x9a);
+		bar(x1+2,y2-2,x2-3,y2-1, 0x9a );		 // right side
+		draw_pixel(x1+1, y2-1, 0x9a);
 
-	//--------- junction between white and black border --------//
-	draw_pixel(x2-1, y1, 0x97);
-	draw_pixel(x2-2, y1+1, 0x97);
-	draw_pixel(x1, y2-1, 0x97);
-	draw_pixel(x1+1, y2-2, 0x97);
+		//--------- junction between white and black border --------//
+		draw_pixel(x2-1, y1, 0x97);
+		draw_pixel(x2-2, y1+1, 0x97);
+		draw_pixel(x1, y2-1, 0x97);
+		draw_pixel(x1+1, y2-2, 0x97);
 
-	//--------- remove shadow, copy from back  -----------//
-	bar(x2, y1+1, x2, y2, 0x9c);
-	bar(x1+1, y2, x2-1, y2, 0x9c);
-	// ####### end Gilbert 12/7 ##########//
+		//--------- remove shadow, copy from back  -----------//
+		bar(x2, y1+1, x2, y2, 0x9c);
+		bar(x1+1, y2, x2-1, y2, 0x9c);
+		// ####### end Gilbert 12/7 ##########//
 
-	//----------- show mouse ----------//
+		//----------- show mouse ----------//
 
-	if( is_front )
-		mouse.show_area();
+		if( is_front )
+			mouse.show_area();
+	}
 }
 //------------- End of function VgaBuf::d3_panel_down ------------//
 
@@ -703,25 +717,30 @@ void VgaBuf::adjust_brightness(int x1,int y1,int x2,int y2,int adjustDegree)
 //
 void VgaBuf::draw_d3_up_border(int x1,int y1,int x2,int y2)
 {
-	err_when( x1>x2 || y1>y2 || x1<0 || y1<0 || x2>=VGA_WIDTH || y2>=VGA_HEIGHT );
+	// Use actual surface dimensions instead of hardcoded constants
+	err_when( x1>x2 || y1>y2 || x1<0 || y1<0 || x2>=buf_width() || y2>=buf_height() );
 
-	if( is_front )
-		mouse.hide_area( x1,y1,x2,y2 );
+	// Check bounds before any drawing operations
+	if( x1 >= 0 && y1 >= 0 && x2 < buf_width() && y2 < buf_height() )
+	{
+		if( is_front )
+			mouse.hide_area( x1,y1,x2,y2 );
 
-	//--------- white border on top and left sides -----------//
+		//--------- white border on top and left sides -----------//
 
-	IMGbar( buf_ptr(), buf_pitch(), x1+1,y1,x2,y1, IF_LIGHT_BORDER_COLOR );    // top side
-	IMGbar( buf_ptr(), buf_pitch(), x1,y1,x1,y2  , IF_LIGHT_BORDER_COLOR );    // left side
+		IMGbar( buf_ptr(), buf_pitch(), x1+1,y1,x2,y1, IF_LIGHT_BORDER_COLOR );    // top side
+		IMGbar( buf_ptr(), buf_pitch(), x1,y1,x1,y2  , IF_LIGHT_BORDER_COLOR );    // left side
 
-	//--------- black border on bottom and right sides -----------//
+		//--------- black border on bottom and right sides -----------//
 
-	IMGbar( buf_ptr(), buf_pitch(), x1+1,y2,x2,y2, IF_DARK_BORDER_COLOR );     // bottom side
-	IMGbar( buf_ptr(), buf_pitch(), x2,y1+1,x2,y2, IF_DARK_BORDER_COLOR );		 // right side
+		IMGbar( buf_ptr(), buf_pitch(), x1+1,y2,x2,y2, IF_DARK_BORDER_COLOR );     // bottom side
+		IMGbar( buf_ptr(), buf_pitch(), x2,y1+1,x2,y2, IF_DARK_BORDER_COLOR );		 // right side
 
-	//-------------------------------------------//
+		//-------------------------------------------//
 
-	if( is_front )
-		mouse.show_area();
+		if( is_front )
+			mouse.show_area();
+	}
 }
 //------------- End of function VgaBuf::draw_d3_up_border ------------//
 
@@ -732,25 +751,30 @@ void VgaBuf::draw_d3_up_border(int x1,int y1,int x2,int y2)
 //
 void VgaBuf::draw_d3_down_border(int x1,int y1,int x2,int y2)
 {
-	err_when( x1>x2 || y1>y2 || x1<0 || y1<0 || x2>=VGA_WIDTH || y2>=VGA_HEIGHT );
+	// Use actual surface dimensions instead of hardcoded constants
+	err_when( x1>x2 || y1>y2 || x1<0 || y1<0 || x2>=buf_width() || y2>=buf_height() );
 
-	if( is_front )
-		mouse.hide_area( x1,y1,x2,y2 );
+	// Check bounds before any drawing operations
+	if( x1 >= 0 && y1 >= 0 && x2 < buf_width() && y2 < buf_height() )
+	{
+		if( is_front )
+			mouse.hide_area( x1,y1,x2,y2 );
 
-	//--------- white border on top and left sides -----------//
+		//--------- white border on top and left sides -----------//
 
-	IMGbar( buf_ptr(), buf_pitch(), x1+1,y1,x2,y1, IF_DARK_BORDER_COLOR );    // top side
-	IMGbar( buf_ptr(), buf_pitch(), x1,y1,x1,y2  , IF_DARK_BORDER_COLOR );    // left side
+		IMGbar( buf_ptr(), buf_pitch(), x1+1,y1,x2,y1, IF_DARK_BORDER_COLOR );    // top side
+		IMGbar( buf_ptr(), buf_pitch(), x1,y1,x1,y2  , IF_DARK_BORDER_COLOR );    // left side
 
-	//--------- black border on bottom and right sides -----------//
+		//--------- black border on bottom and right sides -----------//
 
-	IMGbar( buf_ptr(), buf_pitch(), x1+1,y2,x2,y2, IF_LIGHT_BORDER_COLOR );     // bottom side
-	IMGbar( buf_ptr(), buf_pitch(), x2,y1+1,x2,y2, IF_LIGHT_BORDER_COLOR );		 // right side
+		IMGbar( buf_ptr(), buf_pitch(), x1+1,y2,x2,y2, IF_LIGHT_BORDER_COLOR );     // bottom side
+		IMGbar( buf_ptr(), buf_pitch(), x2,y1+1,x2,y2, IF_LIGHT_BORDER_COLOR );		 // right side
 
-	//-------------------------------------------//
+		//-------------------------------------------//
 
-	if( is_front )
-		mouse.show_area();
+		if( is_front )
+			mouse.show_area();
+	}
 }
 //------------- End of function VgaBuf::draw_d3_down_border ------------//
 

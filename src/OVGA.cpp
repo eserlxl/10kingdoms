@@ -1010,6 +1010,159 @@ char Vga::is_ui_mode() const
 //-------- End of function Vga::is_ui_mode ----------//
 
 
+//-------- Begin of function Vga::resize_for_mode ----------//
+//
+// Dynamically resize the window when switching between UI and gameplay modes
+//
+void Vga::resize_for_mode()
+{
+   if( !window )
+      return;
+
+   int new_width, new_height;
+   if( is_ui_mode() )
+   {
+      new_width = VGA_UI_WIDTH;
+      new_height = VGA_UI_HEIGHT;
+      printf("resize_for_mode(): UI mode detected, setting window to %dx%d\n", new_width, new_height);
+   }
+   else
+   {
+      new_width = VGA_WIDTH;
+      new_height = VGA_HEIGHT;
+      printf("resize_for_mode(): Gameplay mode detected, setting window to %dx%d\n", new_width, new_height);
+   }
+
+   // Check if we need to change resolution (not just window size)
+   int current_width = is_ui_mode() ? VGA_UI_WIDTH : VGA_WIDTH;
+   int current_height = is_ui_mode() ? VGA_UI_HEIGHT : VGA_HEIGHT;
+   
+   // Only resize if the dimensions are different
+   if( config_adv.vga_window_width != new_width || config_adv.vga_window_height != new_height )
+   {
+      printf("resize_for_mode(): Resizing window from %dx%d to %dx%d\n", config_adv.vga_window_width, config_adv.vga_window_height, new_width, new_height);
+      config_adv.vga_window_width = new_width;
+      config_adv.vga_window_height = new_height;
+      
+      // Save current mouse position
+      int mouse_x, mouse_y;
+      SDL_GetGlobalMouseState(&mouse_x, &mouse_y);
+      
+      // Resize the window
+      SDL_SetWindowSize(window, new_width, new_height);
+      
+      // Center the window on screen (only if not in fullscreen)
+      if( !config_adv.vga_full_screen )
+         SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+      
+      // Restore mouse position
+      SDL_WarpMouseGlobal(mouse_x, mouse_y);
+      
+      // Update logical size for renderer - get actual window size from SDL for proper scaling
+      int window_width, window_height;
+      SDL_GetWindowSize(window, &window_width, &window_height);
+      SDL_RenderSetLogicalSize(renderer, window_width, window_height);
+      printf("resize_for_mode(): Set logical size to %dx%d (window size)\n", window_width, window_height);
+      
+      // Flag for redraw
+      sys.need_redraw_flag = 1;
+      boundary_set = 0;
+   }
+   else
+   {
+      printf("resize_for_mode(): No resize needed, already at %dx%d\n", config_adv.vga_window_width, config_adv.vga_window_height);
+   }
+}
+//-------- End of function Vga::resize_for_mode ----------//
+
+
+//-------- Begin of function Vga::reinit_for_mode ----------//
+//
+// Reinitialize the VGA system when switching between UI and gameplay modes
+//
+void Vga::reinit_for_mode()
+{
+	if( !window )
+		return;
+
+	printf("reinit_for_mode(): Reinitializing VGA system for mode change\n");
+
+	// Save current mouse position
+	int mouse_x, mouse_y;
+	SDL_GetGlobalMouseState(&mouse_x, &mouse_y);
+
+	// Determine new resolution
+	int new_width = is_ui_mode() ? VGA_UI_WIDTH : VGA_WIDTH;
+	int new_height = is_ui_mode() ? VGA_UI_HEIGHT : VGA_HEIGHT;
+
+	printf("reinit_for_mode(): Switching to %dx%d resolution\n", new_width, new_height);
+
+	// Update window size to match the new resolution
+	config_adv.vga_window_width = new_width;
+	config_adv.vga_window_height = new_height;
+	SDL_SetWindowSize(window, new_width, new_height);
+
+	// Recreate texture with new resolution
+	if( texture )
+		SDL_DestroyTexture(texture);
+
+	Uint32 window_pixel_format = SDL_GetWindowPixelFormat(window);
+	texture = SDL_CreateTexture(renderer,
+								window_pixel_format,
+								SDL_TEXTUREACCESS_STREAMING,
+								new_width,
+								new_height);
+	if (!texture)
+	{
+		ERR("Could not recreate texture: %s\n", SDL_GetError());
+		return;
+	}
+
+	// Recreate target surface with new resolution
+	if( target )
+		SDL_FreeSurface(target);
+
+	int desktop_bpp = 32; // Assume 32-bit for simplicity
+	target = SDL_CreateRGBSurface(0,
+								  new_width,
+								  new_height,
+								  desktop_bpp,
+								  0, 0, 0, 0);
+	if (!target)
+	{
+		ERR("Could not recreate target surface\n");
+		return;
+	}
+
+	// Reinitialize VGA buffers with new resolution
+	printf("reinit_for_mode(): Reinitializing VGA buffers to %dx%d\n", new_width, new_height);
+	vga_front.deinit();
+	vga_back.deinit();
+	vga_front.init(1, new_width, new_height);
+	vga_back.init(0, new_width, new_height);
+	vga.activate_pal(&vga_front);
+	vga.activate_pal(&vga_back);
+	vga_front.lock_buf();
+	vga_back.lock_buf();
+
+	// Update logical size for renderer - get actual window size from SDL for proper scaling
+	int window_width, window_height;
+	SDL_GetWindowSize(window, &window_width, &window_height);
+	SDL_RenderSetLogicalSize(renderer, window_width, window_height);
+	printf("reinit_for_mode(): Set logical size to %dx%d (window size)\n", window_width, window_height);
+
+	// Restore mouse position
+	SDL_WarpMouseGlobal(mouse_x, mouse_y);
+
+	// Flag for redraw
+	sys.need_redraw_flag = 1;
+	boundary_set = 0;
+
+	printf("reinit_for_mode(): VGA system reinitialized successfully\n");
+}
+//-------- End of function Vga::reinit_for_mode ----------//
+
+
 #ifdef USE_WINDOWS
 
 #include <windows.h>
