@@ -239,6 +239,10 @@ void UnitRes::load_info()
 
 		if( unitRec->all_know=='1' )
 			memset( unitInfo->nation_tech_level_array, 1, sizeof(unitInfo->nation_tech_level_array) );
+		
+		// Initialize nation arrays to prevent uninitialized memory issues
+		memset( unitInfo->nation_unit_count_array, 0, sizeof(unitInfo->nation_unit_count_array) );
+		memset( unitInfo->nation_general_count_array, 0, sizeof(unitInfo->nation_general_count_array) );
 	}
 
 	//--------- set vehicle info  ---------//

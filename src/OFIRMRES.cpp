@@ -341,6 +341,9 @@ void FirmRes::load_firm_info()
 
 		if( firmRec->all_know=='1' )
 			memset( firmInfo->nation_tech_level_array, 1, sizeof(firmInfo->nation_tech_level_array) );
+		
+		// Initialize nation arrays to prevent uninitialized memory issues
+		memset( firmInfo->nation_firm_count_array, 0, sizeof(firmInfo->nation_firm_count_array) );
 
 		//------- set loc_width & loc_height in FirmInfo --------//
 
