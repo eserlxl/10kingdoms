@@ -989,12 +989,9 @@ char Vga::is_ui_mode() const
            game.game_mode == GAME_CREDITS ||
            game.game_mode == GAME_DEMO);
    
-   printf("is_ui_mode(): game_mode=%d, result=%d\n", game.game_mode, result);
-   
    // Force full resolution if we're in single player or multiplayer mode
    if( game.game_mode == GAME_SINGLE_PLAYER || game.game_mode == GAME_MULTI_PLAYER )
    {
-      printf("is_ui_mode(): Forcing gameplay mode (full resolution)\n");
       return 0;  // Force gameplay mode
    }
    
