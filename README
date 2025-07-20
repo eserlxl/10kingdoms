@@ -1,16 +1,20 @@
 Ten Kingdoms: Ancient Adversaries
 -----------------------------------
-Ten Kingdoms is only a public fork of the Seven Kingdoms project for 7kfans.
+Ten Kingdoms is a public fork of the Seven Kingdoms project for 7kfans.
 
 Forked from Seven Kingdoms 2.15.7
 Seven Kingdoms website: www.7kfans.com
 Seven Kingdoms source repo: sourceforge.net/projects/skfans
 
-Seven Kingdoms is a trademark of Enlight Software Ltd.
-Enlight Software granted the ability to license the game under a
-free and open source license in 2009. See the file "COPYING" for the
-details of the license.
-Ten Kingdoms is a public fork of the Seven Kingdoms project, maintained for the 7kfans community. This fork is based on Seven Kingdoms version 2.15.7 and continues development under the GPL thanks to Enlight Software, which granted the ability to license the game under a free and open source license in 2009. See the file "COPYING" for the details of the license. We are indebted to Enlight for making the 7kfans project possible and giving a new chance to build a community for fans of the game.
+Ten Kingdoms is a community continuation of the Seven Kingdoms project, maintained for the 7kfans community. This fork is based on Seven Kingdoms version 2.15.7 and continues development under the GPL.
+
+## Acknowledgments & Trademarks
+
+- **Seven Kingdoms** is a trademark of Enlight Software Ltd., used here with permission for non-commercial, community development projects.
+- The source code for Seven Kingdoms was released under the GPL‑2.0‑or‑later by Enlight Software in 2009. See COPYING for full details.
+- **Ten Kingdoms** is a community continuation of the Seven Kingdoms project (via 7kfans), now licensed under GPL‑3.0.
+
+This project does not imply any transfer of trademark ownership or official endorsement by Enlight. For trademark questions, please contact Enlight Software Ltd.
 
 System Requirements
 ---------
