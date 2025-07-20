@@ -168,8 +168,7 @@ OpenALAudio::OpenALAudio()
 
 OpenALAudio::~OpenALAudio()
 {
-	if (this->init_flag != 0)
-		this->deinit();
+	this->deinit();
 }
 
 // Initialize the mid driver
@@ -305,8 +304,21 @@ void OpenALAudio::deinit_wav()
 	long_sources = 0; 
 	loop_sources = 0;
 
+	// Ensure all sources are stopped and deleted
 	if (this->al_context != NULL)
 	{
+		alcMakeContextCurrent(this->al_context);
+		
+		// Delete any remaining sources that might not have been cleaned up
+		ALuint sources[32]; // Reasonable limit for sources
+		ALint source_count = 0;
+		alGetIntegerv(AL_MAX_SOURCES, &source_count);
+		if (source_count > 32) source_count = 32;
+		
+		// Generate temporary sources to find which ones are in use
+		alGenSources(source_count, sources);
+		alDeleteSources(source_count, sources);
+		
 		alcMakeContextCurrent(NULL);  // Unset current context before destroying
 		alcDestroyContext(this->al_context);
 		this->al_context = NULL;
@@ -1006,6 +1018,18 @@ OpenALAudio::StreamContext::~StreamContext()
 	if (this->source != 0)
 	{
 		this->stop();
+		
+		// Unqueue and delete any remaining buffers
+		ALint count;
+		alGetSourcei(this->source, AL_BUFFERS_QUEUED, &count);
+		if (count > 0)
+		{
+			ALuint *buffers = new ALuint[count];
+			alSourceUnqueueBuffers(this->source, count, buffers);
+			alDeleteBuffers(count, buffers);
+			delete[] buffers;
+		}
+		
 		alDeleteSources(1, &this->source);
 	}
 	if (this->data_buffer != NULL)
@@ -1176,8 +1200,11 @@ bool OpenALAudio::StreamContext::stream_data(int new_buffer_count)
 
 	if (!this->streaming)
 	{
-		alDeleteBuffers(1, &buf);
-		check_al();
+		if (buf != 0)
+		{
+			alDeleteBuffers(1, &buf);
+			check_al();
+		}
 	}
 
 	alGetSourcei(this->source, AL_SOURCE_STATE, &state);
@@ -1192,7 +1219,10 @@ bool OpenALAudio::StreamContext::stream_data(int new_buffer_count)
 
 err:
 	if (buf != 0)
+	{
 		alDeleteBuffers(1, &buf);
+		check_al();
+	}
 
 	this->streaming = false;
 	return false;
@@ -1206,8 +1236,17 @@ void OpenALAudio::StreamContext::stop()
 	assert(this->source != 0);
 
 	alSourceStop(this->source);
+	
+	// Unqueue and delete all processed buffers
 	alGetSourcei(this->source, AL_BUFFERS_PROCESSED, &count);
-
+	while (count-- > 0)
+	{
+		alSourceUnqueueBuffers(this->source, 1, &buf);
+		alDeleteBuffers(1, &buf);
+	}
+	
+	// Also unqueue and delete any remaining queued buffers
+	alGetSourcei(this->source, AL_BUFFERS_QUEUED, &count);
 	while (count-- > 0)
 	{
 		alSourceUnqueueBuffers(this->source, 1, &buf);

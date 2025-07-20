@@ -410,5 +410,12 @@ static void extra_error_handler()
 	game_file_array.save_new_game("ERROR.SAV");  // save a new game immediately without prompting menu
 
 	box.msg( "Error encountered. The game has been saved to ERROR.SAV" );
+	
+	// Ensure proper cleanup even during error conditions
+	// This prevents memory leaks when errors occur
+	if (sys.init_flag)
+	{
+		sys.deinit();
+	}
 }
 //----------- End of function extra_error_handler -------------//

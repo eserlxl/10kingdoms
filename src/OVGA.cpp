@@ -243,8 +243,10 @@ void Vga::deinit()
    }
    
    // Only call SDL_Quit() if no other subsystems are still active
+   // This prevents memory leaks from SDL internal structures
    if (!SDL_WasInit(0))
    {
+      // Force cleanup of any remaining SDL internal structures
       SDL_Quit();
    }
 }
