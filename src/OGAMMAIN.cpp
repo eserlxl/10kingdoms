@@ -99,7 +99,7 @@ void Game::main_menu()
 	int refreshFlag=1, i;
 
 	mouse_cursor.set_icon(CURSOR_NORMAL);
-	vga_front.bar(0,0,VGA_WIDTH-1,VGA_HEIGHT-1,V_BLACK);
+	vga_front.bar(0,0,get_vga_width()-1,get_vga_height()-1,V_BLACK);
 	OptionInfo* optionInfo;
 	char *menuBitmap = NULL;
 	char *brightBitmap = NULL;
@@ -118,7 +118,7 @@ void Game::main_menu()
 
 			image_interface.put_to_buf( &vga_back, "M_MAIN" );
 
-			vga_util.blt_buf(0,0,VGA_WIDTH-1,VGA_HEIGHT-1);	// blt the main menu screen from the back buffer to the front buffer
+			vga_util.blt_buf(0,0,get_vga_width()-1,get_vga_height()-1);	// blt the main menu screen from the back buffer to the front buffer
 
 			disp_version();
 
@@ -200,23 +200,23 @@ void Game::main_menu()
 				
 				// Validate bitmap dimensions - allow reasonable sizes
 				if (bmp_w <= 0 || bmp_h <= 0 || bmp_w > 2000 || bmp_h > 2000) {
-					vga_front.bar(0, 0, VGA_WIDTH-1, VGA_HEIGHT-1, V_BLACK);
+					vga_front.bar(0, 0, get_vga_width()-1, get_vga_height()-1, V_BLACK);
 				} else {
 					char* bmp_data = bitmapPtr + 4;
 					static char* scaled_buf = nullptr;
 					static int scaled_buf_size = 0;
-					int needed_size = VGA_WIDTH * VGA_HEIGHT;
+					int needed_size = get_vga_width() * get_vga_height();
 					if (!scaled_buf || scaled_buf_size < needed_size) {
 						if (scaled_buf) delete[] scaled_buf;
 						scaled_buf = new char[needed_size];
 						scaled_buf_size = needed_size;
 					}
-					scale_bitmap(bmp_data, bmp_w, bmp_h, scaled_buf, VGA_WIDTH, VGA_HEIGHT);
-					vga_front.bar(0, 0, VGA_WIDTH-1, VGA_HEIGHT-1, V_BLACK);
-					vga_front.put_bitmap2(0, 0, VGA_WIDTH, VGA_HEIGHT, scaled_buf);
+					scale_bitmap(bmp_data, bmp_w, bmp_h, scaled_buf, get_vga_width(), get_vga_height());
+					vga_front.bar(0, 0, get_vga_width()-1, get_vga_height()-1, V_BLACK);
+					vga_front.put_bitmap2(0, 0, get_vga_width(), get_vga_height(), scaled_buf);
 				}
 			} else {
-				vga_front.bar(0, 0, VGA_WIDTH-1, VGA_HEIGHT-1, V_BLACK);
+				vga_front.bar(0, 0, get_vga_width()-1, get_vga_height()-1, V_BLACK);
 			}
 			// Draw menu options ONCE, at correct scaled positions, only text/label
 			const char* labels[MAIN_OPTION_COUNT] = {
@@ -496,9 +496,9 @@ void Game::disp_version()
 	#endif
 
 	if( str.len() > 40 )
-		font_news.center_put( 0, VGA_HEIGHT-20, VGA_WIDTH-1, VGA_HEIGHT-1, str );
+		font_news.center_put( 0, get_vga_height()-20, get_vga_width()-1, get_vga_height()-1, str );
 	else
-		font_news.right_put( VGA_WIDTH-10, VGA_HEIGHT-20, str );
+		font_news.right_put( get_vga_width()-10, get_vga_height()-20, str );
 }
 //---------- End of function Game::disp_version ---------//
 
@@ -571,7 +571,8 @@ void Game::single_player_menu()
 		{
 			image_interface.put_to_buf( &vga_back, "M_MAIN" );
 
-			vga_util.blt_buf(0,0,VGA_WIDTH-1, VGA_HEIGHT-1);
+			// Use actual surface dimensions to prevent buffer overflow
+			vga_util.blt_buf(0,0,vga_back.buf_width()-1,vga_back.buf_height()-1);
 
 			if(!menuBitmap)
 			{
@@ -781,7 +782,6 @@ void Game::test_game()
 //
 // ####### begin Gilbert 13/2 ########//
 void Game::multi_player_menu(int lobbied, char *game_host)
-// ####### end Gilbert 13/2 ########//
 {
 	enum { MULTI_PLAYER_OPTION_COUNT = 5 };
 
@@ -828,7 +828,7 @@ void Game::multi_player_menu(int lobbied, char *game_host)
 		{
 			image_interface.put_to_buf( &vga_back, "M_MAIN" );
 
-			vga_util.blt_buf(0,0,VGA_WIDTH-1, VGA_HEIGHT-1);
+			vga_util.blt_buf(0,0,get_vga_width()-1,get_vga_height()-1);
 
 			if(!menuBitmap)
 			{

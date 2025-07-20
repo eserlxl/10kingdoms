@@ -46,6 +46,7 @@
 #include <OINFO.h>
 #include <OOPTMENU.h>
 #include "gettext.h"
+#include <vga_util.h>
 
 //------------ Define static vars ----------------//
 
@@ -271,11 +272,11 @@ void Info::disp_panel()
 	if( !info_background_bitmap ) 
 	{
 		// Allocate memory for the background bitmap
-		info_background_bitmap = mem_add( 4 + (INFO_X2-INFO_X1+1)*(INFO_Y2-INFO_Y1+1) );
+		info_background_bitmap = mem_add( 4 + (get_scaled_info_x2()-get_scaled_info_x1()+1)*(get_scaled_info_y2()-get_scaled_info_y1()+1) );
 	}
 
 	// Read the current state of the info panel area
-	vga_back.read_bitmap( INFO_X1, INFO_Y1, INFO_X2, INFO_Y2, info_background_bitmap );
+	vga_back.read_bitmap( get_scaled_info_x1(), get_scaled_info_y1(), get_scaled_info_x2(), get_scaled_info_y2(), info_background_bitmap );
 }
 //--------- End of function Info::disp_panel ---------//
 
@@ -669,19 +670,19 @@ void Info::save_game_scr()
 	// top and buttom
 	if( 0 < ZOOM_Y1 )
 	{
-		save_buf_1  = vga_front.save_area(0, 0, VGA_WIDTH-1, ZOOM_Y1-1);
-		save_buf_1b = vga_back.save_area(0, 0, VGA_WIDTH-1, ZOOM_Y1-1);		// save the back buffer also as the top area of the back buf is used for font display 
+		save_buf_1  = vga_front.save_area(0, 0, vga_front.buf_width()-1, ZOOM_Y1-1);
+		save_buf_1b = vga_back.save_area(0, 0, vga_back.buf_width()-1, ZOOM_Y1-1);		// save the back buffer also as the top area of the back buf is used for font display 
 	}
 
-	if( ZOOM_Y2 < VGA_HEIGHT-1 )
-		save_buf_2 = vga_front.save_area(0, ZOOM_Y2+1, VGA_WIDTH-1, VGA_HEIGHT-1);
+	if( ZOOM_Y2 < vga_front.buf_height()-1 )
+		save_buf_2 = vga_front.save_area(0, ZOOM_Y2+1, vga_front.buf_width()-1, vga_front.buf_height()-1);
 
 	// left and right
 	if( 0 < ZOOM_X1 )
 		save_buf_3 = vga_front.save_area(0, ZOOM_Y1, ZOOM_X1-1, ZOOM_Y2);
 
-	if( ZOOM_X2 < VGA_WIDTH-1 )
-		save_buf_4 = vga_front.save_area(ZOOM_X2+1, ZOOM_Y1, VGA_WIDTH-1, ZOOM_Y2);
+	if( ZOOM_X2 < vga_front.buf_width()-1 )
+		save_buf_4 = vga_front.save_area(ZOOM_X2+1, ZOOM_Y1, vga_front.buf_width()-1, ZOOM_Y2);
 }
 //---------- End of function Info::save_game_scr ---------//
 

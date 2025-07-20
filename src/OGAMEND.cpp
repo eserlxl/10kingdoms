@@ -213,7 +213,7 @@ void Game::game_end(int winNationRecno, int playerDestroyed, int surrenderToNati
 
 	if( !retireFlag && !remote.is_enable() )		// can't stay in the game in a multiplayer game
 	{
-		vga_front.bar( 0, 0, VGA_WIDTH-1, VGA_HEIGHT-1, V_BLACK );		// clear the screen
+		vga_front.bar( 0, 0, vga_front.buf_width()-1, vga_front.buf_height()-1, V_BLACK );		// clear the screen
 
 		// ###### begin Gilbert 29/10 ######//
 		char powerWinFlag = power.win_opened;

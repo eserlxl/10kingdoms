@@ -279,7 +279,12 @@ int Font::put(int x,int y,const char* textPtr, char clearBack, int x2 )
 	if( x2 < 0 ) // default
 		x2 = x+max_font_width*textPtrLen;
 
-	x2 = MIN( x2, VGA_WIDTH-1 );
+	// Use dynamic buffer width instead of hardcoded VGA_WIDTH
+	x2 = MIN( x2, Vga::active_buf->buf_width()-1 );
+
+	// Check bounds to prevent buffer overflow
+	if( x < 0 || y < 0 || x2 >= Vga::active_buf->buf_width() || y + max_font_height > Vga::active_buf->buf_height() )
+		return x;
 
 	if( !Vga::use_back_buf )
 		mouse.hide_area( x, y, x2, y+font_height );
