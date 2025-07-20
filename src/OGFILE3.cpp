@@ -1745,9 +1745,16 @@ static void read_ai_info(File* filePtr, short** aiInfoArrayPtr, short& aiInfoCou
 	aiInfoCount = filePtr->file_get_short();
 	aiInfoSize  = filePtr->file_get_short();
 
-	*aiInfoArrayPtr = (short*) mem_add( aiInfoSize * sizeof(short) );
+	// Use the minimum of aiInfoCount and aiInfoSize to prevent buffer overflow
+	short actualSize = (aiInfoCount < aiInfoSize) ? aiInfoCount : aiInfoSize;
+	
+	*aiInfoArrayPtr = (short*) mem_add( actualSize * sizeof(short) );
 
-	filePtr->file_get_short_array( *aiInfoArrayPtr, aiInfoCount );
+	filePtr->file_get_short_array( *aiInfoArrayPtr, actualSize );
+	
+	// Update aiInfoCount to reflect the actual number of elements read
+	aiInfoCount = actualSize;
+	aiInfoSize = actualSize;
 }
 //----------- End of static function read_ai_info ---------//
 
