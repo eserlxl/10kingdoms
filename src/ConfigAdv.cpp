@@ -288,6 +288,7 @@ void ConfigAdv::reset()
 	race_random_list_max = MAX_RACE;
 	for (int i = 0; i < race_random_list_max; i++)
 		race_random_list[i] = i+1;
+	race_create_all = 0;
 
 	remote_compare_object_crc = 1;
 	remote_compare_random_seed = 1;
@@ -495,10 +496,23 @@ int ConfigAdv::set(char *name, char *value)
 				race_random_list[i] = i+1;
 			update_check_sum(name, value);
 		}
+		else if( !strcmpi(value, "all") )
+		{
+			race_random_list_max = MAX_RACE;
+			for (int i = 0; i < race_random_list_max; i++)
+				race_random_list[i] = i+1;
+			update_check_sum(name, value);
+		}
 		else
 		{
 			return 0;
 		}
+	}
+	else if( !strcmp(name, "race_create_all") )
+	{
+		if( !read_bool(value, &race_create_all) )
+			return 0;
+		update_check_sum(name, value);
 	}
 	else if( !strcmp(name, "remote_compare_object_crc") )
 	{

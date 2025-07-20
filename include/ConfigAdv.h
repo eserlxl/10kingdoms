@@ -87,6 +87,7 @@ public:
 	// race settings
 	char			race_random_list[MAX_RACE];
 	int			race_random_list_max;
+	char			race_create_all;
 
 	// remote settings
 	char		        remote_compare_object_crc;
