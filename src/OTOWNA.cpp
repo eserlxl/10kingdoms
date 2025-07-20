@@ -391,7 +391,11 @@ int TownArray::independent_town_resistance()
 //
 int TownArray::think_town_loc(int maxTries, int& xLoc, int& yLoc)
 {
-	#define MIN_INTER_TOWN_DISTANCE  16
+	// Calculate minimum distance based on world size to ensure proper spacing on large maps
+	// Use 15% of the smaller world dimension as minimum distance
+	int worldMinDimension = MIN(MAX_WORLD_X_LOC, MAX_WORLD_Y_LOC);
+	int minInterTownDistance = MAX(16, worldMinDimension / 7);  // At least 16, but scales with world size
+	
 	#define BUILD_TOWN_LOC_WIDTH     16
 	#define BUILD_TOWN_LOC_HEIGHT    16
 
@@ -437,7 +441,7 @@ int TownArray::think_town_loc(int maxTries, int& xLoc, int& yLoc)
 
 			if( misc.rects_distance(xLoc, yLoc, xLoc+STD_TOWN_LOC_WIDTH-1, yLoc+STD_TOWN_LOC_HEIGHT-1,
 					townPtr->loc_x1, townPtr->loc_y1,
-					townPtr->loc_x2, townPtr->loc_y2) < MIN_INTER_TOWN_DISTANCE )
+					townPtr->loc_x2, townPtr->loc_y2) < minInterTownDistance )
 			{
 				break;
 			}
