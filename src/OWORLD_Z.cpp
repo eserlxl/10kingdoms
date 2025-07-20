@@ -356,102 +356,106 @@ void ZoomMatrix::draw()
 				
 			if( locPtr->explored() )		// only draw if the location has been explored
 			{
-				//---------- draw terrain bitmap -----------//
-
-				vga_back.put_bitmap_32x32( x, y, terrain_res[locPtr->terrain_id]->bitmap_ptr );
-				char *overlayBitmap = terrain_res[locPtr->terrain_id]->get_bitmap(sys.frame_count /4);
-				if( overlayBitmap)
-					vga_back.put_bitmap_trans_decompress( x, y, overlayBitmap);
-
-				#ifdef DEBUG
-				if(debug2_enable_flag)
+				// Check bounds to prevent buffer overflow
+				if( x >= 0 && y >= 0 && x + 31 < vga_back.buf_width() && y + 31 < vga_back.buf_height() )
 				{
-					if(locPtr->is_coast())
-					{
-						VgaBuf *activeBufBackup = Vga::active_buf;
-						Vga::active_buf = &vga_back;
-						font_std.put( x+24, y+20, terrain_res[locPtr->terrain_id]->average_type);
-						Vga::active_buf = activeBufBackup;
-					}
-				}
-				#endif
+					//---------- draw terrain bitmap -----------//
 
-				// --------- draw dirt block --------//
-				if( locPtr->has_dirt() )
-				{
-					dirt_array[locPtr->dirt_recno()]->draw_block(xLoc,yLoc);
-				}
+					vga_back.put_bitmap_32x32( x, y, terrain_res[locPtr->terrain_id]->bitmap_ptr );
+					char *overlayBitmap = terrain_res[locPtr->terrain_id]->get_bitmap(sys.frame_count /4);
+					if( overlayBitmap)
+						vga_back.put_bitmap_trans_decompress( x, y, overlayBitmap);
 
-				if(terrain_res[locPtr->terrain_id]->can_snow() )
-				{
-					if( config.snow_ground==1 && snow_ground_array.snow_thick > 0)
-					{
-						vga_back.snow_32x32(x,y, snowSeed+xLoc, 0xffff - snow_ground_array.snow_thick);
-					}
-
-					if( config.snow_ground==2)
-					{
-						int snowMapId = snow_ground_array.has_snow(xLoc,yLoc);
-						if( snowMapId )
-						{
-							snow_res[snowMapId]->draw_at(xLoc*ZOOM_LOC_WIDTH+ZOOM_LOC_WIDTH/2, yLoc*ZOOM_LOC_HEIGHT+ZOOM_LOC_HEIGHT/2);
-						}
-					}
-				}
-
-				// --------- draw hill square --------//
-				if( locPtr->has_hill() )
-				{
-					if( locPtr->hill_id2())
-						hill_res[locPtr->hill_id2()]->draw(xLoc,yLoc,1);
-					hill_res[locPtr->hill_id1()]->draw(xLoc, yLoc,1);
-				}
-
-				//---------- if in power map mode -----------//
-
-				if( dispPower && (nationRecno=locPtr->power_nation_recno) > 0 )
-				{
-					vga_back.pixelize_32x32( x, y, nationColorArray[nationRecno] );
-
-					borderColor = nationColorArray[nationRecno] + 1;
-
-					if( yLoc==0 || get_loc(xLoc, yLoc-1)->power_nation_recno!=nationRecno )
-						vga_back.bar( x, y, x+31, y, borderColor );
-
-					if( yLoc==MAX_WORLD_Y_LOC-1 || get_loc(xLoc, yLoc+1)->power_nation_recno!=nationRecno )
-						vga_back.bar( x, y+31, x+31, y+31, borderColor );
-
-					if( xLoc==0 || get_loc(xLoc-1, yLoc)->power_nation_recno!=nationRecno )
-						vga_back.bar( x, y, x, y+31, borderColor );
-
-					if( xLoc==MAX_WORLD_X_LOC-1 || get_loc(xLoc+1, yLoc)->power_nation_recno!=nationRecno )
-						vga_back.bar( x+31, y, x+31, y+31, borderColor );
-				}
-
-				//--------- draw raw material icon ---------//
-
-				if( locPtr->has_site() && locPtr->walkable(3) )		// don't display if a building/object has already been built on the location
-					site_array[locPtr->site_recno()]->draw(x, y);
-
-				//----- draw grids, for debugging only -----//
-
-				#ifdef DEBUG
+					#ifdef DEBUG
 					if(debug2_enable_flag)
 					{
-						vga_back.bar( x, y, x+31, y, V_WHITE );
-						vga_back.bar( x, y, x, y+31, V_WHITE );
-
-						// display x, y location
-						if(!(xLoc%5) && !(yLoc%5))
+						if(locPtr->is_coast())
 						{
 							VgaBuf *activeBufBackup = Vga::active_buf;
 							Vga::active_buf = &vga_back;
-							font_std.put( x+4, y+3, xLoc );
-							font_std.put( x+4, y+15, yLoc );
+							font_std.put( x+24, y+20, terrain_res[locPtr->terrain_id]->average_type);
 							Vga::active_buf = activeBufBackup;
 						}
 					}
-				#endif
+					#endif
+
+					// --------- draw dirt block --------//
+					if( locPtr->has_dirt() )
+					{
+						dirt_array[locPtr->dirt_recno()]->draw_block(xLoc,yLoc);
+					}
+
+					if(terrain_res[locPtr->terrain_id]->can_snow() )
+					{
+						if( config.snow_ground==1 && snow_ground_array.snow_thick > 0)
+						{
+							vga_back.snow_32x32(x,y, snowSeed+xLoc, 0xffff - snow_ground_array.snow_thick);
+						}
+
+						if( config.snow_ground==2)
+						{
+							int snowMapId = snow_ground_array.has_snow(xLoc,yLoc);
+							if( snowMapId )
+							{
+								snow_res[snowMapId]->draw_at(xLoc*ZOOM_LOC_WIDTH+ZOOM_LOC_WIDTH/2, yLoc*ZOOM_LOC_HEIGHT+ZOOM_LOC_HEIGHT/2);
+							}
+						}
+					}
+
+					// --------- draw hill square --------//
+					if( locPtr->has_hill() )
+					{
+						if( locPtr->hill_id2())
+							hill_res[locPtr->hill_id2()]->draw(xLoc,yLoc,1);
+						hill_res[locPtr->hill_id1()]->draw(xLoc, yLoc,1);
+					}
+
+					//---------- if in power map mode -----------//
+
+					if( dispPower && (nationRecno=locPtr->power_nation_recno) > 0 )
+					{
+						vga_back.pixelize_32x32( x, y, nationColorArray[nationRecno] );
+
+						borderColor = nationColorArray[nationRecno] + 1;
+
+						if( yLoc==0 || get_loc(xLoc, yLoc-1)->power_nation_recno!=nationRecno )
+							vga_back.bar( x, y, x+31, y, borderColor );
+
+						if( yLoc==MAX_WORLD_Y_LOC-1 || get_loc(xLoc, yLoc+1)->power_nation_recno!=nationRecno )
+							vga_back.bar( x, y+31, x+31, y+31, borderColor );
+
+						if( xLoc==0 || get_loc(xLoc-1, yLoc)->power_nation_recno!=nationRecno )
+							vga_back.bar( x, y, x, y+31, borderColor );
+
+						if( xLoc==MAX_WORLD_X_LOC-1 || get_loc(xLoc+1, yLoc)->power_nation_recno!=nationRecno )
+							vga_back.bar( x+31, y, x+31, y+31, borderColor );
+					}
+
+					//--------- draw raw material icon ---------//
+
+					if( locPtr->has_site() && locPtr->walkable(3) )		// don't display if a building/object has already been built on the location
+						site_array[locPtr->site_recno()]->draw(x, y);
+
+					//----- draw grids, for debugging only -----//
+
+					#ifdef DEBUG
+						if(debug2_enable_flag)
+						{
+							vga_back.bar( x, y, x+31, y, V_WHITE );
+							vga_back.bar( x, y, x, y+31, V_WHITE );
+
+							// display x, y location
+							if(!(xLoc%5) && !(yLoc%5))
+							{
+								VgaBuf *activeBufBackup = Vga::active_buf;
+								Vga::active_buf = &vga_back;
+								font_std.put( x+4, y+3, xLoc );
+								font_std.put( x+4, y+15, yLoc );
+								Vga::active_buf = activeBufBackup;
+							}
+						}
+					#endif
+				}
 			}
 		}
 	}
@@ -496,7 +500,13 @@ void ZoomMatrix::draw_white_site()
 				continue;
 				
 			if(locPtr->has_unit(UNIT_LAND) || locPtr->has_unit(UNIT_SEA) || locPtr->has_unit(UNIT_AIR))
-				vga_back.bar( x, y, x+31, y+31, V_WHITE );
+			{
+				// Check bounds to prevent buffer overflow
+				if( x >= 0 && y >= 0 && x + 31 < vga_back.buf_width() && y + 31 < vga_back.buf_height() )
+				{
+					vga_back.bar( x, y, x+31, y+31, V_WHITE );
+				}
+			}
 		}
 	}
 }
@@ -1067,14 +1077,20 @@ void ZoomMatrix::put_center_text(int x, int y, const char* str)
 		int y2 = y1 + h - 1;
 		if( x1 < ZOOM_X2 && x2 >= 0 && y1 < ZOOM_HEIGHT && y2 >= 0)
 		{
-			if( x1 < 0 || x2 >= ZOOM_WIDTH || y1 < 0 || y2 >= ZOOM_HEIGHT )
+			// Check bounds to prevent buffer overflow
+			int destX = x1 + ZOOM_X1;
+			int destY = y1 + ZOOM_Y1;
+			if( destX >= 0 && destY >= 0 && destX + w <= vga_back.buf_width() && destY + h <= vga_back.buf_height() )
 			{
-				vga_back.put_bitmap_area_trans( x1+ZOOM_X1, y1+ZOOM_Y1, tempBuffer, 
-					MAX(0,x1)-x1, MAX(0,y1)-y1, MIN(ZOOM_WIDTH-1,x2)-x1, MIN(ZOOM_HEIGHT-1,y2)-y1);
-			}
-			else
-			{
-				vga_back.put_bitmap_trans( x1+ZOOM_X1, y1+ZOOM_Y1, tempBuffer );
+				if( x1 < 0 || x2 >= ZOOM_WIDTH || y1 < 0 || y2 >= ZOOM_HEIGHT )
+				{
+					vga_back.put_bitmap_area_trans( destX, destY, tempBuffer, 
+						MAX(0,x1)-x1, MAX(0,y1)-y1, MIN(ZOOM_WIDTH-1,x2)-x1, MIN(ZOOM_HEIGHT-1,y2)-y1);
+				}
+				else
+				{
+					vga_back.put_bitmap_trans( destX, destY, tempBuffer );
+				}
 			}
 		}
 	}
@@ -1866,14 +1882,23 @@ void ZoomMatrix::draw_objects_now(DynArray* unitArray, int displayLayer)
 
 					if( x2 >= 0 && x1 < ZOOM_WIDTH && y2 >= 0 && y1 < ZOOM_HEIGHT )
 					{
-						if( x1 < 0 || x2 >= ZOOM_WIDTH || y1 < 0 || y2 >= ZOOM_HEIGHT )
+						// Check bounds to prevent buffer overflow
+						int destX = x1+ZOOM_X1;
+						int destY = y1+ZOOM_Y1;
+						int flameWidth = Flame::default_width(f);
+						int flameHeight = Flame::default_height(f);
+						
+						if( destX >= 0 && destY >= 0 && destX + flameWidth <= vga_back.buf_width() && destY + flameHeight <= vga_back.buf_height() )
 						{
-							vga_back.put_bitmap_area_trans( x1+ZOOM_X1, y1+ZOOM_Y1, (char *)flame[f].bitmap,
-								MAX(0,x1)-x1, MAX(0,y1)-y1, MIN(ZOOM_WIDTH-1,x2)-x1, MIN(ZOOM_HEIGHT-1,y2)-y1 );
-						}
-						else
-						{
-							vga_back.put_bitmap_trans( x1+ZOOM_X1, y1+ZOOM_Y1, (char *)flame[f].bitmap );
+							if( x1 < 0 || x2 >= ZOOM_WIDTH || y1 < 0 || y2 >= ZOOM_HEIGHT )
+							{
+								vga_back.put_bitmap_area_trans( destX, destY, (char *)flame[f].bitmap,
+									MAX(0,x1)-x1, MAX(0,y1)-y1, MIN(ZOOM_WIDTH-1,x2)-x1, MIN(ZOOM_HEIGHT-1,y2)-y1 );
+							}
+							else
+							{
+								vga_back.put_bitmap_trans( destX, destY, (char *)flame[f].bitmap );
+							}
 						}
 					}
 				}
@@ -1965,6 +1990,10 @@ void ZoomMatrix::put_bitmap_clip(int x, int y, char* bitmapPtr, int compressedFl
 	int x2 = x + *((short*)bitmapPtr) 	  - 1;
 	int y2 = y + *(((short*)bitmapPtr)+1) - 1;
 
+	// Check bounds to prevent buffer overflow
+	if( x < 0 || y < 0 || x2 >= vga_back.buf_width() || y2 >= vga_back.buf_height() )
+		return;
+
 	if( x2 < ZOOM_X1 || y2 < ZOOM_Y1 || x > ZOOM_X2 || y > ZOOM_Y2 )
 		return;
 
@@ -1972,15 +2001,19 @@ void ZoomMatrix::put_bitmap_clip(int x, int y, char* bitmapPtr, int compressedFl
 
 	if( x < ZOOM_X1 || x2 > ZOOM_X2 || y < ZOOM_Y1 || y2 > ZOOM_Y2 )
 	{
-		if( compressedFlag )
+		// Check bounds to prevent buffer overflow
+		if( x >= 0 && y >= 0 && x2 < vga_back.buf_width() && y2 < vga_back.buf_height() )
 		{
-			vga_back.put_bitmap_area_trans_decompress( x, y, bitmapPtr,
-				MAX(ZOOM_X1,x)-x, MAX(ZOOM_Y1,y)-y, MIN(ZOOM_X2,x2)-x, MIN(ZOOM_Y2,y2)-y );
-		}
-		else
-		{
-			vga_back.put_bitmap_area_trans( x, y, bitmapPtr,
-				MAX(ZOOM_X1,x)-x, MAX(ZOOM_Y1,y)-y, MIN(ZOOM_X2,x2)-x, MIN(ZOOM_Y2,y2)-y );
+			if( compressedFlag )
+			{
+				vga_back.put_bitmap_area_trans_decompress( x, y, bitmapPtr,
+					MAX(ZOOM_X1,x)-x, MAX(ZOOM_Y1,y)-y, MIN(ZOOM_X2,x2)-x, MIN(ZOOM_Y2,y2)-y );
+			}
+			else
+			{
+				vga_back.put_bitmap_area_trans( x, y, bitmapPtr,
+					MAX(ZOOM_X1,x)-x, MAX(ZOOM_Y1,y)-y, MIN(ZOOM_X2,x2)-x, MIN(ZOOM_Y2,y2)-y );
+			}
 		}
 	}
 
@@ -1988,10 +2021,14 @@ void ZoomMatrix::put_bitmap_clip(int x, int y, char* bitmapPtr, int compressedFl
 
 	else
 	{
-		if( compressedFlag )
-			vga_back.put_bitmap_trans_decompress( x, y, bitmapPtr );
-		else
-			vga_back.put_bitmap_trans( x, y, bitmapPtr );
+		// Check bounds to prevent buffer overflow
+		if( x >= 0 && y >= 0 && x2 < vga_back.buf_width() && y2 < vga_back.buf_height() )
+		{
+			if( compressedFlag )
+				vga_back.put_bitmap_trans_decompress( x, y, bitmapPtr );
+			else
+				vga_back.put_bitmap_trans( x, y, bitmapPtr );
+		}
 	}
 }
 //--------- End of function ZoomMatrix::put_bitmap_clip ---------//
@@ -2057,6 +2094,10 @@ void ZoomMatrix::put_bitmap_remap_clip(int x, int y, char* bitmapPtr, char* colo
 	int x2 = x + *((short*)bitmapPtr) 	  - 1;
 	int y2 = y + *(((short*)bitmapPtr)+1) - 1;
 
+	// Check bounds to prevent buffer overflow
+	if( x < 0 || y < 0 || x2 >= vga_back.buf_width() || y2 >= vga_back.buf_height() )
+		return;
+
 	if( x2 < ZOOM_X1 || y2 < ZOOM_Y1 || x > ZOOM_X2 || y > ZOOM_Y2 )
 		return;
 
@@ -2064,30 +2105,34 @@ void ZoomMatrix::put_bitmap_remap_clip(int x, int y, char* bitmapPtr, char* colo
 
 	if( x < ZOOM_X1 || x2 > ZOOM_X2 || y < ZOOM_Y1 || y2 > ZOOM_Y2 )
 	{
-		if( compressedFlag )
+		// Check bounds to prevent buffer overflow
+		if( x >= 0 && y >= 0 && x2 < vga_back.buf_width() && y2 < vga_back.buf_height() )
 		{
-			if( colorRemapTable )
+			if( compressedFlag )
 			{
-				vga_back.put_bitmap_area_trans_remap_decompress( x, y, bitmapPtr,
-					MAX(ZOOM_X1,x)-x, MAX(ZOOM_Y1,y)-y, MIN(ZOOM_X2,x2)-x, MIN(ZOOM_Y2,y2)-y, colorRemapTable );
+				if( colorRemapTable )
+				{
+					vga_back.put_bitmap_area_trans_remap_decompress( x, y, bitmapPtr,
+						MAX(ZOOM_X1,x)-x, MAX(ZOOM_Y1,y)-y, MIN(ZOOM_X2,x2)-x, MIN(ZOOM_Y2,y2)-y, colorRemapTable );
+				}
+				else
+				{
+					vga_back.put_bitmap_area_trans_decompress( x, y, bitmapPtr,
+						MAX(ZOOM_X1,x)-x, MAX(ZOOM_Y1,y)-y, MIN(ZOOM_X2,x2)-x, MIN(ZOOM_Y2,y2)-y );
+				}
 			}
 			else
 			{
-				vga_back.put_bitmap_area_trans_decompress( x, y, bitmapPtr,
-					MAX(ZOOM_X1,x)-x, MAX(ZOOM_Y1,y)-y, MIN(ZOOM_X2,x2)-x, MIN(ZOOM_Y2,y2)-y );
-			}
-		}
-		else
-		{
-			if( colorRemapTable )
-			{
-				vga_back.put_bitmap_area_trans_remap( x, y, bitmapPtr,
-					MAX(ZOOM_X1,x)-x, MAX(ZOOM_Y1,y)-y, MIN(ZOOM_X2,x2)-x, MIN(ZOOM_Y2,y2)-y, colorRemapTable );
-			}
-			else
-			{
-				vga_back.put_bitmap_area_trans( x, y, bitmapPtr,
-					MAX(ZOOM_X1,x)-x, MAX(ZOOM_Y1,y)-y, MIN(ZOOM_X2,x2)-x, MIN(ZOOM_Y2,y2)-y );
+				if( colorRemapTable )
+				{
+					vga_back.put_bitmap_area_trans_remap( x, y, bitmapPtr,
+						MAX(ZOOM_X1,x)-x, MAX(ZOOM_Y1,y)-y, MIN(ZOOM_X2,x2)-x, MIN(ZOOM_Y2,y2)-y, colorRemapTable );
+				}
+				else
+				{
+					vga_back.put_bitmap_area_trans( x, y, bitmapPtr,
+						MAX(ZOOM_X1,x)-x, MAX(ZOOM_Y1,y)-y, MIN(ZOOM_X2,x2)-x, MIN(ZOOM_Y2,y2)-y );
+				}
 			}
 		}
 	}
@@ -2096,19 +2141,23 @@ void ZoomMatrix::put_bitmap_remap_clip(int x, int y, char* bitmapPtr, char* colo
 
 	else
 	{
-		if( compressedFlag )
+		// Check bounds to prevent buffer overflow
+		if( x >= 0 && y >= 0 && x2 < vga_back.buf_width() && y2 < vga_back.buf_height() )
 		{
-			if( colorRemapTable )
-				vga_back.put_bitmap_trans_remap_decompress( x, y, bitmapPtr, colorRemapTable );
+			if( compressedFlag )
+			{
+				if( colorRemapTable )
+					vga_back.put_bitmap_trans_remap_decompress( x, y, bitmapPtr, colorRemapTable );
+				else
+					vga_back.put_bitmap_trans_decompress( x, y, bitmapPtr );
+			}
 			else
-				vga_back.put_bitmap_trans_decompress( x, y, bitmapPtr );
-		}
-		else
-		{
-			if( colorRemapTable )
-				vga_back.put_bitmap_trans_remap( x, y, bitmapPtr, colorRemapTable );
-			else
-				vga_back.put_bitmap_trans( x, y, bitmapPtr );
+			{
+				if( colorRemapTable )
+					vga_back.put_bitmap_trans_remap( x, y, bitmapPtr, colorRemapTable );
+				else
+					vga_back.put_bitmap_trans( x, y, bitmapPtr );
+			}
 		}
 	}
 }
