@@ -660,6 +660,9 @@ int Town::protection_needed()
 
 	for( int i=linked_firm_count-1 ; i>=0 ; i-- )
 	{
+		if( !linked_firm_array[i] || firm_array.is_deleted(linked_firm_array[i]) )
+			continue;
+
 		firmPtr = firm_array[ linked_firm_array[i] ];
 
 		if( firmPtr->nation_recno != nation_recno )
@@ -697,6 +700,9 @@ int Town::protection_available()
 
 	for( int i=linked_firm_count-1 ; i>=0 ; i-- )
 	{
+		if( !linked_firm_array[i] || firm_array.is_deleted(linked_firm_array[i]) )
+			continue;
+
 		firmPtr = firm_array[ linked_firm_array[i] ];
 
 		if( firmPtr->nation_recno != nation_recno )
@@ -748,6 +754,9 @@ int Town::think_build_market()
 
 	for(int i=0; i<linked_firm_count; i++)
 	{
+		if( !linked_firm_array[i] || firm_array.is_deleted(linked_firm_array[i]) )
+			continue;
+
 		firmPtr = (FirmMarket*) firm_array[linked_firm_array[i]];
 
 		if(firmPtr->firm_id!=FIRM_MARKET)
@@ -788,6 +797,8 @@ int Town::think_build_camp()
 	// Only restrict building a camp if there is already at least one camp next to the town
 	int existingCampCount = 0;
 	for(int i=linked_firm_count-1; i>=0; --i) {
+		if( !linked_firm_array[i] || firm_array.is_deleted(linked_firm_array[i]) )
+			continue;
 		Firm* firmPtr = firm_array[linked_firm_array[i]];
 		if(firmPtr->firm_id == FIRM_CAMP && firmPtr->nation_recno == nation_recno)
 			existingCampCount++;
@@ -804,7 +815,8 @@ int Town::think_build_camp()
 
 	for(int i=linked_firm_count-1; i>=0; --i)
 	{
-		err_when(firm_array.is_deleted(linked_firm_array[i]));
+		if( !linked_firm_array[i] || firm_array.is_deleted(linked_firm_array[i]) )
+			continue;
 
 		firmPtr = firm_array[linked_firm_array[i]];
 
@@ -883,6 +895,9 @@ void Town::update_product_supply()
 
 	for( int i=linked_firm_count-1 ; i>=0 ; i-- )
 	{
+		if( !linked_firm_array[i] || firm_array.is_deleted(linked_firm_array[i]) )
+			continue;
+
 		firmPtr = (FirmMarket*) firm_array[ linked_firm_array[i] ];
 
 		if( firmPtr->nation_recno != nation_recno ||
@@ -1433,6 +1448,9 @@ int Town::think_attack_linked_enemy()
 		if( linked_firm_enable_array[i] != LINK_EE )		// don't attack if the link is not enabled
 			continue;
 
+		if( !linked_firm_array[i] || firm_array.is_deleted(linked_firm_array[i]) )
+			continue;
+
 		firmPtr = firm_array[ linked_firm_array[i] ];
 
 		if( firmPtr->nation_recno == nation_recno )
@@ -1522,6 +1540,9 @@ void Town::think_capture_linked_firm()
 
 	for( int i=linked_firm_count-1 ; i>=0 ; i-- )
 	{
+		if( !linked_firm_array[i] || firm_array.is_deleted(linked_firm_array[i]) )
+			continue;
+
 		firmPtr = firm_array[ linked_firm_array[i] ];
 
 		if( firmPtr->nation_recno == nation_recno )		// this is our own firm

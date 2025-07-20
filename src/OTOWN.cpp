@@ -838,6 +838,9 @@ void Town::set_nation(int newNationRecno)
 
 	for( i=0 ; i<linked_firm_count ; i++ )
 	{
+		if( !linked_firm_array[i] || firm_array.is_deleted(linked_firm_array[i]) )
+			continue;
+
 		firmPtr = firm_array[ linked_firm_array[i] ];
 
 		if( firmPtr->firm_ai )		// tell linked firms that this town has changed nation
@@ -1263,6 +1266,9 @@ void Town::update_target_loyalty()
 		if( linked_firm_enable_array[i] != LINK_EE )
 			continue;
 
+		if( !linked_firm_array[i] || firm_array.is_deleted(linked_firm_array[i]) )
+			continue;
+
 		firmPtr = firm_array[linked_firm_array[i]];
 
 		if( firmPtr->firm_id!=FIRM_CAMP || !firmPtr->overseer_recno )
@@ -1340,6 +1346,9 @@ void Town::update_target_loyalty()
 
 	for( i=0 ; i<linked_firm_count ; i++ )
 	{
+		if( !linked_firm_array[i] || firm_array.is_deleted(linked_firm_array[i]) )
+			continue;
+
 		firmPtr = firm_array[linked_firm_array[i]];
 
 		if( firmPtr->firm_id != FIRM_CAMP )
