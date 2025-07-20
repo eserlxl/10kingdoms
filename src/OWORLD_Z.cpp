@@ -346,6 +346,14 @@ void ZoomMatrix::draw()
 
 		for( x=image_x1,xLoc=top_x_loc ; xLoc<maxXLoc ; xLoc++, x+=loc_width, locPtr++ )
 		{
+			// Skip drawing if in mini map area to prevent overwriting
+			if( x >= MAP_X1 && y >= MAP_Y1 && x <= MAP_X2 && y <= MAP_Y2 )
+				continue;
+				
+			// Skip drawing if in info panel area to prevent overwriting
+			if( x >= INFO_X1 && y >= INFO_Y1 && x <= INFO_X2 && y <= INFO_Y2 )
+				continue;
+				
 			if( locPtr->explored() )		// only draw if the location has been explored
 			{
 				//---------- draw terrain bitmap -----------//
@@ -479,6 +487,14 @@ void ZoomMatrix::draw_white_site()
 
 		for( x=image_x1,xLoc=top_x_loc ; xLoc<maxXLoc ; xLoc++, x+=loc_width, locPtr++ )
 		{
+			// Skip drawing if in mini map area to prevent overwriting
+			if( x >= MAP_X1 && y >= MAP_Y1 && x <= MAP_X2 && y <= MAP_Y2 )
+				continue;
+				
+			// Skip drawing if in info panel area to prevent overwriting
+			if( x >= INFO_X1 && y >= INFO_Y1 && x <= INFO_X2 && y <= INFO_Y2 )
+				continue;
+				
 			if(locPtr->has_unit(UNIT_LAND) || locPtr->has_unit(UNIT_SEA) || locPtr->has_unit(UNIT_AIR))
 				vga_back.bar( x, y, x+31, y+31, V_WHITE );
 		}
