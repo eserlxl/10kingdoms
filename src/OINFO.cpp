@@ -471,19 +471,19 @@ int Info::detect()
 {
 	//------------ detect objects ------------//
 
-	if( firm_array.selected_recno )
+	if( firm_array.selected_recno && !firm_array.is_deleted(firm_array.selected_recno) )
 	{
 		firm_array[firm_array.selected_recno]->detect_info_both();
 	}
-	else if( town_array.selected_recno )
+	else if( town_array.selected_recno && !town_array.is_deleted(town_array.selected_recno) )
 	{
 		town_array[town_array.selected_recno]->detect_info();
 	}
-	else if( site_array.selected_recno )
+	else if( site_array.selected_recno && !site_array.is_deleted(site_array.selected_recno) )
 	{
 		site_array[site_array.selected_recno]->detect_info();
 	}
-	else if( unit_array.selected_recno )
+	else if( unit_array.selected_recno && !unit_array.is_deleted(unit_array.selected_recno) )
 	{
 		unit_array[unit_array.selected_recno]->detect_info();
 	}
