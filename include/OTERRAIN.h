@@ -113,7 +113,10 @@ struct TerrainInfo
 
 	char *get_bitmap(unsigned frameNo);
 	int	can_snow()						{ return flags & TERRAIN_FLAG_SNOW; }
-	~TerrainInfo() { if (bitmap_ptr) { mem_del(bitmap_ptr); bitmap_ptr = nullptr; } }
+	~TerrainInfo() {
+		if (bitmap_ptr) { mem_del(bitmap_ptr); bitmap_ptr = nullptr; }
+		if (anim_bitmap_ptr) { mem_del(anim_bitmap_ptr); anim_bitmap_ptr = nullptr; }
+	}
 };
 
 //------------ Define struct TerrainType ---------------//
