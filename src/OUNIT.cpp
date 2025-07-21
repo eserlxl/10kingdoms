@@ -529,9 +529,14 @@ void Unit::deinit()
 
 	else if( unit_mode == UNIT_MODE_CONSTRUCT )
 	{
-		err_when( firm_array[unit_mode_para]->builder_recno != sprite_recno );
-
-		firm_array[unit_mode_para]->builder_recno = 0;
+		Firm* firm = firm_array[unit_mode_para];
+		if (firm) {
+			err_when(firm->builder_recno != sprite_recno);
+			firm->builder_recno = 0;
+		} else {
+			// Log error: invalid unit_mode_para or deleted firm
+			err_when(1); // or replace with your logger if available
+		}
 	}
 
    //-------- if this is a spy ---------//
