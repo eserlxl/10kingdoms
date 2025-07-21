@@ -75,6 +75,9 @@ Unit::Unit()
    // unit_id = 0;
 	memset( sizeof(Sprite) + (char *)this, 0, sizeof(Unit) - sizeof(Sprite));
 	// ##### patch end Gilbert 21/1 ######//
+	result_node_array = nullptr;
+	way_point_array = nullptr;
+	team_info = nullptr;
 }
 //----------- End of function Unit::Unit -----------//
 
@@ -432,6 +435,19 @@ void Unit::init_sprite(int startXLoc, int startYLoc)
 
 void Unit::deinit()
 {
+	if (result_node_array) {
+		mem_del(result_node_array);
+		result_node_array = nullptr;
+	}
+	if (way_point_array) {
+		mem_del(way_point_array);
+		way_point_array = nullptr;
+	}
+	if (team_info) {
+		mem_del(team_info);
+		team_info = nullptr;
+	}
+
 	err_when( unit_array.is_truly_deleted(sprite_recno) );
 
    if( !unit_id )

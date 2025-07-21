@@ -377,6 +377,13 @@ int File::file_put_short_array(int16_t *out, int count)
 int File::file_get_short_array(int16_t *in, int count)
 {
 	err_when( !file_handle );
+	if (!in) {
+		if (handle_error)
+			err.run("[File::file_get_short_array] null pointer passed for array\n");
+		else
+			ERR("[File::file_get_short_array] null pointer passed for array\n");
+		return 0;
+	}
 
 	unsigned arrayBytes = count*sizeof(int16_t);
 	unsigned bytesToRead = arrayBytes;

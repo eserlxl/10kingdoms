@@ -288,6 +288,7 @@ int Unit::read_file(File* filePtr)
 		if (result_node_array)
 		{
 			mem_del(result_node_array);
+			result_node_array = nullptr;
 		}
 		
 		result_node_array = (ResultNode*) mem_add(sizeof(ResultNode) * result_node_count);
@@ -314,6 +315,7 @@ int Unit::read_file(File* filePtr)
 		if (way_point_array)
 		{
 			mem_del(way_point_array);
+			way_point_array = nullptr;
 		}
 		
 		way_point_array = (ResultNode*) mem_add(sizeof(ResultNode)*way_point_array_size);
@@ -335,6 +337,7 @@ int Unit::read_file(File* filePtr)
 		if (team_info)
 		{
 			mem_del(team_info);
+			team_info = nullptr;
 		}
 		
 		team_info = (TeamInfo*) mem_add(sizeof(TeamInfo));
@@ -1766,21 +1769,38 @@ static void read_ai_info(File* filePtr, short** aiInfoArrayPtr, short& aiInfoCou
 	aiInfoCount = filePtr->file_get_short();
 	aiInfoSize  = filePtr->file_get_short();
 
-	// Use the minimum of aiInfoCount and aiInfoSize to prevent buffer overflow
-	short actualSize = (aiInfoCount < aiInfoSize) ? aiInfoCount : aiInfoSize;
-	
-	// Free existing memory if it exists to prevent memory leaks
-	if (*aiInfoArrayPtr)
-	{
-		mem_del(*aiInfoArrayPtr);
-		*aiInfoArrayPtr = NULL;
+	// Validate sizes
+	if (aiInfoCount < 0 || aiInfoSize < 0 || aiInfoCount > 10000 || aiInfoSize > 10000) {
+		// Invalid/corrupt data, do not allocate
+		if (*aiInfoArrayPtr) {
+			mem_del(*aiInfoArrayPtr);
+			*aiInfoArrayPtr = nullptr;
+		}
+		aiInfoCount = 0;
+		aiInfoSize = 0;
+		return;
 	}
-	
-	*aiInfoArrayPtr = (short*) mem_add( actualSize * sizeof(short) );
 
-	filePtr->file_get_short_array( *aiInfoArrayPtr, actualSize );
-	
-	// Update aiInfoCount to reflect the actual number of elements read
+	short actualSize = (aiInfoCount < aiInfoSize) ? aiInfoCount : aiInfoSize;
+
+	if (*aiInfoArrayPtr) {
+		mem_del(*aiInfoArrayPtr);
+		*aiInfoArrayPtr = nullptr;
+	}
+
+	if (actualSize > 0) {
+		*aiInfoArrayPtr = (short*) mem_add(actualSize * sizeof(short));
+		if (*aiInfoArrayPtr) {
+			filePtr->file_get_short_array(*aiInfoArrayPtr, actualSize);
+		} else {
+			aiInfoCount = 0;
+			aiInfoSize = 0;
+			return;
+		}
+	} else {
+		*aiInfoArrayPtr = nullptr;
+	}
+
 	aiInfoCount = actualSize;
 	aiInfoSize = actualSize;
 }
