@@ -296,12 +296,7 @@ err:
 	}
 	
 	// Clear any OpenAL errors that might have occurred during initialization
-	while (alGetError() != AL_NO_ERROR)
-	{
-		// Just clear the error queue
-	}
-	
-	return 0;
+	alGetError();
 }
 
 void OpenALAudio::deinit_wav()
@@ -339,10 +334,7 @@ void OpenALAudio::deinit_wav()
 		alDeleteBuffers(0, NULL);  // Delete all buffers
 		
 		// Clear any OpenAL errors that might have occurred during cleanup
-		while (alGetError() != AL_NO_ERROR)
-		{
-			// Just clear the error queue
-		}
+		alGetError();
 		
 		// Unset current context before destroying
 		alcMakeContextCurrent(NULL);
@@ -358,10 +350,7 @@ void OpenALAudio::deinit_wav()
 	
 	// Final cleanup to ensure no OpenAL resources remain
 	// This helps prevent memory leaks from OpenAL internal structures
-	while (alGetError() != AL_NO_ERROR)
-	{
-		// Just clear the error queue
-	}
+	alGetError();
 }
 
 // Initialize MIDI mid driver
@@ -1079,10 +1068,7 @@ OpenALAudio::StreamContext::~StreamContext()
 		alDeleteSources(1, &this->source);
 		
 		// Clear any OpenAL errors that might have occurred during cleanup
-		while (alGetError() != AL_NO_ERROR)
-		{
-			// Just clear the error queue
-		}
+		alGetError();
 	}
 	
 	if (this->stream)
