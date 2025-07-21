@@ -869,6 +869,8 @@ int Unit::idle_detect_unit_checking(short targetRecno)
 int Unit::idle_detect_firm_checking(short targetRecno)
 {
    Firm *firmPtr = firm_array[targetRecno];
+   if (!firmPtr)
+      return 0;
 
 	//------------ code to select firm for attacking -----------//
 	switch(firmPtr->firm_id)
