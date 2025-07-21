@@ -294,6 +294,13 @@ void Game::deinit(int loadGameCall)
 	monster_res.deinit();
 
 	sprite_res.deinit();
+
+	// Clear all cached SpriteInfo* pointers in all SpriteArray-derived arrays
+	unit_array.clear_all_ptrs();
+	bullet_array.clear_all_ptrs();
+	rebel_array.clear_all_ptrs();
+	spy_array.clear_all_ptrs();
+	effect_array.clear_all_ptrs();
 	sprite_frame_res.deinit();
 	unit_res.deinit();
 

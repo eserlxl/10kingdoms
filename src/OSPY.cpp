@@ -1503,3 +1503,14 @@ int Spy::get_assassinate_rating(int targetUnitRecno, int& attackRating, int& def
 	return 1;
 }
 //---------- End of function Spy::get_assassinate_rating --------//
+
+
+// Implementation for clearing all cached SpriteInfo* pointers in SpyArray
+void SpyArray::clear_all_ptrs() {
+    for (int i = 1; i <= size(); ++i) {
+        Spy* spyPtr = (Spy*)get_ptr(i);
+        if (spyPtr) {
+            spyPtr->clear_ptr();
+        }
+    }
+}

@@ -139,6 +139,7 @@ public:
 	#endif
 
 	int   	is_deleted(int recNo)   { return get_ptr(recNo) == NULL; }
+	void clear_all_ptrs();
 };
 
 

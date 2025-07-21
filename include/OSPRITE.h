@@ -182,6 +182,8 @@ public:
 
 	virtual void process();
 
+	virtual void clear_all_ptrs();
+
 	#ifdef DYNARRAY_DEBUG_ELEMENT_ACCESS
 		Sprite* operator[](int recNo);
 	#else

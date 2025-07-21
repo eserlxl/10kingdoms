@@ -194,6 +194,7 @@ public:
 	#endif
 
 	int     is_deleted(int recNo);
+	void clear_all_ptrs();
 };
 
 inline int SpyArray::is_deleted(int recNo)

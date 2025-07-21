@@ -1125,3 +1125,12 @@ Rebel* RebelArray::operator[](int recNo)
 //--------- End of function RebelArray::operator[] ----//
 
 #endif
+
+void RebelArray::clear_all_ptrs() {
+    for (int i = 1; i <= size(); ++i) {
+        Rebel* rebelPtr = (Rebel*)get_ptr(i);
+        if (rebelPtr) {
+            rebelPtr->clear_ptr();
+        }
+    }
+}

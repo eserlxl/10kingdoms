@@ -376,3 +376,13 @@ int Sprite::is_shealth()
 	return config.fog_of_war && world.get_loc(cur_x_loc(), cur_y_loc())->visibility() <= EXPLORED_VISIBILITY;
 }
 // ---------- End of function Sprite::is_shealth --------//
+
+// Implementation for clearing all cached SpriteInfo* pointers in SpriteArray-derived arrays
+void SpriteArray::clear_all_ptrs() {
+    for (int i = 1; i <= size(); ++i) {
+        Sprite* spritePtr = (Sprite*)get_ptr(i);
+        if (spritePtr) {
+            spritePtr->clear_ptr();
+        }
+    }
+}
