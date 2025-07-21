@@ -150,9 +150,16 @@ int UnitArray::read_file(File* filePtr)
       }
       else
       {
+         //----- validate unitId before creating unit -----------//
+         if( unitId < 1 || unitId > unit_res.unit_info_count ) {
+#ifdef DEBUG
+            err_here(); // Invalid unitId in save file
+#else
+            return 0; // Abort loading on invalid unitId
+#endif
+         }
          //----- create unit object -----------//
-
-			unitPtr = create_unit( unitId );
+         unitPtr = create_unit( unitId );
          unitPtr->unit_id = unitId;
 
          //---- read data in base class -----//
