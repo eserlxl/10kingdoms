@@ -1291,7 +1291,10 @@ int FirmCamp::think_attack_nearby_enemy()
 
 			if( locPtr->has_unit(UNIT_LAND) )
 			{
-				unitPtr = unit_array[ locPtr->unit_recno(UNIT_LAND) ];
+				int recno = locPtr->unit_recno(UNIT_LAND);
+				if( !recno || unit_array.is_deleted(recno) )
+					continue;
+				unitPtr = unit_array[recno];
 
 				if( !unitPtr->nation_recno )
 					continue;

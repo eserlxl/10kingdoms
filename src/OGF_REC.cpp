@@ -948,7 +948,7 @@ void Unit::write_record(UnitGF *r)
 	WriteInt8(aggressive_mode);
 	WriteInt8(seek_path_fail_count);
 	WriteInt8(ignore_power_nation);
-	r->has_team_info = team_info ? 0xdeadbeef : 0;
+	r->has_team_info = team_info ? 1 : 0;
 }
 
 void Unit::read_record(UnitGF *r)
@@ -1046,7 +1046,7 @@ void Unit::read_record(UnitGF *r)
 	ReadInt8(aggressive_mode);
 	ReadInt8(seek_path_fail_count);
 	ReadInt8(ignore_power_nation);
-	team_info = r->has_team_info ? (TeamInfo*)0xdeadbeef : 0;
+	team_info = r->has_team_info ? (TeamInfo*)1 : nullptr;
 }
 
 void CaravanStop::write_record(CaravanStopGF *r)

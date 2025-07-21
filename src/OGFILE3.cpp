@@ -274,6 +274,12 @@ int Unit::read_file(File* filePtr)
 
 	//--------------- read in memory data ----------------//
 
+	// Fix: Only free if not the 0xdeadbeef marker
+	if( result_node_array && result_node_array != (ResultNode*)0xdeadbeef )
+	{
+		mem_del(result_node_array);
+	}
+	result_node_array = nullptr;
 	if( result_node_array )
 	{
 		ResultNodeGF *node_record_array = (ResultNodeGF*) mem_add(sizeof(ResultNode)*result_node_count);
@@ -282,13 +288,6 @@ int Unit::read_file(File* filePtr)
 		{
 			mem_del(node_record_array);
 			return 0;
-		}
-		
-		// Free existing memory if it exists to prevent memory leaks
-		if (result_node_array)
-		{
-			mem_del(result_node_array);
-			result_node_array = nullptr;
 		}
 		
 		result_node_array = (ResultNode*) mem_add(sizeof(ResultNode) * result_node_count);
@@ -301,7 +300,12 @@ int Unit::read_file(File* filePtr)
 	}
 
 	//### begin alex 15/10 ###//
-	if(way_point_array)
+	if( way_point_array && way_point_array != (ResultNode*)0xdeadbeef )
+	{
+		mem_del(way_point_array);
+	}
+	way_point_array = nullptr;
+	if( way_point_array )
 	{
 		ResultNodeGF *node_record_array = (ResultNodeGF*) mem_add(sizeof(ResultNodeGF)*way_point_array_size);
 
@@ -309,13 +313,6 @@ int Unit::read_file(File* filePtr)
 		{
 			mem_del(node_record_array);
 			return 0;
-		}
-		
-		// Free existing memory if it exists to prevent memory leaks
-		if (way_point_array)
-		{
-			mem_del(way_point_array);
-			way_point_array = nullptr;
 		}
 		
 		way_point_array = (ResultNode*) mem_add(sizeof(ResultNode)*way_point_array_size);
@@ -330,16 +327,11 @@ int Unit::read_file(File* filePtr)
 
 	if( team_info )
 	{
-		if( !filePtr->file_read(&gf_rec, sizeof(TeamInfoGF)) )
-			return 0;
-		
-		// Free existing memory if it exists to prevent memory leaks
-		if (team_info)
-		{
-			mem_del(team_info);
-			team_info = nullptr;
-		}
-		
+		mem_del(team_info);
+	}
+	team_info = nullptr;
+	if( filePtr->file_read(&gf_rec, sizeof(TeamInfoGF)) )
+	{
 		team_info = (TeamInfo*) mem_add(sizeof(TeamInfo));
 		team_info->read_record(&gf_rec.team_info);
 	}
