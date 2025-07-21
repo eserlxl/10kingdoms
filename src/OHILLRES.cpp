@@ -78,8 +78,18 @@ void HillRes::deinit()
 {
 	if( init_flag )
 	{
+		// Free each hillBlockInfo->bitmap_ptr
+		if (hill_block_info_array) {
+			for (int i = 0; i < hill_block_count; ++i) {
+				if (hill_block_info_array[i].bitmap_ptr) {
+					mem_del(hill_block_info_array[i].bitmap_ptr);
+					hill_block_info_array[i].bitmap_ptr = nullptr;
+				}
+			}
+		}
 		mem_del(first_block_index);
 		mem_del(hill_block_info_array);
+		hill_block_info_array = nullptr;
 		init_flag=0;
 	}
 }

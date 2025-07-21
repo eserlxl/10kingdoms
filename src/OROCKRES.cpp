@@ -108,10 +108,23 @@ void RockRes::deinit()
 {
 	if(init_flag)
 	{
+		// Free each rockBitmapInfo->bitmap_ptr
+		if (rock_bitmap_array) {
+			for (int i = 0; i < rock_bitmap_count; ++i) {
+				if (rock_bitmap_array[i].bitmap_ptr) {
+					mem_del(rock_bitmap_array[i].bitmap_ptr);
+					rock_bitmap_array[i].bitmap_ptr = nullptr;
+				}
+			}
+		}
 		mem_del(rock_info_array);
 		mem_del(rock_block_array);
 		mem_del(rock_bitmap_array);
+		rock_info_array = nullptr;
+		rock_block_array = nullptr;
+		rock_bitmap_array = nullptr;
 		mem_del(rock_anim_array);
+		rock_anim_array = nullptr;
 		rock_info_count = 0;
 		rock_block_count = 0;
 		rock_bitmap_count = 0;

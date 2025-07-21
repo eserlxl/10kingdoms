@@ -90,6 +90,15 @@ void FirmRes::deinit()
 {
 	if( init_flag )
 	{
+		// Free each firmBitmap->bitmap_ptr
+		if (firm_bitmap_array) {
+			for (int i = 0; i < firm_bitmap_count; ++i) {
+				if (firm_bitmap_array[i].bitmap_ptr) {
+					mem_del(firm_bitmap_array[i].bitmap_ptr);
+					firm_bitmap_array[i].bitmap_ptr = nullptr;
+				}
+			}
+		}
 		mem_del(firm_info_array);
 		firm_info_array = nullptr;
 		mem_del(firm_build_array);
@@ -98,7 +107,6 @@ void FirmRes::deinit()
 		firm_bitmap_array = nullptr;
 
 		res_bitmap.deinit();
-
 		init_flag=0;
 	}
 }
