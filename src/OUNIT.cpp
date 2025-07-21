@@ -2861,7 +2861,10 @@ void Unit::process_way_point()
 
 TeamInfo::TeamInfo()
 {
-	memset( this, 0, sizeof(TeamInfo) );
+	member_count = 0;
+	for (int i = 0; i < MAX_TEAM_MEMBER; ++i)
+		member_unit_array[i] = 0;
+	ai_last_request_defense_date = 0;
 }
 //----------- End of function TeamInfo::TeamInfo ---------//
 

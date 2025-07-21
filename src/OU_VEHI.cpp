@@ -25,6 +25,15 @@
 #include <OUNITRES.h>
 #include <OU_VEHI.h>
 
+//--------- Begin of function UnitVehicle::UnitVehicle ---------//
+UnitVehicle::UnitVehicle() : Unit()
+{
+	solider_hit_points = 0;
+	vehicle_hit_points = 0;
+}
+//--------- End of function UnitVehicle::UnitVehicle ---------//
+
+
 //--------- Begin of function UnitVehicle::set_combat_level ---------//
 //
 void UnitVehicle::set_combat_level(int combatLevel)

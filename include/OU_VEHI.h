@@ -41,6 +41,7 @@ public:
 	short vehicle_hit_points;		// the original hit points of the vehicle before the soliders gets on it
 
 public:
+	UnitVehicle();
 	void	set_combat_level(int);
 	void	dismount();
 
