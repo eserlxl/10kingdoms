@@ -109,7 +109,7 @@ struct CursorInfo
 
 	char* bitmap_ptr;
 
-	~CursorInfo() { if (bitmap_ptr) mem_del(bitmap_ptr); }
+	~CursorInfo() { if (bitmap_ptr) { mem_del(bitmap_ptr); bitmap_ptr = nullptr; } }
 };
 
 //--------- Define class MouseCursor --------//

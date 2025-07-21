@@ -748,6 +748,7 @@ int Nation::find_best_firm_loc(short buildFirmId, short refXLoc, short refYLoc, 
 	//------ release the refective matrix -----//
 
 	mem_del( refMatrix );
+	refMatrix = nullptr;
 
 	return resultXLoc >= 0;
 }

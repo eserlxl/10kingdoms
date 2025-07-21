@@ -1340,7 +1340,7 @@ void Unit::next_move()
 		err_when(next_x_loc()!=move_to_x_loc || next_y_loc()!=move_to_y_loc);
 
       mem_del(result_node_array);
-      result_node_array = NULL;
+      result_node_array = nullptr;
 		set_idle();
 		
 		if(action_mode2==ACTION_MOVE) //--------- used to terminate action_mode==ACTION_MOVE
@@ -1378,7 +1378,7 @@ void Unit::reset_path()
 	if( result_node_array )
 	{
 		mem_del(result_node_array);
-      result_node_array = NULL;
+      result_node_array = nullptr;
 	}
 
 	result_path_dist = result_node_count = result_node_recno = 0;
@@ -2453,7 +2453,7 @@ void Unit::handle_blocked_wait(Unit* unitPtr)
 
 		//---------- deinit data structure -------//
 		mem_del(cycle_wait_unit_array);
-		cycle_wait_unit_array = NULL;
+		cycle_wait_unit_array = nullptr;
 	}
 
 	if(cycleWait)
@@ -2615,7 +2615,7 @@ void Unit::opposite_direction_blocked(short vecX, short vecY, short unitPtrVecX,
 				unitPtr->set_dir(unitPtr->next_x, unitPtr->next_y, next_x, next_y);
 				set_dir(next_x, next_y, unitPtr->next_x, unitPtr->next_y);
 				
-				err_when(unitPtr->result_node_array!=NULL);
+				err_when(unitPtr->result_node_array!=nullptr);
 					
 				unitPtr->result_node_array = (ResultNode*)mem_add(sizeof(ResultNode)*2);
 				ResultNode* nodePtr = unitPtr->result_node_array;
@@ -2653,12 +2653,12 @@ void Unit::opposite_direction_blocked(short vecX, short vecY, short unitPtrVecX,
 
 		#ifdef DEBUG
 			ResultNode* curNode;
-			if(result_node_array!=NULL)
+			if(result_node_array!=nullptr)
 			{
 				curNode = result_node_array + result_node_count - 1;
 				err_when(curNode->node_x!=move_to_x_loc || curNode->node_y!=move_to_y_loc);
 			}
-			if(unitPtr->result_node_array!=NULL)
+			if(unitPtr->result_node_array!=nullptr)
 			{
 				curNode = unitPtr->result_node_array + unitPtr->result_node_count - 1;
 				err_when(curNode->node_x!=unitPtr->move_to_x_loc || curNode->node_y!=unitPtr->move_to_y_loc);
@@ -2708,7 +2708,7 @@ void Unit::terminate_move()
    reset_path();
 	set_idle();
 
-	err_when(result_node_array!=NULL);
+	err_when(result_node_array!=nullptr);
 }
 //------- End of function Unit::terminate_move --------//
 
@@ -2751,7 +2751,7 @@ void Unit::move_to_my_loc(Unit* unitPtr)
 	//------------------------------------------------------------------//
 	// setting for unit pointed by unitPtr
 	//------------------------------------------------------------------//
-	if(result_node_array==NULL)	//************BUGHERE
+	if(result_node_array==nullptr)	//************BUGHERE
 	{
 		err_when(unitPtr->cur_action!=SPRITE_IDLE);
 		unitPtr->move_to(destX, destY, 1); // unit pointed by unitPtr is idle before calling searching
@@ -2759,7 +2759,7 @@ void Unit::move_to_my_loc(Unit* unitPtr)
 	}
 	else	
 	{
-		err_when(result_node_recno<1 || unitPtr->result_node_array!=NULL);
+		err_when(result_node_recno<1 || unitPtr->result_node_array!=nullptr);
 		ResultNode* resultNode = result_node_array+result_node_recno-1;
 		if(go_x == unitPtr->next_x && go_y == unitPtr->next_y)
 		{
@@ -2809,7 +2809,7 @@ void Unit::move_to_my_loc(Unit* unitPtr)
 		unitPtr->next_move();
 
 		#ifdef DEBUG
-			if(unitPtr->result_node_array!=NULL)
+			if(unitPtr->result_node_array!=nullptr)
 			{
 				ResultNode* curNode1 = unitPtr->result_node_array + unitPtr->result_node_recno - 1;
 				err_when(curNode1->node_x!=unitPtr->go_x>>ZOOM_X_SHIFT_COUNT || curNode1->node_y!=unitPtr->go_y>>ZOOM_Y_SHIFT_COUNT);
@@ -2845,7 +2845,7 @@ void Unit::move_to_my_loc(Unit* unitPtr)
 	}
 
 	//---------- note: the cur_dir is already the correct direction ---------------//
-	err_when(result_node_array!=NULL);
+	err_when(result_node_array!=nullptr);
 	result_node_array = (ResultNode*)mem_add(sizeof(ResultNode)*2);
 	ResultNode* nodePtr = result_node_array;
 	nodePtr->node_x = curX;
@@ -2859,7 +2859,7 @@ void Unit::move_to_my_loc(Unit* unitPtr)
 		set_wait();	// wait for the blocking unit to move first
 	
 	#ifdef DEBUG
-		if(result_node_array!=NULL)
+		if(result_node_array!=nullptr)
 		{
 			ResultNode* curNode2 = result_node_array + result_node_recno - 1;
 			err_when(curNode2->node_x!=go_x>>ZOOM_X_SHIFT_COUNT || curNode2->node_y!=go_y>>ZOOM_Y_SHIFT_COUNT);

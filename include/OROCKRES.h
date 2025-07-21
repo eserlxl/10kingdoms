@@ -132,7 +132,7 @@ struct RockBitmapInfo
 	short width()     { return *(short *)bitmap_ptr; }
 	short height()    { return *(((short *)bitmap_ptr)+1); }
 	void	draw(short xLoc, short yLoc);
-	~RockBitmapInfo() { if (bitmap_ptr) mem_del(bitmap_ptr); }
+	~RockBitmapInfo() { if (bitmap_ptr) { mem_del(bitmap_ptr); bitmap_ptr = nullptr; } }
 };
 
 // ------------ Define struct RockAnimInfo --------//

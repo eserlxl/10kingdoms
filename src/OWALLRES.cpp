@@ -80,7 +80,9 @@ void WallRes::deinit()
 	if( init_flag )
 	{
 		mem_del(wall_info_array);
+		wall_info_array = nullptr;
 		mem_del(wall_index);
+		wall_index = nullptr;
 		init_flag=0;
 	}
 }

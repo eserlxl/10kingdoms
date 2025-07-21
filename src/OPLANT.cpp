@@ -86,8 +86,11 @@ void PlantRes::deinit()
 	if( init_flag )
 	{
 		mem_del(plant_info_array);
+		plant_info_array = nullptr;
 		mem_del(plant_bitmap_array);
-      mem_del(scan_id_array);
+		plant_bitmap_array = nullptr;
+		mem_del(scan_id_array);
+		scan_id_array = nullptr;
 		init_flag=0;
 	}
 }

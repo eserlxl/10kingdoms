@@ -111,11 +111,20 @@ void RegionArray::deinit()
 	if( init_flag )
 	{
 		if(region_info_array)
+		{
 			mem_del( region_info_array );
+			region_info_array = nullptr;
+		}
 		if(region_stat_array)
+		{
 			mem_del( region_stat_array );
+			region_stat_array = nullptr;
+		}
 		if(connect_bits)
+		{
 			mem_del( connect_bits );
+			connect_bits = nullptr;
+		}
 
 		init_flag = 0;
 	}

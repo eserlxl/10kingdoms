@@ -260,7 +260,7 @@ struct FirmBitmap
 	char	display_layer;
 
 	void	draw_at(int absX, int absY, char *colorTable, int displayLayer);
-	~FirmBitmap() { if (bitmap_ptr) mem_del(bitmap_ptr); }
+	~FirmBitmap() { if (bitmap_ptr) { mem_del(bitmap_ptr); bitmap_ptr = nullptr; } }
 };
 
 //----------- Define class FirmRes ---------------//

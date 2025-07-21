@@ -157,7 +157,7 @@ void Info::deinit()
 	if( info_background_bitmap )
 	{
 		mem_del( info_background_bitmap );
-		info_background_bitmap = NULL;
+		info_background_bitmap = nullptr;
 	}
 }
 //--------- End of function Info::deinit ---------//
@@ -695,27 +695,27 @@ void Info::rest_game_scr()
 	if(save_buf_4)
 	{
 		vga_front.rest_area(save_buf_4, 1);
-		save_buf_4 = NULL;
+		save_buf_4 = nullptr;
 	}
 	if(save_buf_3)
 	{
 		vga_front.rest_area(save_buf_3, 1);
-		save_buf_3 = NULL;
+		save_buf_3 = nullptr;
 	}
 	if(save_buf_2)
 	{
 		vga_front.rest_area(save_buf_2, 1);
-		save_buf_2 = NULL;
+		save_buf_2 = nullptr;
 	}
 	if(save_buf_1)
 	{
 		vga_front.rest_area(save_buf_1, 1);
-		save_buf_1 = NULL;
+		save_buf_1 = nullptr;
 	}
 	if(save_buf_1b)
 	{
 		vga_back.rest_area(save_buf_1b, 1);
-		save_buf_1b = NULL;
+		save_buf_1b = nullptr;
 	}
 
 	info.disp();
@@ -731,31 +731,31 @@ void Info::free_game_scr()
 	if(save_buf_4)
 	{
 		mem_del(save_buf_4);
-		save_buf_4 = NULL;
+		save_buf_4 = nullptr;
 	}
 
 	if(save_buf_3)
 	{
 		mem_del(save_buf_3);
-		save_buf_3 = NULL;
+		save_buf_3 = nullptr;
 	}
 
 	if(save_buf_2)
 	{
 		mem_del(save_buf_2);
-		save_buf_2 = NULL;
+		save_buf_2 = nullptr;
 	}
 
 	if(save_buf_1)
 	{
 		mem_del(save_buf_1);
-		save_buf_1 = NULL;
+		save_buf_1 = nullptr;
 	}
 
 	if(save_buf_1b)
 	{
 		mem_del(save_buf_1b);
-		save_buf_1b = NULL;
+		save_buf_1b = nullptr;
 	}
 }
 //---------- End of function Info::free_game_scr ---------//

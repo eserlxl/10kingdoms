@@ -70,6 +70,7 @@ void MonsterRes::deinit()
    if( init_flag )
    {
       mem_del(monster_info_array);
+      monster_info_array = nullptr;
       init_flag=0;
    }
 }

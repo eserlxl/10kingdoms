@@ -276,11 +276,17 @@ void TerrainRes::deinit()
 		for( int i = terrain_count-1; i >= 0; --i)
 		{
 			if( terrain_info_array[i].anim_frames > 0 )
+			{
 				mem_del(terrain_info_array[i].anim_bitmap_ptr);
+				terrain_info_array[i].anim_bitmap_ptr = nullptr;
+			}
 		}
 		mem_del(terrain_info_array);
+		terrain_info_array = nullptr;
 		mem_del(ter_sub_array);
+		ter_sub_array = nullptr;
 		mem_del(ter_sub_index);
+		ter_sub_index = nullptr;
 		init_flag=0;
 	}
 }
@@ -931,7 +937,7 @@ void TerrainRes::load_anim_info()
 	}
 
 	mem_del(file_name_array);
-	file_name_array = NULL;
+	file_name_array = nullptr;
 }
 //------------ End of function TerrainRes::load_anim_info -------//
 

@@ -89,6 +89,7 @@ FileTxt::FileTxt(File* filePtr, int dataSize)
 FileTxt::~FileTxt()
 {
    mem_del( data_buf );
+   data_buf = nullptr;
 }
 //---------- End of function FileTxt::~FileTxt ----------//
 

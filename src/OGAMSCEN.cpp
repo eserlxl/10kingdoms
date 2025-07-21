@@ -136,6 +136,7 @@ int Game::select_run_scenario()
 	//-------------------------------------------//
 
 	mem_del(scenInfoArray);
+	scenInfoArray = nullptr;
 
 	return rc;
 }

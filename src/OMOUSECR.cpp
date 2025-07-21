@@ -104,23 +104,24 @@ void MouseCursor::deinit()
 	if( init_flag )
 	{
 		mem_del(cursor_info_array);
+		cursor_info_array = nullptr;
 
 		if( save_scr )
 		{
 			mem_del( save_scr );
-			save_scr = NULL;
+			save_scr = nullptr;
 		}
 
 		if( save_back_scr )
 		{
 			mem_del( save_back_scr );
-			save_back_scr = NULL;
+			save_back_scr = nullptr;
 		}
 
 		if( merge_buf )		// buffer for merging save screen from the front and back buffers
 		{
 			mem_del( merge_buf );
-			merge_buf = NULL;
+			merge_buf = nullptr;
 		}
 
 		init_flag = 0;

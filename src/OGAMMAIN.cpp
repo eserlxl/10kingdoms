@@ -345,17 +345,17 @@ void Game::main_menu()
 				if( menuBitmap )
 				{
 					mem_del(menuBitmap);
-					menuBitmap = NULL;
+					menuBitmap = nullptr;
 				}
 				if( brightBitmap)
 				{
 					mem_del(brightBitmap);
-					brightBitmap = NULL;
+					brightBitmap = nullptr;
 				}
 				if( darkBitmap)
 				{
 					mem_del(darkBitmap);
-					darkBitmap = NULL;
+					darkBitmap = nullptr;
 				}
 
 				run_main_menu_option(i+1);
@@ -382,13 +382,22 @@ void Game::main_menu()
 	music.stop();
 
 	if( menuBitmap )
+	{
 		mem_del(menuBitmap);
+		menuBitmap = nullptr;
+	}
 
 	if( brightBitmap)
+	{
 		mem_del(brightBitmap);
+		brightBitmap = nullptr;
+	}
 
 	if( darkBitmap)
+	{
 		mem_del(darkBitmap);
+		darkBitmap = nullptr;
+	}
 
 	//--------------------------------------//
 
@@ -696,17 +705,17 @@ void Game::single_player_menu()
 				if( menuBitmap )
 				{
 					mem_del(menuBitmap);
-					menuBitmap = NULL;
+					menuBitmap = nullptr;
 				}
 				if( brightBitmap )
 				{
 					mem_del(brightBitmap);
-					brightBitmap = NULL;
+					brightBitmap = nullptr;
 				}
 				if( darkBitmap )
 				{
 					mem_del(darkBitmap);
-					darkBitmap = NULL;
+					darkBitmap = nullptr;
 				}
 
 				refreshFlag = 1;
@@ -753,11 +762,20 @@ void Game::single_player_menu()
 	}
 
 	if( menuBitmap )
+	{
 		mem_del(menuBitmap);
+		menuBitmap = nullptr;
+	}
 	if( brightBitmap )
+	{
 		mem_del(brightBitmap);
+		brightBitmap = nullptr;
+	}
 	if( darkBitmap )
+	{
 		mem_del(darkBitmap);
+		darkBitmap = nullptr;
+	}
 }
 //------------ End of function Game::single_player_menu -----------//
 
@@ -941,17 +959,17 @@ void Game::multi_player_menu(int lobbied, char *game_host)
 				if( menuBitmap )
 				{
 					mem_del(menuBitmap);
-					menuBitmap = NULL;
+					menuBitmap = nullptr;
 				}
 				if( brightBitmap )
 				{
 					mem_del(brightBitmap);
-					brightBitmap = NULL;
+					brightBitmap = nullptr;
 				}
 				if( darkBitmap )
 				{
 					mem_del(darkBitmap);
-					darkBitmap = NULL;
+					darkBitmap = nullptr;
 				}
 				refreshFlag = 1;
 
@@ -995,11 +1013,20 @@ void Game::multi_player_menu(int lobbied, char *game_host)
 	}
 
 	if( menuBitmap )
+	{
 		mem_del(menuBitmap);
+		menuBitmap = nullptr;
+	}
 	if( brightBitmap )
+	{
 		mem_del(brightBitmap);
+		brightBitmap = nullptr;
+	}
 	if( darkBitmap )
+	{
 		mem_del(darkBitmap);
+		darkBitmap = nullptr;
+	}
 }
 //------------ End of function Game::multi_player_menu -----------//
 #endif

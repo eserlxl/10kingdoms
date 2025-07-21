@@ -202,10 +202,10 @@ void Vga::deinit()
 
    if (vga_color_table)
       delete vga_color_table;
-   vga_color_table = NULL;
+   vga_color_table = nullptr;
    if( custom_pal )
       mem_del(custom_pal);
-   custom_pal = NULL;
+   custom_pal = nullptr;
 
    // Clean up SDL resources in reverse order of creation
    if( target )
@@ -350,7 +350,7 @@ void Vga::free_custom_palette()
    if (custom_pal)
    {
       mem_del(custom_pal);
-      custom_pal = NULL; 
+      custom_pal = nullptr;
    }
    vga_front.activate_pal(game_pal);
 }

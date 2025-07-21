@@ -474,7 +474,7 @@ void Unit::deinit()
    if( team_info )
    {
       mem_del(team_info);
-      team_info = NULL;
+      team_info = nullptr;
    }
 
    //---- if this is a general, deinit its link with its soldiers ----//
@@ -1975,7 +1975,7 @@ void Unit::set_rank(int rankId)
 		err_when( !team_info );
 
 		mem_del(team_info);
-		team_info = NULL;
+		team_info = nullptr;
 		team_id   = 0;
 	}
 

@@ -124,7 +124,7 @@ void ColorTable::init(int absScale, int tableSize, BYTE *customTable)
 	table_size = table_size;
 	remap_table = (BYTE *)mem_add(table_size * (2*absScale+1) );
 	memcpy(remap_table, customTable, tableSize * (2*absScale+1) );
-	remap_table_array = (BYTE **)mem_add(sizeof(BYTE *) * (2*absScale+1) );
+	remap_table_array = (BYTE **)mem_add(sizeof(BYTE *) * (2*abs_scale+1) );
 	create_table_array();
 }
 // ---------- end of function ColorTable::init ----------//
@@ -136,12 +136,12 @@ void ColorTable::deinit()
 	if( remap_table )
 	{
 		mem_del( remap_table );
-		remap_table = NULL;
+		remap_table = nullptr;
 	}
 	if( remap_table_array)
 	{
 		mem_del( remap_table_array);
-		remap_table_array = NULL;
+		remap_table_array = nullptr;
 	}
 }
 // ---------- end of function ColorTable::deinit ----------//
@@ -198,7 +198,7 @@ void ColorTable::generate_table(int absScale, PalDesc & palD, RGBColor (*fp)(RGB
 	abs_scale = absScale;
 	table_size = palSize;
 	BYTE *remapEntry = remap_table = (BYTE *)mem_add(table_size * (2*absScale+1) );
-	remap_table_array = (BYTE **)mem_add(sizeof(BYTE *) * (2*absScale+1) );
+	remap_table_array = (BYTE **)mem_add(sizeof(BYTE *) * (2*abs_scale+1) );
 
 	int scale;
 
@@ -371,7 +371,7 @@ void ColorTable::generate_table_fast (int absScale, PalDesc &palD, RGBColor (*fp
 	abs_scale = absScale;
 	table_size = palSize;
 	BYTE *remapEntry = remap_table = (BYTE *)mem_add(table_size * (2*absScale+1) );
-	remap_table_array = (BYTE **)mem_add(sizeof(BYTE *) * (2*absScale+1) );
+	remap_table_array = (BYTE **)mem_add(sizeof(BYTE *) * (2*abs_scale+1) );
 
 	int scale;
 
@@ -859,7 +859,7 @@ int ColorTable::read_file(File *f)
 	if(! f->file_read(remap_table, table_size * (2*abs_scale+1)) )
 	{
 		mem_del(remap_table);
-		remap_table = 0;
+		remap_table = nullptr;
 		return 0;
 	}
 	remap_table_array = (BYTE **)mem_add(sizeof(BYTE *) * (2*abs_scale+1) );

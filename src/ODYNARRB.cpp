@@ -69,6 +69,7 @@ DynArrayB::~DynArrayB()
 {
    if( empty_room_array )
       mem_del( empty_room_array );
+      empty_room_array = nullptr;
 }
 //----------- END OF FUNCTION DynArrayB::DynArrayB -----//
 
@@ -309,7 +310,7 @@ int DynArrayB::read_empty_room(File* filePtr)
 		if( empty_room_array )
 		{
 			mem_del( empty_room_array );
-			empty_room_array = NULL;
+			empty_room_array = nullptr;
 		}
 	}
 

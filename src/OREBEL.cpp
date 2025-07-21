@@ -874,6 +874,7 @@ void Rebel::execute_new_action()
 	if( !rebelCount )
 	{
 		mem_del( rebelRecnoArray );
+		rebelRecnoArray = nullptr;
 		return; // all rebel units are dead
 	}
 
@@ -912,6 +913,7 @@ void Rebel::execute_new_action()
 	}
 
 	mem_del( rebelRecnoArray );
+	rebelRecnoArray = nullptr;
 }
 //-------- End of function Rebel::execute_new_action ---------//
 

@@ -77,7 +77,7 @@ public:
 	void	draw(int xLoc, int yLoc, int layerMask=-1);
 	void 	draw_at(int absBaseX, int absBaseY, int layerMask=-1);
 
-	~HillBlockInfo() { if (bitmap_ptr) mem_del(bitmap_ptr); }
+	~HillBlockInfo() { if (bitmap_ptr) { mem_del(bitmap_ptr); bitmap_ptr = nullptr; } }
 };
 
 //----------- Define class HillRes ---------------//

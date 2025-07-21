@@ -91,8 +91,11 @@ void FirmRes::deinit()
 	if( init_flag )
 	{
 		mem_del(firm_info_array);
+		firm_info_array = nullptr;
 		mem_del(firm_build_array);
+		firm_build_array = nullptr;
 		mem_del(firm_bitmap_array);
+		firm_bitmap_array = nullptr;
 
 		res_bitmap.deinit();
 
@@ -287,6 +290,7 @@ void FirmRes::load_firm_build()
 	//------ free up the temporary array -------//
 
 	mem_del( firstFrameArray );
+	firstFrameArray = nullptr;
 }
 //--------- End of function FirmRes::load_firm_build ---------//
 

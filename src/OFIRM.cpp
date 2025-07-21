@@ -105,7 +105,7 @@ Firm::Firm()
     builder_recno = 0;
     builder_region_id = 0;
     productivity = 0.0f;
-    worker_array = NULL;
+    worker_array = nullptr;
     worker_count = 0;
     selected_worker_id = 0;
     player_spy_count = 0;
@@ -178,7 +178,7 @@ void Firm::init(int xLoc, int yLoc, int nationRecno, int firmId, const char* bui
 	if( firmInfo->need_worker )
 		worker_array = (Worker*) mem_add( MAX_WORKER * sizeof(Worker) );
 	else
-		worker_array = NULL;
+		worker_array = nullptr;
 
 	//----- set the firm's absolute positions on the map -----//
 
@@ -334,7 +334,7 @@ void Firm::deinit()
 		{
 			resign_all_worker(); // the workers in the firm will be killed if there is no space for creating the workers
 			mem_del( worker_array );
-			worker_array = NULL;
+			worker_array = nullptr;
 		}
 
 		if(builder_recno)
@@ -351,7 +351,7 @@ void Firm::deinit()
 		{
 			kill_all_worker();
 			mem_del(worker_array);
-			worker_array = NULL;
+			worker_array = nullptr;
 		}
 	}
 

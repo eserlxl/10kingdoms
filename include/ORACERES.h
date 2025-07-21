@@ -110,7 +110,7 @@ public:
 	void	free_name_id(uint16_t nameId);
 	void	use_name_id(uint16_t nameId);
 
-	~RaceInfo() { if (icon_bitmap_ptr) mem_del(icon_bitmap_ptr); }
+	~RaceInfo() { if (icon_bitmap_ptr) { mem_del(icon_bitmap_ptr); icon_bitmap_ptr = nullptr; } }
 };
 
 //-------- Define struct NameRec ----------//

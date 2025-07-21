@@ -331,8 +331,11 @@ void UnitArray::attack(int targetXLoc, int targetYLoc, int divided, short* selec
 
 			selected_land_unit_count = selected_sea_unit_count = selected_air_unit_count = 0;
 			mem_del(selected_land_unit_array);
+			selected_land_unit_array = nullptr;
 			mem_del(selected_sea_unit_array);
+			selected_sea_unit_array = nullptr;
 			mem_del(selected_air_unit_array);
+			selected_air_unit_array = nullptr;
 			return;
 		}
 		else
@@ -506,8 +509,9 @@ void UnitArray::attack_unit(int targetXLoc, int targetYLoc, short targetUnitRecn
 
 		for(count=0; count<ATTACK_DIR; count++)
 			mem_del(dir_array_ptr[count]);
-
+		dir_array_ptr[count] = nullptr;
 		mem_del(unit_processed_array);
+		unit_processed_array = nullptr;
 		return;
 	}
 
@@ -544,8 +548,9 @@ void UnitArray::attack_unit(int targetXLoc, int targetYLoc, short targetUnitRecn
 				
 				for(count=0; count<ATTACK_DIR; count++)
 					mem_del(dir_array_ptr[count]);
-
+				dir_array_ptr[count] = nullptr;
 				mem_del(unit_processed_array);
+				unit_processed_array = nullptr;
 				return;
 			}
 			else
@@ -660,8 +665,9 @@ void UnitArray::attack_unit(int targetXLoc, int targetYLoc, short targetUnitRecn
 	//---------------------------------------------------------------------//
 	for(count=0; count<ATTACK_DIR; count++)
 		mem_del(dir_array_ptr[count]);
-
+	dir_array_ptr[count] = nullptr;
 	mem_del(unit_processed_array);
+	unit_processed_array = nullptr;
 }
 //----------- End of function UnitArray::attack_unit -----------//
 
@@ -770,8 +776,9 @@ void UnitArray::attack_firm(int targetXLoc, int targetYLoc, short firmRecno, sho
 
 		for(count=0; count<ATTACK_DIR; count++)
 			mem_del(dir_array_ptr[count]);
-
+		dir_array_ptr[count] = nullptr;
 		mem_del(unit_processed_array);
+		unit_processed_array = nullptr;
 		return;
 	}
 
@@ -806,8 +813,9 @@ void UnitArray::attack_firm(int targetXLoc, int targetYLoc, short firmRecno, sho
 				
 				for(count=0; count<ATTACK_DIR; count++)
 					mem_del(dir_array_ptr[count]);
-
+				dir_array_ptr[count] = nullptr;
 				mem_del(unit_processed_array);
+				unit_processed_array = nullptr;
 				return;
 			}
 			else
@@ -917,8 +925,9 @@ void UnitArray::attack_firm(int targetXLoc, int targetYLoc, short firmRecno, sho
 	//---------------------------------------------------------------------//
 	for(count=0; count<ATTACK_DIR; count++)
 		mem_del(dir_array_ptr[count]);
-
+	dir_array_ptr[count] = nullptr;
 	mem_del(unit_processed_array);
+	unit_processed_array = nullptr;
 }
 //----------- End of function UnitArray::attack_firm -----------//
 
@@ -1023,8 +1032,9 @@ void UnitArray::attack_town(int targetXLoc, int targetYLoc, short townRecno, sho
 
 		for(count=0; count<ATTACK_DIR; count++)
 			mem_del(dir_array_ptr[count]);
-
+		dir_array_ptr[count] = nullptr;
 		mem_del(unit_processed_array);
+		unit_processed_array = nullptr;
 		return;
 	}
 
@@ -1056,8 +1066,9 @@ void UnitArray::attack_town(int targetXLoc, int targetYLoc, short townRecno, sho
 				
 				for(count=0; count<ATTACK_DIR; count++)
 					mem_del(dir_array_ptr[count]);
-
+				dir_array_ptr[count] = nullptr;
 				mem_del(unit_processed_array);
+				unit_processed_array = nullptr;
 				return;
 			}
 			else
@@ -1168,8 +1179,9 @@ void UnitArray::attack_town(int targetXLoc, int targetYLoc, short townRecno, sho
 	//---------------------------------------------------------------------//
 	for(count=0; count<ATTACK_DIR; count++)
 		mem_del(dir_array_ptr[count]);
-
+	dir_array_ptr[count] = nullptr;
 	mem_del(unit_processed_array);
+	unit_processed_array = nullptr;
 }
 //----------- End of function UnitArray::attack_town -----------//
 
@@ -1269,8 +1281,9 @@ void UnitArray::attack_wall(int targetXLoc, int targetYLoc, short* selectedUnitA
 
 		for(count=0; count<ATTACK_DIR; count++)
 			mem_del(dir_array_ptr[count]);
-
+		dir_array_ptr[count] = nullptr;
 		mem_del(unit_processed_array);
+		unit_processed_array = nullptr;
 		return;
 	}
 
@@ -1302,8 +1315,9 @@ void UnitArray::attack_wall(int targetXLoc, int targetYLoc, short* selectedUnitA
 				
 				for(count=0; count<ATTACK_DIR; count++)
 					mem_del(dir_array_ptr[count]);
-
+				dir_array_ptr[count] = nullptr;
 				mem_del(unit_processed_array);
+				unit_processed_array = nullptr;
 				return;
 			}
 			else
@@ -1411,8 +1425,9 @@ void UnitArray::attack_wall(int targetXLoc, int targetYLoc, short* selectedUnitA
 	//---------------------------------------------------------------------//
 	for(count=0; count<ATTACK_DIR; count++)
 		mem_del(dir_array_ptr[count]);
-
+	dir_array_ptr[count] = nullptr;
 	mem_del(unit_processed_array);
+	unit_processed_array = nullptr;
 }
 //----------- End of function UnitArray::attack_wall -----------//
 

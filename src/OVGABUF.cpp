@@ -381,7 +381,10 @@ void VgaBuf::rest_area(char* saveScr, int releaseFlag)
 	put_bitmap( x1, y1, (char*) shortPtr );
 
 	if( releaseFlag )
+	{
 		mem_del( saveScr );
+		saveScr = nullptr;
+	}
 }
 //------------ End of function VgaBuf::rest_area ----------//
 
