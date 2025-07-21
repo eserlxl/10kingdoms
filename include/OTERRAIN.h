@@ -188,6 +188,7 @@ public:
 	ResourceDb   anm_bitmap;
 
 public:
+	virtual ~TerrainRes();
 	TerrainRes();
 
 	void 		 	 init();

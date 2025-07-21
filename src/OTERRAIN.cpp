@@ -193,7 +193,22 @@ TerrainRes::TerrainRes()
 }
 //--------- End of function TerrainRes::TerrainRes -----------//
 
-
+TerrainRes::~TerrainRes() {
+    if (terrain_info_array) {
+        for (int i = 0; i < terrain_count; ++i) {
+            if (terrain_info_array[i].bitmap_ptr) {
+                mem_del(terrain_info_array[i].bitmap_ptr);
+                terrain_info_array[i].bitmap_ptr = nullptr;
+            }
+        }
+        mem_del(terrain_info_array);
+        terrain_info_array = nullptr;
+    }
+    if (file_name_array) {
+        mem_del(file_name_array);
+        file_name_array = nullptr;
+    }
+}
 //---------- Begin of function TerrainRes::init -----------//
 //
 // This function must be called after a map is generated.

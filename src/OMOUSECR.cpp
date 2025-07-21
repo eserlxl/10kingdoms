@@ -103,8 +103,16 @@ void MouseCursor::deinit()
 {
 	if( init_flag )
 	{
-		mem_del(cursor_info_array);
-		cursor_info_array = nullptr;
+		if (cursor_info_array) {
+			for (int i = 0; i < cursor_count; ++i) {
+				if (cursor_info_array[i].bitmap_ptr) {
+					mem_del(cursor_info_array[i].bitmap_ptr);
+					cursor_info_array[i].bitmap_ptr = nullptr;
+				}
+			}
+			mem_del(cursor_info_array);
+			cursor_info_array = nullptr;
+		}
 
 		if( save_scr )
 		{
