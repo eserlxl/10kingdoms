@@ -592,7 +592,10 @@ char* NationBase::nation_name()
 // 
 const char* NationBase::king_name(int firstWordOnly)
 {
-    // Extra defensive: check for uninitialized or invalid race_id or race_res
+    // Extra defensive: check for uninitialized or invalid nation_recno, race_id, or deleted nation
+    if (nation_recno < 1 || nation_recno > MAX_NATION || nation_array.is_deleted(nation_recno)) {
+        return "Unknown";
+    }
     if (race_id < 1 || !race_res.race_info_array || race_res.race_count < 1 || race_id > race_res.race_count || !race_res[race_id]) {
         return "Unknown";
     }

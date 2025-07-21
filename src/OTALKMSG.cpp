@@ -247,11 +247,13 @@ int TalkMsg::can_accept()
 // Used in printf as part of "<King's> Kingdom<Color>"
 char* TalkMsg::from_nation_name()
 {
-	static String str;
-
-	str = nation_array[from_nation_recno]->king_name(1);
-
-	return str;
+    static String str;
+    if (nation_array.is_deleted(from_nation_recno)) {
+        str = "Unknown";
+        return str;
+    }
+    str = nation_array[from_nation_recno]->king_name(1);
+    return str;
 }
 //------- End of function TalkMsg::from_nation_name ------//
 
@@ -261,11 +263,13 @@ char* TalkMsg::from_nation_name()
 // Used in printf as part of "<King's> Kingdom<Color>"
 char* TalkMsg::to_nation_name()
 {
-	static String str;
-
-	str = nation_array[to_nation_recno]->king_name(1);
-
-	return str;
+    static String str;
+    if (nation_array.is_deleted(to_nation_recno)) {
+        str = "Unknown";
+        return str;
+    }
+    str = nation_array[to_nation_recno]->king_name(1);
+    return str;
 }
 //------- End of function TalkMsg::to_nation_name ------//
 
@@ -275,11 +279,13 @@ char* TalkMsg::to_nation_name()
 // Used in printf as part of "<King's> Kingdom<Color>"
 char* TalkMsg::para1_nation_name()
 {
-	static String str;
-
-	str = nation_array[talk_para1]->king_name(1);
-
-	return str;
+    static String str;
+    if (nation_array.is_deleted(talk_para1)) {
+        str = "Unknown";
+        return str;
+    }
+    str = nation_array[talk_para1]->king_name(1);
+    return str;
 }
 //------- End of function TalkMsg::para1_nation_name ------//
 
@@ -290,22 +296,19 @@ char* TalkMsg::para1_nation_name()
 // Returns king's first name with optional color
 char* TalkMsg::from_king_name()
 {
-	static String str;
-
-	str = nation_array[from_nation_recno]->king_name();
-
-	//------ add nation color bar -------//
-
-	if( talk_res.msg_add_nation_color )
-	{
-		char colorCodeStr[] = " @COL0";
-
-		colorCodeStr[5] = ASCII_ZERO + nation_array[from_nation_recno]->color_scheme_id;
-
-		str += colorCodeStr;
-	}
-
-	return str;
+    static String str;
+    if (nation_array.is_deleted(from_nation_recno)) {
+        str = "Unknown";
+        return str;
+    }
+    str = nation_array[from_nation_recno]->king_name();
+    if (talk_res.msg_add_nation_color)
+    {
+        char colorCodeStr[] = " @COL0";
+        colorCodeStr[5] = ASCII_ZERO + nation_array[from_nation_recno]->color_scheme_id;
+        str += colorCodeStr;
+    }
+    return str;
 }
 //------- End of function TalkMsg::from_king_name ------//
 
@@ -315,22 +318,19 @@ char* TalkMsg::from_king_name()
 // Returns king's first name with optional color
 char* TalkMsg::to_king_name()
 {
-	static String str;
-
-	str = nation_array[to_nation_recno]->king_name();
-
-	//------ add nation color bar -------//
-
-	if( talk_res.msg_add_nation_color )
-	{
-		char colorCodeStr[] = " @COL0";
-
-		colorCodeStr[5] = ASCII_ZERO + nation_array[to_nation_recno]->color_scheme_id;
-
-		str += colorCodeStr;
-	}
-
-	return str;
+    static String str;
+    if (nation_array.is_deleted(to_nation_recno)) {
+        str = "Unknown";
+        return str;
+    }
+    str = nation_array[to_nation_recno]->king_name();
+    if (talk_res.msg_add_nation_color)
+    {
+        char colorCodeStr[] = " @COL0";
+        colorCodeStr[5] = ASCII_ZERO + nation_array[to_nation_recno]->color_scheme_id;
+        str += colorCodeStr;
+    }
+    return str;
 }
 //------- End of function TalkMsg::to_king_name ------//
 
@@ -339,10 +339,12 @@ char* TalkMsg::to_king_name()
 //
 char* TalkMsg::nation_color_code_str(int nationRecno)
 {
-	static char colorCodeStr[] = " @COL0";
-
-	colorCodeStr[5] = ASCII_ZERO + nation_array[nationRecno]->color_scheme_id;
-	return colorCodeStr;
+    static char colorCodeStr[] = " @COL0";
+    if (nation_array.is_deleted(nationRecno)) {
+        return (char*)"";
+    }
+    colorCodeStr[5] = ASCII_ZERO + nation_array[nationRecno]->color_scheme_id;
+    return colorCodeStr;
 }
 //------- End of function TalkMsg::nation_color_code_str ------//
 
