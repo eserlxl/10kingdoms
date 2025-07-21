@@ -592,23 +592,21 @@ char* NationBase::nation_name()
 // 
 const char* NationBase::king_name(int firstWordOnly)
 {
-	if( nation_name_id < 0 )		// human player custom names
-	{
-		return nation_array.get_human_name(nation_name_id, firstWordOnly);
-	}
-	else
-	{
-		// Add bounds checking to prevent invalid memory access
-		// Note: race_id uses 1-based indexing, so valid range is 1 to race_count
-		if (race_id < 1 || race_id > race_res.race_count || !race_res[race_id]) {
-			return "Unknown";  // Return a safe default
-		}
-		
-		if( firstWordOnly )
-			return race_res[race_id]->get_single_name( static_cast<uint16_t>(nation_name_id) );
-		else
-			return race_res[race_id]->get_name( static_cast<uint16_t>(nation_name_id) );
-	}
+    // Extra defensive: check for uninitialized or invalid race_id or race_res
+    if (race_id < 1 || !race_res.race_info_array || race_res.race_count < 1 || race_id > race_res.race_count || !race_res[race_id]) {
+        return "Unknown";
+    }
+    if( nation_name_id < 0 )        // human player custom names
+    {
+        return nation_array.get_human_name(nation_name_id, firstWordOnly);
+    }
+    else
+    {
+        if( firstWordOnly )
+            return race_res[race_id]->get_single_name( static_cast<uint16_t>(nation_name_id) );
+        else
+            return race_res[race_id]->get_name( static_cast<uint16_t>(nation_name_id) );
+    }
 }
 //----------- End of function NationBase::king_name ---------//
 
