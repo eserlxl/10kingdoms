@@ -40,7 +40,50 @@
 
 Nation::Nation() : action_array( sizeof(ActionNode), 30 )
 {
+	// Initialize all AI info arrays to NULL
 	ai_town_array = NULL;
+	ai_base_array = NULL;
+	ai_mine_array = NULL;
+	ai_factory_array = NULL;
+	ai_market_array = NULL;
+	ai_inn_array = NULL;
+	ai_camp_array = NULL;
+	ai_research_array = NULL;
+	ai_war_array = NULL;
+	ai_harbor_array = NULL;
+	ai_caravan_array = NULL;
+	ai_ship_array = NULL;
+	ai_general_array = NULL;
+
+	// Initialize all AI info count and size variables to 0
+	ai_town_size = 0;
+	ai_base_size = 0;
+	ai_mine_size = 0;
+	ai_factory_size = 0;
+	ai_market_size = 0;
+	ai_inn_size = 0;
+	ai_camp_size = 0;
+	ai_research_size = 0;
+	ai_war_size = 0;
+	ai_harbor_size = 0;
+	ai_caravan_size = 0;
+	ai_ship_size = 0;
+	ai_general_size = 0;
+
+	ai_town_count = 0;
+	ai_base_count = 0;
+	ai_mine_count = 0;
+	ai_factory_count = 0;
+	ai_market_count = 0;
+	ai_inn_count = 0;
+	ai_camp_count = 0;
+	ai_research_count = 0;
+	ai_war_count = 0;
+	ai_harbor_count = 0;
+	ai_caravan_count = 0;
+	ai_ship_count = 0;
+	ai_general_count = 0;
+	ai_base_town_count = 0;
 }
 //---------- End of function Nation::Nation --------//
 
