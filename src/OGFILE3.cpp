@@ -274,13 +274,14 @@ int Unit::read_file(File* filePtr)
 
 	//--------------- read in memory data ----------------//
 
-	// Fix: Only free if not the 0xdeadbeef marker
+	// Defensive: Only free if not nullptr and not the 0xdeadbeef marker
 	if( result_node_array && result_node_array != (ResultNode*)0xdeadbeef )
 	{
 		mem_del(result_node_array);
+		result_node_array = nullptr; // Patch: set to nullptr after free
 	}
-	result_node_array = nullptr;
-	if( result_node_array )
+	// Defensive: Only allocate if count > 0
+	if( result_node_count > 0 )
 	{
 		ResultNodeGF *node_record_array = (ResultNodeGF*) mem_add(sizeof(ResultNode)*result_node_count);
 
@@ -303,9 +304,9 @@ int Unit::read_file(File* filePtr)
 	if( way_point_array && way_point_array != (ResultNode*)0xdeadbeef )
 	{
 		mem_del(way_point_array);
+		way_point_array = nullptr; // Patch: set to nullptr after free
 	}
-	way_point_array = nullptr;
-	if( way_point_array )
+	if( way_point_array_size > 0 )
 	{
 		ResultNodeGF *node_record_array = (ResultNodeGF*) mem_add(sizeof(ResultNodeGF)*way_point_array_size);
 
@@ -328,8 +329,8 @@ int Unit::read_file(File* filePtr)
 	if( team_info )
 	{
 		mem_del(team_info);
+		team_info = nullptr; // Patch: set to nullptr after free
 	}
-	team_info = nullptr;
 	if( filePtr->file_read(&gf_rec, sizeof(TeamInfoGF)) )
 	{
 		team_info = (TeamInfo*) mem_add(sizeof(TeamInfo));

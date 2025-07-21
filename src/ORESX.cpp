@@ -246,6 +246,8 @@ int ResourceIdx::get_index(const char* dataName)
 //
 // Return : <char*> data pointer
 //
+// WARNING: After mem_resize, all pointers to data_buf become invalid.
+// All users must reacquire the pointer after this call.
 char* ResourceIdx::get_data(int indexId)
 {
 	err_when( !init_flag );

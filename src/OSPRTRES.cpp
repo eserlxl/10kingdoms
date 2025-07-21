@@ -356,15 +356,19 @@ void SpriteInfo::load_bitmap_res()
 
 
 //------- Begin of function SpriteInfo::free_bitmap_res -------//
-
 void SpriteInfo::free_bitmap_res()
 {
-	loaded_count--;
+   loaded_count--;
 
-	err_when( loaded_count < 0 );
+   err_when( loaded_count < 0 );
 
-	if( loaded_count==0 )		// if this bitmap is still needed by other sprites
-		res_bitmap.deinit();
+   if( loaded_count==0 )
+   {
+      res_bitmap.deinit();
+      // Patch: After deinit, res_bitmap should not be used until re-initialized
+   }
+   // Patch: Optionally, set loaded_count = 0 to prevent underflow
+   if (loaded_count < 0) loaded_count = 0;
 }
 //-------- End of function SpriteInfo::free_bitmap_res -------//
 

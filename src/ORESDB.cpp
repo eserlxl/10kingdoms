@@ -47,12 +47,12 @@ void ResourceDb::deinit()
    {
       if( !use_common_buf && data_buf )
       {
-			 mem_del(data_buf);
-			 data_buf = NULL;
+         mem_del(data_buf);
+         data_buf = NULL; // Patch: always set to NULL after free
       }
 
       if( !read_all )
-			 file_close();
+         file_close();
 
       init_flag = false;
    }
