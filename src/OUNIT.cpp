@@ -435,15 +435,15 @@ void Unit::init_sprite(int startXLoc, int startYLoc)
 
 void Unit::deinit()
 {
-	if (result_node_array) {
+	if (result_node_array && result_node_array != (ResultNode*)0xdeadbeef) {
 		mem_del(result_node_array);
 		result_node_array = nullptr;
 	}
-	if (way_point_array) {
+	if (way_point_array && way_point_array != (ResultNode*)0xdeadbeef) {
 		mem_del(way_point_array);
 		way_point_array = nullptr;
 	}
-	if (team_info) {
+	if (team_info && team_info != (TeamInfo*)0xdeadbeef) {
 		mem_del(team_info);
 		team_info = nullptr;
 	}
@@ -624,12 +624,16 @@ void Unit::deinit()
 //
 void Unit::deinit_sprite(int keepSelected)
 {
-   err_when(result_node_array!=NULL);
+	err_when(result_node_array!=NULL);
 
-   if( cur_x == -1 )
-      return;
+	if( cur_x == -1 )
+		return;
 
-   //---- if this unit is led by a leader, only mobile units has leader_unit_recno assigned to a leader -----//
+	// Defensive: check sprite_info before use
+	if (!sprite_info)
+		return;
+
+	//---- if this unit is led by a leader, only mobile units has leader_unit_recno assigned to a leader -----//
    // units are still considered mobile when boarding a ship
 
    if( leader_unit_recno && unit_mode != UNIT_MODE_ON_SHIP )

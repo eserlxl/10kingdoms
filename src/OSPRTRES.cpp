@@ -57,8 +57,9 @@ void SpriteRes::deinit()
 	if( init_flag )
 	{
 		delete[] sprite_info_array;
+		sprite_info_array = nullptr;
 		mem_del(sub_sprite_info_array);
-
+		sub_sprite_info_array = nullptr;
 		init_flag=0;
 	}
 }

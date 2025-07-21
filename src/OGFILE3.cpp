@@ -326,7 +326,7 @@ int Unit::read_file(File* filePtr)
 	}
 	//#### end alex 15/10 ####//
 
-	if( team_info )
+	if( team_info && team_info != (TeamInfo*)0xdeadbeef )
 	{
 		mem_del(team_info);
 		team_info = nullptr; // Patch: set to nullptr after free
@@ -338,10 +338,10 @@ int Unit::read_file(File* filePtr)
 	}
 
 	//----------- post-process the data read ----------//
-
-	sprite_info       = sprite_res[sprite_id];
-
-	sprite_info->load_bitmap_res();
+	if (sprite_id > 0 && sprite_res[sprite_id]) {
+		sprite_info = sprite_res[sprite_id];
+		sprite_info->load_bitmap_res();
+	}
 
 	return 1;
 }
