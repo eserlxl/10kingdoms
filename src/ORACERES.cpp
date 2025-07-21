@@ -76,10 +76,21 @@ void RaceRes::deinit()
 {
 	if( init_flag )
 	{
-		mem_del(race_info_array);
-		mem_del(name_array);
-		mem_del(name_used_array);
-
+		if (race_info_array) {
+			for (int i = 0; i < race_count; ++i) {
+				race_info_array[i].~RaceInfo();
+			}
+			mem_del(race_info_array);
+			race_info_array = nullptr;
+		}
+		if (name_array) {
+			mem_del(name_array);
+			name_array = nullptr;
+		}
+		if (name_used_array) {
+			mem_del(name_used_array);
+			name_used_array = nullptr;
+		}
 		init_flag=0;
 	}
 }
