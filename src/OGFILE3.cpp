@@ -183,9 +183,14 @@ int UnitArray::read_file(File* filePtr)
    for( i=size() ; i>0 ; i-- )
 	{
 		DynArrayB::go(i);             // since UnitArray has its own go() which will call GroupArray::go()
-
-      if( get_ptr() == NULL )       // add_blank() record
+      void* ptr = get_ptr();
+      if( ptr == NULL )       // add_blank() record
          linkout();
+#ifdef DEBUG
+      else if ((uintptr_t)ptr < 0x1000 || (uintptr_t)ptr > 0x7fffffffffff) {
+         err_here(); // Suspicious pointer detected
+      }
+#endif
    }
 
    //------- read empty room array --------//
@@ -632,13 +637,18 @@ int BulletArray::read_file(File* filePtr)
 	//-- So they will be marked deleted in DynArrayB and can be -----//
 	//-- undeleted and used when a new record is going to be added --//
 
-	for( i=1 ; i<=size() ; i++ )
-	{
-		DynArrayB::go(i);             // since BulletArray has its own go() which will call GroupArray::go()
-
-		if( get_ptr() == NULL )       // add_blank() record
-			linkout();
-	}
+   for( i=1 ; i<=size() ; i++ )
+   {
+      DynArrayB::go(i);             // since BulletArray has its own go() which will call GroupArray::go()
+      void* ptr = get_ptr();
+      if( ptr == NULL )       // add_blank() record
+         linkout();
+#ifdef DEBUG
+      else if ((uintptr_t)ptr < 0x1000 || (uintptr_t)ptr > 0x7fffffffffff) {
+         err_here(); // Suspicious pointer detected
+      }
+#endif
+   }
 
 	//------- read empty room array --------//
 
@@ -884,9 +894,14 @@ int FirmArray::read_file(File* filePtr)
    for( i=size() ; i>0 ; i-- )
    {
       DynArrayB::go(i);             // since FirmArray has its own go() which will call GroupArray::go()
-
-      if( get_ptr() == NULL )       // add_blank() record
+      void* ptr = get_ptr();
+      if( ptr == NULL )       // add_blank() record
          linkout();
+#ifdef DEBUG
+      else if ((uintptr_t)ptr < 0x1000 || (uintptr_t)ptr > 0x7fffffffffff) {
+         err_here(); // Suspicious pointer detected
+      }
+#endif
    }
 
    //------- read empty room array --------//
@@ -1485,13 +1500,18 @@ int TownArray::read_file(File* filePtr)
 	//-- So they will be marked deleted in DynArrayB and can be -----//
 	//-- undeleted and used when a new record is going to be added --//
 
-	for( i=size() ; i>0 ; i-- )
-	{
-		DynArrayB::go(i);             // since TownArray has its own go() which will call GroupArray::go()
-
-		if( get_ptr() == NULL )       // add_blank() record
-			linkout();
-	}
+   for( i=size() ; i>0 ; i-- )
+   {
+      DynArrayB::go(i);             // since TownArray has its own go() which will call GroupArray::go()
+      void* ptr = get_ptr();
+      if( ptr == NULL )       // add_blank() record
+         linkout();
+#ifdef DEBUG
+      else if ((uintptr_t)ptr < 0x1000 || (uintptr_t)ptr > 0x7fffffffffff) {
+         err_here(); // Suspicious pointer detected
+      }
+#endif
+   }
 
 	//------- read empty room array --------//
 
@@ -1610,9 +1630,14 @@ int NationArray::read_file(File* filePtr)
    for( i=size() ; i>0 ; i-- )
    {
       DynArrayB::go(i);             // since NationArray has its own go() which will call GroupArray::go()
-
-      if( get_ptr() == NULL )       // add_blank() record
+      void* ptr = get_ptr();
+      if( ptr == NULL )       // add_blank() record
          linkout();
+#ifdef DEBUG
+      else if ((uintptr_t)ptr < 0x1000 || (uintptr_t)ptr > 0x7fffffffffff) {
+         err_here(); // Suspicious pointer detected
+      }
+#endif
    }
 
 	//-------- set NationArray::player_ptr -----------//
@@ -1884,9 +1909,14 @@ int TornadoArray::read_file(File* filePtr)
    for( i=size() ; i>0 ; i-- )
    {
       DynArrayB::go(i);             // since TornadoArray has its own go() which will call GroupArray::go()
-
-      if( get_ptr() == NULL )       // add_blank() record
+      void* ptr = get_ptr();
+      if( ptr == NULL )       // add_blank() record
          linkout();
+#ifdef DEBUG
+      else if ((uintptr_t)ptr < 0x1000 || (uintptr_t)ptr > 0x7fffffffffff) {
+         err_here(); // Suspicious pointer detected
+      }
+#endif
    }
 
    //------- read empty room array --------//
@@ -2002,9 +2032,14 @@ int RebelArray::read_file(File* filePtr)
 	for( i=size(); i>0; i-- )
 	{
 		DynArrayB::go(i);             // since DynArrayB has its own go() which will call GroupArray::go()
-
-		if( get_ptr() == NULL )       // add_blank() record
+		void* ptr = get_ptr();
+		if( ptr == NULL )       // add_blank() record
 			linkout();
+#ifdef DEBUG
+		else if ((uintptr_t)ptr < 0x1000 || (uintptr_t)ptr > 0x7fffffffffff) {
+			err_here(); // Suspicious pointer detected
+		}
+#endif
 	}
 
 	//------- read empty room array --------//
