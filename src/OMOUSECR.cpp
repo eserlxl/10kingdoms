@@ -156,8 +156,12 @@ void MouseCursor::load_cursor_info()
 		cursorInfo = cursor_info_array+i;
 
 		memcpy( &bitmapOffset, cursorRec->bitmap_ptr, sizeof(uint32_t) );
-
-		cursorInfo->bitmap_ptr = res_bitmap.read_imported(bitmapOffset);
+		{
+			char* src = res_bitmap.read_imported(bitmapOffset);
+			int size = *((int*)(src - sizeof(int)));
+			cursorInfo->bitmap_ptr = (char*)mem_add(size);
+			memcpy(cursorInfo->bitmap_ptr, src, size);
+		}
 
 		cursorInfo->hot_spot_x = misc.atoi( cursorRec->hot_spot_x, cursorRec->HOT_SPOT_LEN );
 		cursorInfo->hot_spot_y = misc.atoi( cursorRec->hot_spot_y, cursorRec->HOT_SPOT_LEN );

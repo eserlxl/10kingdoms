@@ -119,6 +119,12 @@ void RaceRes::load_race_info()
 		memcpy( &bitmapOffset, raceRec->icon_bitmap_ptr, sizeof(uint32_t) );
 
 		raceInfo->icon_bitmap_ptr = res_bitmap.read_imported(bitmapOffset);
+		{
+			char* src = res_bitmap.read_imported(bitmapOffset);
+			int size = *((int*)(src - sizeof(int)));
+			raceInfo->icon_bitmap_ptr = (char*)mem_add(size);
+			memcpy(raceInfo->icon_bitmap_ptr, src, size);
+		}
 
 		err_when( !raceInfo->icon_bitmap_ptr );
 

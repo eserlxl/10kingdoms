@@ -134,7 +134,12 @@ void HillRes::load_hill_block_info()
 		hillBlockInfo->offset_y = misc.atoi(hillBlockRec->offset_y, hillBlockRec->OFFSET_LEN);
 
 		memcpy( &bitmapOffset, hillBlockRec->bitmap_ptr, sizeof(uint32_t) );
-		hillBlockInfo->bitmap_ptr = res_bitmap.read_imported(bitmapOffset);
+		{
+			char* src = res_bitmap.read_imported(bitmapOffset);
+			int size = *((int*)(src - sizeof(int)));
+			hillBlockInfo->bitmap_ptr = (char*)mem_add(size);
+			memcpy(hillBlockInfo->bitmap_ptr, src, size);
+		}
 	}
 
 	//------ build index for the first block of each pattern -------//

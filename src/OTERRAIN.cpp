@@ -413,8 +413,12 @@ void TerrainRes::load_info()
 		//---- get the bitmap pointer of the terrain icon in res_icon ----//
 
 		memcpy( &bitmapOffset, terrainRec->bitmap_ptr, sizeof(uint32_t) );
-
-		terrainInfo->bitmap_ptr = res_bitmap.read_imported(bitmapOffset);
+		{
+			char* src = res_bitmap.read_imported(bitmapOffset);
+			int size = *((int*)(src - sizeof(int)));
+			terrainInfo->bitmap_ptr = (char*)mem_add(size);
+			memcpy(terrainInfo->bitmap_ptr, src, size);
+		}
 
 		terrainInfo->anim_frames = 0;
 		terrainInfo->anim_bitmap_ptr = NULL;

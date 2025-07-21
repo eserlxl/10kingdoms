@@ -127,8 +127,12 @@ void FirmRes::load_firm_bitmap()
 		firmBitmap    = firm_bitmap_array+i;
 
 		memcpy( &bitmapOffset, firmBitmapRec->bitmap_ptr, sizeof(uint32_t) );
-
-		firmBitmap->bitmap_ptr = res_bitmap.read_imported(bitmapOffset);
+		{
+			char* src = res_bitmap.read_imported(bitmapOffset);
+			int size = *((int*)(src - sizeof(int)));
+			firmBitmap->bitmap_ptr = (char*)mem_add(size);
+			memcpy(firmBitmap->bitmap_ptr, src, size);
+		}
 		firmBitmap->width  	  = *((short*)firmBitmap->bitmap_ptr);
 		firmBitmap->height 	  = *(((short*)firmBitmap->bitmap_ptr)+1);
 

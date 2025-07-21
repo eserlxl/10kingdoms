@@ -217,7 +217,12 @@ void RockRes::load_bitmap_info()
 
 		uint32_t bitmapOffset;
 		memcpy( &bitmapOffset, rockBitmapRec->bitmap_ptr, sizeof(uint32_t) );
-		rockBitmapInfo->bitmap_ptr = res_bitmap.read_imported(bitmapOffset);
+		{
+			char* src = res_bitmap.read_imported(bitmapOffset);
+			int size = *((int*)(src - sizeof(int)));
+			rockBitmapInfo->bitmap_ptr = (char*)mem_add(size);
+			memcpy(rockBitmapInfo->bitmap_ptr, src, size);
+		}
 	}
 }
 // ------------ end of function RockRes::load_bitmap_info -----------//

@@ -108,6 +108,8 @@ struct CursorInfo
 	short hot_spot_y;
 
 	char* bitmap_ptr;
+
+	~CursorInfo() { if (bitmap_ptr) mem_del(bitmap_ptr); }
 };
 
 //--------- Define class MouseCursor --------//
