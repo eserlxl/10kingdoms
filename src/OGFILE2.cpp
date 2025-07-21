@@ -791,14 +791,18 @@ int UnitRes::write_file(File* filePtr)
 
 	for( int i=1 ; i<=unit_res.unit_info_count ; i++, unitInfo++ )
 	{
-		// Ensure arrays are properly initialized before writing
-		// If arrays are not initialized, initialize them with zeros to prevent uninitialized memory writes
-		if (!unitInfo->nation_tech_level_array || !unitInfo->nation_unit_count_array || !unitInfo->nation_general_count_array)
-		{
-			err.msg("UnitInfo arrays not properly initialized for unit %d, initializing with zeros\n", i);
-			// Initialize arrays with zeros to prevent uninitialized memory writes
+		// Defensive: Ensure arrays are allocated and zeroed before writing
+		if (!unitInfo->nation_tech_level_array) {
+			// Should never happen for POD struct, but patch for safety
+			static_assert(sizeof(unitInfo->nation_tech_level_array) == MAX_NATION, "nation_tech_level_array size mismatch");
 			memset(unitInfo->nation_tech_level_array, 0, sizeof(unitInfo->nation_tech_level_array));
+		}
+		if (!unitInfo->nation_unit_count_array) {
+			static_assert(sizeof(unitInfo->nation_unit_count_array) == sizeof(short)*MAX_NATION, "nation_unit_count_array size mismatch");
 			memset(unitInfo->nation_unit_count_array, 0, sizeof(unitInfo->nation_unit_count_array));
+		}
+		if (!unitInfo->nation_general_count_array) {
+			static_assert(sizeof(unitInfo->nation_general_count_array) == sizeof(short)*MAX_NATION, "nation_general_count_array size mismatch");
 			memset(unitInfo->nation_general_count_array, 0, sizeof(unitInfo->nation_general_count_array));
 		}
 
@@ -827,13 +831,24 @@ int UnitRes::read_file(File* filePtr)
 
 	for( int i=1 ; i<=unit_res.unit_info_count ; i++, unitInfo++ )
 	{
-			if(!game_file_array.same_version && i > VERSION_1_UNITRES_UNIT_INFO_COUNT)
-			{
-				memset(unitInfo->nation_tech_level_array, 0, sizeof(unitInfo->nation_tech_level_array));
-				memset(unitInfo->nation_unit_count_array, 0, sizeof(unitInfo->nation_unit_count_array));
-				memset(unitInfo->nation_general_count_array, 0, sizeof(unitInfo->nation_general_count_array));
-				continue;
-			}
+		if(!game_file_array.same_version && i > VERSION_1_UNITRES_UNIT_INFO_COUNT)
+		{
+			memset(unitInfo->nation_tech_level_array, 0, sizeof(unitInfo->nation_tech_level_array));
+			memset(unitInfo->nation_unit_count_array, 0, sizeof(unitInfo->nation_unit_count_array));
+			memset(unitInfo->nation_general_count_array, 0, sizeof(unitInfo->nation_general_count_array));
+			continue;
+		}
+
+		// Defensive: Ensure arrays are allocated and zeroed before reading
+		if (!unitInfo->nation_tech_level_array) {
+			memset(unitInfo->nation_tech_level_array, 0, sizeof(unitInfo->nation_tech_level_array));
+		}
+		if (!unitInfo->nation_unit_count_array) {
+			memset(unitInfo->nation_unit_count_array, 0, sizeof(unitInfo->nation_unit_count_array));
+		}
+		if (!unitInfo->nation_general_count_array) {
+			memset(unitInfo->nation_general_count_array, 0, sizeof(unitInfo->nation_general_count_array));
+		}
 
 		if( !filePtr->file_read( unitInfo->nation_tech_level_array, sizeof(unitInfo->nation_tech_level_array) ) )
 			return 0;
