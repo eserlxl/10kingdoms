@@ -367,6 +367,7 @@ void SpriteInfo::free_bitmap_res()
    {
       res_bitmap.deinit();
       // Patch: After deinit, res_bitmap should not be used until re-initialized
+      // Note: All users of this SpriteInfo should check loaded_count before accessing res_bitmap
    }
    // Patch: Optionally, set loaded_count = 0 to prevent underflow
    if (loaded_count < 0) loaded_count = 0;

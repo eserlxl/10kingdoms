@@ -1378,7 +1378,7 @@ void Unit::reset_path()
 	if( result_node_array )
 	{
 		mem_del(result_node_array);
-      result_node_array = nullptr;
+      result_node_array = nullptr; // Patch: nullify after free
 	}
 
 	result_path_dist = result_node_count = result_node_recno = 0;

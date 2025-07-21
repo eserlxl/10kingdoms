@@ -160,7 +160,8 @@ Unit* UnitArray::create_unit(int unitId)
 			else
 				unitPtr = new Unit;
 	}
-
+	// Patch: zero-initialize the new unit memory
+	if (unitPtr) memset(unitPtr, 0, unit_class_size(unitId));
 	SpriteArray::add(unitPtr);			// it set Sprite::sprite_recno
 
  	return unitPtr;

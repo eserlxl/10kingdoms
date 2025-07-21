@@ -309,14 +309,14 @@ int Unit::read_file(File* filePtr)
 	if( way_point_array_size > 0 )
 	{
 		ResultNodeGF *node_record_array = (ResultNodeGF*) mem_add(sizeof(ResultNodeGF)*way_point_array_size);
-
+		memset(node_record_array, 0, sizeof(ResultNodeGF)*way_point_array_size); // Patch: zero-initialize
 		if( !filePtr->file_read(node_record_array, sizeof(ResultNodeGF)*way_point_array_size) )
 		{
 			mem_del(node_record_array);
 			return 0;
 		}
-		
 		way_point_array = (ResultNode*) mem_add(sizeof(ResultNode)*way_point_array_size);
+		memset(way_point_array, 0, sizeof(ResultNode)*way_point_array_size); // Patch: zero-initialize
 		for( int i=0; i<way_point_array_size; i++ )
 		{
 			ResultNode *node = way_point_array+i;
@@ -334,13 +334,15 @@ int Unit::read_file(File* filePtr)
 	if( filePtr->file_read(&gf_rec, sizeof(TeamInfoGF)) )
 	{
 		team_info = (TeamInfo*) mem_add(sizeof(TeamInfo));
+		memset(team_info, 0, sizeof(TeamInfo)); // Patch: zero-initialize
 		team_info->read_record(&gf_rec.team_info);
 	}
 
 	//----------- post-process the data read ----------//
 	if (sprite_id > 0 && sprite_res[sprite_id]) {
 		sprite_info = sprite_res[sprite_id];
-		sprite_info->load_bitmap_res();
+		if (sprite_info) // Patch: defensive check
+			sprite_info->load_bitmap_res();
 	}
 
 	return 1;

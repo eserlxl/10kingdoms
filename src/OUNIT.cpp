@@ -668,16 +668,11 @@ void Unit::deinit_sprite(int keepSelected)
       if( unit_array.selected_recno == sprite_recno )
 		{
          unit_array.selected_recno = 0;
-         info.disp();
-      }
-
-      if( power.command_unit_recno == sprite_recno )
-         power.command_id = 0;
+		}
    }
 
-	//------- deinit unit mode -------//
-
-	deinit_unit_mode();
+   // Patch: Nullify sprite_info after use to avoid dangling pointer
+   sprite_info = nullptr;
 }
 //----------- End of function Unit::deinit_sprite -----------//
 

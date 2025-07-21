@@ -294,7 +294,10 @@ char* ResourceIdx::get_data(int indexId)
 		err_when( use_common_buf && dataSize > COMMON_DATA_BUF_SIZE );
 
 		if( !use_common_buf && data_buf_size < dataSize )
+		{
 			data_buf = mem_resize( data_buf, dataSize );
+			if (data_buf) memset(data_buf, 0, dataSize); // Patch: zero-initialize new buffer
+		}
 
 		data_buf_size = dataSize;
 
