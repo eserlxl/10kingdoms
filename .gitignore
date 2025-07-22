@@ -102,3 +102,4 @@ tools/icnpack
 .vscode/
 data/vgcore*
 valgrind_output.txt*
+tests/
