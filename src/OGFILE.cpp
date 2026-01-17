@@ -194,7 +194,9 @@ int GameFile::load_game(const char* base_path, const char* fileName)
 
 		//-------- read in saved game ----------//
 
-		switch( read_file(&file) )
+		int readResult = read_file(&file);
+		// fprintf(stderr, "[DEBUG] read_file returned: %d\n", readResult);
+		switch( readResult )
 		{
 		case 1:
 			rc = 1;
@@ -202,11 +204,13 @@ int GameFile::load_game(const char* base_path, const char* fileName)
 		case -1:
 			rc = 0;		// consider cancel load game
 			last_status = ERROR_FILE_FORMAT;
+			// fprintf(stderr, "[DEBUG] Load failed: ERROR_FILE_FORMAT\n");
 			break;
 		case 0:
 		default:
 			rc = -1;
 			last_status = ERROR_FILE_CORRUPTED;
+			// fprintf(stderr, "[DEBUG] Load failed: ERROR_FILE_CORRUPTED\n");
 		}
 
 		if( rc > 0 )

@@ -177,19 +177,31 @@ int GameFile::read_file(File* filePtr)
 
 	//### begin alex 5/3 ###//
 	game_file_array.load_file_game_version = filePtr->file_get_short();
+	// fprintf(stderr, "[DEBUG] Loaded file game version: %d (raw)\n", game_file_array.load_file_game_version);
 
 	// compare if same demo format or not
 	if( game_file_array.demo_format && game_file_array.load_file_game_version > 0
 		|| !game_file_array.demo_format && game_file_array.load_file_game_version < 0)
+	{
+		// fprintf(stderr, "[DEBUG] Demo format mismatch\n");
 		return -1;
+	}
 
 	// take the absolute value of game version
 	game_file_array.load_file_game_version = abs(game_file_array.load_file_game_version);
+	// fprintf(stderr, "[DEBUG] Loaded file game version (abs): %d, current GAME_VERSION: %d\n", 
+	// 	game_file_array.load_file_game_version, GAME_VERSION);
 
 	if(game_file_array.load_file_game_version > GAME_VERSION)
+	{
+		// fprintf(stderr, "[DEBUG] File version %d is newer than current version %d\n", 
+		// 	game_file_array.load_file_game_version, GAME_VERSION);
 		return -1;		// the executing program can't handle saved game in future version
+	}
 
 	game_file_array.same_version = ( game_file_array.load_file_game_version/100==GAME_VERSION/100 );
+	// fprintf(stderr, "[DEBUG] same_version=%d (load_file_game_version/100=%d, GAME_VERSION/100=%d)\n",
+	// 	game_file_array.same_version, game_file_array.load_file_game_version/100, GAME_VERSION/100);
 	//#### end alex 5/3 ####//
 
 	//------------------------------------------------//
@@ -201,23 +213,43 @@ int GameFile::read_file(File* filePtr)
 
 	if( game_file_array.demo_format )
 	{
+		// fprintf(stderr, "[DEBUG] Reading demo format: read_file_1\n");
 		if( !read_file_1(filePtr) )
+		{
+			// fprintf(stderr, "[DEBUG] read_file_1 failed\n");
 			return 0;
+		}
 
+		// fprintf(stderr, "[DEBUG] Reading demo format: read_file_2\n");
 		if( !read_file_2(filePtr) )
+		{
+			// fprintf(stderr, "[DEBUG] read_file_2 failed\n");
 			return 0;
+		}
 	}
 	else
 	{
+		// fprintf(stderr, "[DEBUG] Reading normal format: read_file_2\n");
 		if( !read_file_2(filePtr) )
+		{
+			// fprintf(stderr, "[DEBUG] read_file_2 failed\n");
 			return 0;
+		}
 
+		// fprintf(stderr, "[DEBUG] Reading normal format: read_file_1\n");
 		if( !read_file_1(filePtr) )
+		{
+			// fprintf(stderr, "[DEBUG] read_file_1 failed\n");
 			return 0;
+		}
 	}
 
+	// fprintf(stderr, "[DEBUG] Reading: read_file_3\n");
 	if( !read_file_3(filePtr) )
+	{
+		// fprintf(stderr, "[DEBUG] read_file_3 failed\n");
 		return 0;
+	}
 
 	//-------------------------------------//
 
@@ -366,11 +398,18 @@ int GameFile::write_file_2(File* filePtr)
 int GameFile::write_file_3(File* filePtr)
 {
 	write_book_mark( filePtr, BOOK_MARK+201 );
+	// long filePosBeforeUnitArray = filePtr->file_pos();
+	// fprintf(stderr, "[DEBUG] write_file_3: File position before unit_array.write_file: %ld\n", filePosBeforeUnitArray);
 
 	if( !unit_array.write_file(filePtr) )
 		return 0;
+	// long filePosAfterUnitArray = filePtr->file_pos();
+	// fprintf(stderr, "[DEBUG] write_file_3: File position after unit_array.write_file: %ld (wrote %ld bytes)\n", 
+	// 	filePosAfterUnitArray, filePosAfterUnitArray - filePosBeforeUnitArray);
 
 	write_book_mark( filePtr, BOOK_MARK+202 );
+	// long filePosAfterBookMark202 = filePtr->file_pos();
+	// fprintf(stderr, "[DEBUG] write_file_3: File position after writing book mark 202: %ld\n", filePosAfterBookMark202);
 
 	if( !bullet_array.write_file(filePtr) )
 		return 0;
@@ -612,20 +651,43 @@ int GameFile::read_file_2(File* filePtr)
 //
 int GameFile::read_file_3(File* filePtr)
 {
+	// fprintf(stderr, "[DEBUG] read_file_3: Checking book mark 201\n");
 	if( !read_book_mark( filePtr, BOOK_MARK+201 ) )
+	{
+		// fprintf(stderr, "[DEBUG] read_file_3: Book mark 201 failed\n");
 		return 0;
+	}
 
+	// fprintf(stderr, "[DEBUG] read_file_3: Reading unit_array\n");
 	if( !unit_array.read_file(filePtr) )
+	{
+		// fprintf(stderr, "[DEBUG] read_file_3: unit_array.read_file failed\n");
 		return 0;
+	}
+	// fprintf(stderr, "[DEBUG] read_file_3: unit_array.read_file succeeded\n");
 
+	// long filePosBeforeBookMark202 = filePtr->file_pos();
+	// fprintf(stderr, "[DEBUG] read_file_3: File position before book mark 202: %ld\n", filePosBeforeBookMark202);
+	// fprintf(stderr, "[DEBUG] read_file_3: Checking book mark 202\n");
 	if( !read_book_mark( filePtr, BOOK_MARK+202 ) )
+	{
+		// fprintf(stderr, "[DEBUG] read_file_3: Book mark 202 failed\n");
 		return 0;
+	}
 
+	// fprintf(stderr, "[DEBUG] read_file_3: Reading bullet_array\n");
 	if( !bullet_array.read_file(filePtr) )
+	{
+		// fprintf(stderr, "[DEBUG] read_file_3: bullet_array.read_file failed\n");
 		return 0;
+	}
 
+	// fprintf(stderr, "[DEBUG] read_file_3: Checking book mark 203\n");
 	if( !read_book_mark( filePtr, BOOK_MARK+203 ) )
+	{
+		// fprintf(stderr, "[DEBUG] read_file_3: Book mark 203 failed\n");
 		return 0;
+	}
 
 	if( !site_array.read_file(filePtr) )
 		return 0;
@@ -729,7 +791,14 @@ int GameFile::read_book_mark(File* filePtr, short bookMark)
 {
 	sys.yield();
 
-	return filePtr->file_get_short() == bookMark;
+	short readValue = filePtr->file_get_short();
+	if( readValue != bookMark )
+	{
+		// fprintf(stderr, "[DEBUG] read_book_mark: Expected %d (0x%04x), got %d (0x%04x)\n", 
+		// 	bookMark, bookMark, readValue, readValue);
+		return 0;
+	}
+	return 1;
 }
 //---------- End of function GameFile::read_book_mark -------//
 

@@ -261,6 +261,7 @@ int DynArrayB::read_file(File* filePtr)
 //
 int DynArrayB::write_empty_room(File* filePtr)
 {
+	// fprintf(stderr, "[DEBUG] DynArrayB::write_empty_room: Writing empty_room_count=%d\n", empty_room_count);
 	filePtr->file_put_short( empty_room_count );
 
 	//---------- write empty_room_array ---------//
@@ -291,6 +292,15 @@ int DynArrayB::write_empty_room(File* filePtr)
 int DynArrayB::read_empty_room(File* filePtr)
 {
 	empty_room_num = empty_room_count = filePtr->file_get_short();		// set both to the same
+	// fprintf(stderr, "[DEBUG] DynArrayB::read_empty_room: Read empty_room_count=%d\n", empty_room_count);
+
+	// Defensive: Validate empty_room_count - it should be reasonable (not > 1000 for most arrays)
+	// For UnitArray, it should typically be <= the number of units, which is usually < 1000
+	if( empty_room_count < 0 || empty_room_count > 1000 )
+	{
+		// fprintf(stderr, "[DEBUG] DynArrayB::read_empty_room: Invalid empty_room_count=%d (expected 0-1000), file position may be wrong - save file may be from incompatible version\n", empty_room_count);
+		return 0;
+	}
 
 	//---------- read empty_room_array ---------//
 

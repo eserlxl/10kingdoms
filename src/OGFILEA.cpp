@@ -27,6 +27,7 @@
 #include <unistd.h>
 #include <time.h>
 #endif
+#include <cstdio>
 #include <OGFILE.h>
 #include <KEY.h>
 #include <ODIR.h>
@@ -265,6 +266,13 @@ int GameFileArray::menu(int actionMode, int *recno)
 	int minRecno = action_mode == 1 ? 0 : 1;
 
 	//------ set current record no. -------//
+	// Initialize browse_recno - if no match found, set to first available slot
+	browse_recno = 0;  // Default to no selection
+	if( action_mode == 2 && size() > 0 )
+	{
+		// In load mode, default to first slot if no last_file_name match
+		browse_recno = 1;
+	}
 
 	for( int i=1 ; i<=size() ; i++ )
 	{
@@ -274,6 +282,8 @@ int GameFileArray::menu(int actionMode, int *recno)
 			break;
 		}
 	}
+	
+	// fprintf(stderr, "[DEBUG] Initial browse_recno=%d, size()=%d, last_file_name='%s'\n", browse_recno, size(), last_file_name);
 
 	//---------------------------------//
 
@@ -425,7 +435,110 @@ int GameFileArray::menu(int actionMode, int *recno)
 
 		sys.blt_virtual_buf();
 
-		if( scrollBar.detect() == 1 )
+		// Check buttons first before other UI elements to ensure they get priority
+		// Check for mouse clicks on buttons first, then check for keyboard shortcuts
+		
+		// Debug: Log mouse state and button coordinates periodically
+		static int debug_counter = 0;
+		// if( (debug_counter++ % 60) == 0 )	// Log every 60 frames
+		// {
+		// 	fprintf(stderr, "[DEBUG] Button check: cancel init=%d enable=%d coords=(%d,%d)-(%d,%d), save init=%d enable=%d coords=(%d,%d)-(%d,%d), mouse=(%d,%d) left_press=%d\n",
+		// 		cancelButton.init_flag, cancelButton.enable_flag, cancelButton.x1, cancelButton.y1, cancelButton.x2, cancelButton.y2,
+		// 		saveButton.init_flag, saveButton.enable_flag, saveButton.x1, saveButton.y1, saveButton.x2, saveButton.y2,
+		// 		mouse.cur_x, mouse.cur_y, mouse.left_press);
+		// }
+		
+		// Debug: Check cancel button
+		int cancelResult = cancelButton.detect();
+		if( cancelResult )		// check for mouse click on cancel button
+		{
+			// Debug output
+			// fprintf(stderr, "[DEBUG] Cancel button detected: result=%d, mouse.cur_x=%d, mouse.cur_y=%d, button coords: (%d,%d)-(%d,%d)\n",
+			// 	cancelResult, mouse.cur_x, mouse.cur_y, cancelButton.x1, cancelButton.y1, cancelButton.x2, cancelButton.y2);
+			// cancel button clicked
+			refreshFlag = LSOPTION_ALL;
+			retFlag = 0;
+			break;		// break while(1)
+		}
+		else if( mouse.key_code == KEY_ESC || mouse.any_click(RIGHT_BUTTON) > 0)		// ESC key or right button
+		{
+			// escape key or right button pressed
+			refreshFlag = LSOPTION_ALL;
+			retFlag = 0;
+			break;		// break while(1)
+		}
+		
+		// Debug: Check load/save button
+		int saveResult = 0;
+		if( action_mode == 1 || (action_mode == 2 && browse_recno) )
+		{
+			saveResult = saveButton.detect();
+			if( saveResult )
+			{
+				// Debug output
+				// fprintf(stderr, "[DEBUG] Load/Save button detected: result=%d, action_mode=%d, browse_recno=%d, mouse.cur_x=%d, mouse.cur_y=%d, button coords: (%d,%d)-(%d,%d)\n",
+				// 	saveResult, action_mode, browse_recno, mouse.cur_x, mouse.cur_y, saveButton.x1, saveButton.y1, saveButton.x2, saveButton.y2);
+				
+				// save / load button clicked - process immediately
+				refreshFlag = LSOPTION_ALL;
+				if( recno )
+					*recno = browse_recno;
+				retFlag = process_action(0);
+				// fprintf(stderr, "[DEBUG] process_action returned: %d\n", retFlag);
+				// ##### begin Gilbert 15/10 #####//
+				// retFlag: 1 = success, 0 = cancelled, -1 = error
+				// For load mode (action_mode == 2), always break after process_action
+				// For save mode (action_mode == 1), only break on success or error, not on cancel
+				if( action_mode == 2 || retFlag != 0 )
+				{
+					break;
+				}
+				// ##### end Gilbert 15/10 #####//
+			}
+		}
+		else if( action_mode == 2 && !browse_recno )
+		{
+			// Debug: Log when load button should be disabled
+			// static int last_log_frame = -1;
+			// if( debug_counter != last_log_frame )
+			// {
+			// 	fprintf(stderr, "[DEBUG] Load button not checked: action_mode=%d, browse_recno=%d (no game selected)\n", action_mode, browse_recno);
+			// 	last_log_frame = debug_counter;
+			// }
+		}
+		else if( action_mode == 1 && saveNewButton.detect() )
+		{
+			// save new button
+			refreshFlag = LSOPTION_ALL;
+			retFlag = process_action(1);
+//			if( retFlag < 0 )
+//				box.msg("Error");
+			break;
+		}
+		else if( action_mode == 1 && browse_recno && delButton.detect() )
+		{
+			// delete save game button
+			if( browse_recno != 0 )			// cannot del save game slot
+			{
+				del_game();
+				if( browse_recno > size() )
+				{
+					browse_recno = size();
+				}
+				if( browse_top_recno > size()-MAX_BROWSE_DISP_REC+1)
+					browse_top_recno = size()-MAX_BROWSE_DISP_REC+1;
+				if( browse_top_recno < minRecno )
+					browse_top_recno = minRecno;
+				scrollBar.set_view_recno(browse_top_recno);
+				refreshFlag |= LSOPTION_ALL_SLOTS | LSOPTION_SCROLL;
+			}
+			else
+			{
+				box.msg(_("Cannot delete this slot"));
+			}
+			refreshFlag = LSOPTION_ALL;
+		}
+		else if( scrollBar.detect() == 1 )
 		{
 			browse_top_recno = scrollBar.view_recno;
 			refreshFlag |= LSOPTION_SCROLL | LSOPTION_ALL_SLOTS;
@@ -473,54 +586,83 @@ int GameFileArray::menu(int actionMode, int *recno)
 				// ######## end Gilbert 31/10 ########//
 			}
 		}
-		else if( mouse.single_click( menu_x1+BROWSE_X1, menu_y1+BROWSE_Y1,
+		// Check for slot clicks - do this before button checks to ensure slot selection works
+		int slotClickResult = mouse.single_click( menu_x1+BROWSE_X1, menu_y1+BROWSE_Y1,
 			menu_x1+BROWSE_X1+BROWSE_REC_WIDTH-1,
-			menu_y1+BROWSE_Y1+ BROWSE_REC_HEIGHT*MAX_BROWSE_DISP_REC -1) )
+			menu_y1+BROWSE_Y1+ BROWSE_REC_HEIGHT*MAX_BROWSE_DISP_REC -1);
+		if( slotClickResult )
 		{
 			// click on game slot
 			int oldValue = browse_recno;
-			int newValue = scrollBar.view_recno + (mouse.click_y(0) - BROWSE_Y1 - menu_y1) / BROWSE_REC_HEIGHT;
-			if( newValue <= size())
+			int clickY = mouse.click_y(0);
+			int slotAreaY1 = menu_y1+BROWSE_Y1;
+			int newValue = scrollBar.view_recno + (clickY - slotAreaY1) / BROWSE_REC_HEIGHT;
+			// fprintf(stderr, "[DEBUG] Slot click detected: slotClickResult=%d, clickY=%d, slotAreaY1=%d, menu_y1=%d, BROWSE_Y1=%d, scrollBar.view_recno=%d, newValue=%d, oldValue=%d, size()=%d, minRecno=%d\n",
+			// 	slotClickResult, clickY, slotAreaY1, menu_y1, BROWSE_Y1, scrollBar.view_recno, newValue, oldValue, size(), minRecno);
+			if( newValue >= minRecno && newValue <= size())
 			{
-				// ##### begin Gilbert 31/10 #######//
-				//if( oldValue == browse_recno )
-				//{
-				//	browse_recno = newValue;
-				//	refreshFlag |= LSOPTION_SLOT(oldValue-scrollBar.view_recno)
-				//		| LSOPTION_SLOT(newValue-scrollBar.view_recno);
-				//}
-				if( newValue != oldValue )
-				{
-					browse_recno = newValue;
-					refreshFlag |= LSOPTION_SLOT(newValue-scrollBar.view_recno);
-					if( oldValue-scrollBar.view_recno >= 0 && oldValue-scrollBar.view_recno < MAX_BROWSE_DISP_REC )
-						refreshFlag |= LSOPTION_SLOT(oldValue-scrollBar.view_recno);
-				}
-				// ##### end Gilbert 31/10 #######//
+				// Always update browse_recno when clicking a valid slot
+				browse_recno = newValue;
+				refreshFlag |= LSOPTION_SLOT(newValue-scrollBar.view_recno);
+				if( oldValue >= minRecno && oldValue <= size() && oldValue-scrollBar.view_recno >= 0 && oldValue-scrollBar.view_recno < MAX_BROWSE_DISP_REC )
+					refreshFlag |= LSOPTION_SLOT(oldValue-scrollBar.view_recno);
+				// fprintf(stderr, "[DEBUG] Slot selected: browse_recno=%d\n", browse_recno);
+			}
+			else
+			{
+				// fprintf(stderr, "[DEBUG] Slot click rejected: newValue=%d not in range [%d, %d]\n", newValue, minRecno, size());
 			}
 		}
-		else if( cancelButton.detect(KEY_ESC) || mouse.any_click(RIGHT_BUTTON) > 0)		// also when ESC key is pressed or right button
+		else if( mouse.any_click(LEFT_BUTTON) > 0 )
 		{
-			// cancel button or escape key
+			// Debug: Log when there's a click but not in slot area
+			// int clickX = mouse.click_x(0);
+			// int clickY = mouse.click_y(0);
+			// int slotX1 = menu_x1+BROWSE_X1;
+			// int slotY1 = menu_y1+BROWSE_Y1;
+			// int slotX2 = menu_x1+BROWSE_X1+BROWSE_REC_WIDTH-1;
+			// int slotY2 = menu_y1+BROWSE_Y1+ BROWSE_REC_HEIGHT*MAX_BROWSE_DISP_REC -1;
+			// fprintf(stderr, "[DEBUG] Click outside slot area: click=(%d,%d), slot area=(%d,%d)-(%d,%d)\n",
+			// 	clickX, clickY, slotX1, slotY1, slotX2, slotY2);
+		}
+		// Check buttons after slot selection to avoid interfering with slot clicks
+		// Only check buttons if mouse click is actually within button bounds
+		// Check cancel button
+		if( mouse.any_click(cancelButton.x1, cancelButton.y1, cancelButton.x2, cancelButton.y2, LEFT_BUTTON) )
+		{
+			// Debug output
+			// fprintf(stderr, "[DEBUG] Cancel button detected: mouse.cur_x=%d, mouse.cur_y=%d, button coords: (%d,%d)-(%d,%d)\n",
+			// 	mouse.cur_x, mouse.cur_y, cancelButton.x1, cancelButton.y1, cancelButton.x2, cancelButton.y2);
+			// cancel button clicked
 			refreshFlag = LSOPTION_ALL;
 			retFlag = 0;
 			break;		// break while(1)
 		}
-		else if( (action_mode == 1 || (action_mode == 2 && browse_recno))
-			&& saveButton.detect() )
+		else if( mouse.key_code == KEY_ESC || mouse.any_click(RIGHT_BUTTON) > 0)		// ESC key or right button
 		{
+			// escape key or right button pressed
+			refreshFlag = LSOPTION_ALL;
+			retFlag = 0;
+			break;		// break while(1)
+		}
+		// Check load/save button - only if click is within button bounds
+		else if( (action_mode == 1 || (action_mode == 2 && browse_recno))
+			&& mouse.any_click(saveButton.x1, saveButton.y1, saveButton.x2, saveButton.y2, LEFT_BUTTON) )
+		{
+			// Debug output
+			// fprintf(stderr, "[DEBUG] Load/Save button detected: action_mode=%d, browse_recno=%d, mouse.cur_x=%d, mouse.cur_y=%d, button coords: (%d,%d)-(%d,%d)\n",
+			// 	action_mode, browse_recno, mouse.cur_x, mouse.cur_y, saveButton.x1, saveButton.y1, saveButton.x2, saveButton.y2);
 			// save / load button
 			refreshFlag = LSOPTION_ALL;
 			if( recno )
 				*recno = browse_recno;
 			retFlag = process_action(0);
+			// fprintf(stderr, "[DEBUG] process_action returned: %d\n", retFlag);
 			// ##### begin Gilbert 15/10 #####//
-			if( retFlag != 0 )
-			{
-//				if( retFlag < 0 )
-//					box.msg("Error");
-				break;
-			}
+			// retFlag: 1 = success, 0 = cancelled, -1 = error
+			// Always break after process_action to exit menu, regardless of result
+			// The error message will be displayed by process_action or the caller
+			break;
 			// ##### end Gilbert 15/10 #####//
 		}
 		else if( action_mode == 1 && saveNewButton.detect() )

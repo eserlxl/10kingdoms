@@ -59,7 +59,9 @@ int UnitArray::write_file(File* filePtr)
 
 	filePtr->file_put_short(restart_recno);  // variable in SpriteArray
 
-	filePtr->file_put_short( size()  );  // no. of units in unit_array
+	int writeSize = size();
+	// fprintf(stderr, "[DEBUG] UnitArray::write_file: Writing size()=%d units\n", writeSize);
+	filePtr->file_put_short( writeSize  );  // no. of units in unit_array
 
 	filePtr->file_put_short( selected_recno );
 	filePtr->file_put_short( selected_count );
@@ -76,7 +78,8 @@ int UnitArray::write_file(File* filePtr)
 	filePtr->file_put_short(0);
 	filePtr->file_put_short(0);
 
-	for( i=1; i<=size() ; i++ )
+	int deletedCount = 0;
+	for( i=1; i<=writeSize ; i++ )
    {
       unitPtr = (Unit*) get_ptr(i);
 
@@ -84,12 +87,15 @@ int UnitArray::write_file(File* filePtr)
 
       if( !unitPtr )    // the unit is deleted
       {
+         // fprintf(stderr, "[DEBUG] UnitArray::write_file: Unit %d is deleted, writing 0\n", i);
          filePtr->file_put_short(0);
+         deletedCount++;
       }
       else
       {
          //--------- write unit_id -------------//
 
+         // fprintf(stderr, "[DEBUG] UnitArray::write_file: Writing unit %d, unitId=%d\n", i, unitPtr->unit_id);
          filePtr->file_put_short(unitPtr->unit_id);
 
          //------ write data in the base class ------//
@@ -103,10 +109,18 @@ int UnitArray::write_file(File* filePtr)
 				return 0;
       }
    }
+   // long filePosBeforeEmptyRoom = filePtr->file_pos();
+   // fprintf(stderr, "[DEBUG] UnitArray::write_file: File position before empty_room_array: %ld\n", filePosBeforeEmptyRoom);
+   // fprintf(stderr, "[DEBUG] UnitArray::write_file: Wrote %d units (%d deleted), about to write empty_room_array\n", writeSize, deletedCount);
+   // fprintf(stderr, "[DEBUG] UnitArray::write_file: Current empty_room_count=%d before writing\n", empty_room_count);
 
    //------- write empty room array --------//
 
    write_empty_room(filePtr);
+   // long filePosAfterEmptyRoom = filePtr->file_pos();
+   // fprintf(stderr, "[DEBUG] UnitArray::write_file: File position after empty_room_array: %ld (wrote %ld bytes)\n", 
+   //    filePosAfterEmptyRoom, filePosAfterEmptyRoom - filePosBeforeEmptyRoom);
+   // fprintf(stderr, "[DEBUG] UnitArray::write_file: Finished writing empty_room_array\n");
 
    return 1;
 }
@@ -123,6 +137,7 @@ int UnitArray::read_file(File* filePtr)
 	restart_recno    = filePtr->file_get_short();
 
 	int unitCount    = filePtr->file_get_short();  // get no. of units from file
+	// fprintf(stderr, "[DEBUG] UnitArray::read_file: unitCount=%d\n", unitCount);
 
 	selected_recno   = filePtr->file_get_short();
 	selected_count   = filePtr->file_get_short();
@@ -139,12 +154,39 @@ int UnitArray::read_file(File* filePtr)
 	filePtr->file_get_short();
 	filePtr->file_get_short();
 
+   // long filePosBeforeUnits = filePtr->file_pos();
+   // fprintf(stderr, "[DEBUG] UnitArray::read_file: File position before reading units: %ld\n", filePosBeforeUnits);
+   
    for( i=1 ; i<=unitCount ; i++ )
    {
+      // long filePosBeforeUnit = filePtr->file_pos();
       unitId = filePtr->file_get_short();
+      // fprintf(stderr, "[DEBUG] Reading unit %d/%d: unitId=%d (0x%04x), file position: %ld\n", i, unitCount, unitId, unitId, filePosBeforeUnit);
 
       if( unitId==0 )  // the unit has been deleted
       {
+         // fprintf(stderr, "[DEBUG] Unit %d is deleted (unitId=0), skipping unit data\n", i);
+         // long currentPos = filePtr->file_pos();
+         // fprintf(stderr, "[DEBUG] Unit %d deleted: file position after reading unitId=0: %ld\n", i, currentPos);
+         
+         // Check if this might be an old format that wrote unit data even for deleted units
+         // Try to peek ahead: read the next short to see if it's a valid unitId or part of unit data
+         // If it's > 0 and < 1000, it might be sprite_id from UnitGF (old format wrote unit data for deleted units)
+         // long peekPos = filePtr->file_pos();
+         // short peekValue = filePtr->file_get_short();
+         // filePtr->file_seek(-2, SEEK_CUR); // Seek back
+         
+         // fprintf(stderr, "[DEBUG] Unit %d deleted: peeked next value=%d (0x%04x)\n", i, peekValue, peekValue);
+         
+         // If peekValue looks like it might be sprite_id (typically 1-1000 range) and we're not at the last unit,
+         // this might be old format that wrote unit data for deleted units
+         // if( peekValue > 0 && peekValue < 1000 && i < unitCount )
+         // {
+         //    fprintf(stderr, "[DEBUG] Unit %d deleted: Detected possible old format - next value %d might be sprite_id\n", i, peekValue);
+         //    fprintf(stderr, "[DEBUG] Unit %d deleted: Old format likely wrote unit data for deleted units - need to skip it\n", i);
+         //    // We can't easily skip without knowing unit_id, so we'll detect this later when reading the next unitId
+         // }
+         
          add_blank(1);     // it's a DynArrayB function
          emptyRoomCount++;
       }
@@ -152,29 +194,190 @@ int UnitArray::read_file(File* filePtr)
       {
          //----- validate unitId before creating unit -----------//
          if( unitId < 1 || unitId > unit_res.unit_info_count ) {
-#ifdef DEBUG
-            err_here(); // Invalid unitId in save file
-#else
-            return 0; // Abort loading on invalid unitId
-#endif
+			// fprintf(stderr, "[DEBUG] Invalid unitId=%d (0x%04x), unit_info_count=%d, i=%d/%d - this suggests file corruption or misalignment\n", 
+			// 	unitId, unitId, unit_res.unit_info_count, i, unitCount);
+			
+			// Try to recover: if unitId looks like it might be part of unit data (e.g., sprite_id = 256),
+			// we might be misaligned due to old format writing unit data for deleted units.
+			// Seek back 2 bytes (we just read the short) and try to read UnitGF to get the real unit_id
+			if( unitId >= 256 && unitId < 1000 && i > 1 ) {
+				// fprintf(stderr, "[DEBUG] Attempting recovery: unitId=%d might be sprite_id from misaligned read\n", unitId);
+				long currentPos = filePtr->file_pos();
+				// fprintf(stderr, "[DEBUG] Current file position: %ld, seeking back 2 bytes\n", currentPos);
+				filePtr->file_seek(-2, SEEK_CUR); // Seek back to before we read the invalid unitId
+				
+				// Try to read UnitGF structure to get the actual unit_id
+				UnitGF tempGF;
+				if( filePtr->file_read(&tempGF, sizeof(UnitGF)) ) {
+					// Extract unit_id from the structure (it's at offset after sprite fields)
+					int8_t actualUnitId = tempGF.unit_id;
+					// fprintf(stderr, "[DEBUG] Recovered: read UnitGF, actual unit_id=%d\n", actualUnitId);
+					
+					// Check if actualUnitId is valid
+					// fprintf(stderr, "[DEBUG] Recovery: actual unit_id=%d, unit_info_count=%d\n", actualUnitId, unit_res.unit_info_count);
+					if( actualUnitId >= 1 && actualUnitId <= unit_res.unit_info_count ) {
+						// fprintf(stderr, "[DEBUG] Recovery successful! Actual unitId=%d, file was misaligned\n", actualUnitId);
+						unitId = actualUnitId;
+						
+						// We've already read UnitGF into tempGF, so we need to process it and continue reading the rest
+						// Create unit and use the already-read UnitGF data
+						unitPtr = create_unit( unitId );
+						unitPtr->unit_id = unitId;
+						
+						// Copy tempGF to global gf_rec and process it (Unit::read_file uses global gf_rec)
+						memcpy(&gf_rec.unit, &tempGF, sizeof(UnitGF));
+						unitPtr->read_record(&gf_rec.unit);
+						
+						// Now read the rest of the unit data (result_node_array, way_point_array, team_info)
+						// This matches the logic in Unit::read_file after reading UnitGF
+						// fprintf(stderr, "[DEBUG] Recovery: Processing rest of unit data for unitId=%d\n", unitId);
+						
+						// Read memory data (result_node_array, way_point_array, team_info)
+						// Use a helper function or inline the logic from Unit::read_file
+						// For now, create a temporary Unit and call its read_file to read the rest
+						// Actually, we can't do that because we've already read UnitGF
+						// Let's manually read the rest
+						
+						// Defensive: Only free if not nullptr, not 0xdeadbeef, and not a small integer
+						auto safe_free = [](void*& ptr) {
+							if (ptr && ptr != (void*)0xdeadbeef && (uintptr_t)ptr > 0x1000) {
+								mem_del(ptr);
+							}
+							ptr = nullptr;
+						};
+						
+						safe_free((void*&)unitPtr->result_node_array);
+						if( unitPtr->result_node_count > 0 )
+						{
+							ResultNodeGF *node_record_array = (ResultNodeGF*) mem_add(sizeof(ResultNode)*unitPtr->result_node_count);
+							if( !filePtr->file_read(node_record_array, sizeof(ResultNodeGF)*unitPtr->result_node_count) )
+							{
+								mem_del(node_record_array);
+								// fprintf(stderr, "[DEBUG] Recovery: Failed to read result_node_array\n");
+								return 0;
+							}
+							unitPtr->result_node_array = (ResultNode*) mem_add(sizeof(ResultNode) * unitPtr->result_node_count);
+							for( int j=0; j<unitPtr->result_node_count; j++ )
+							{
+								ResultNode *node = unitPtr->result_node_array+j;
+								node->read_record(node_record_array+j);
+							}
+							mem_del(node_record_array);
+						}
+						
+						// Read way_point_array
+						safe_free((void*&)unitPtr->way_point_array);
+						if( unitPtr->way_point_array_size > 0 )
+						{
+							ResultNodeGF *node_record_array = (ResultNodeGF*) mem_add(sizeof(ResultNodeGF)*unitPtr->way_point_array_size);
+							memset(node_record_array, 0, sizeof(ResultNodeGF)*unitPtr->way_point_array_size);
+							if( !filePtr->file_read(node_record_array, sizeof(ResultNodeGF)*unitPtr->way_point_array_size) )
+							{
+								mem_del(node_record_array);
+								// fprintf(stderr, "[DEBUG] Recovery: Failed to read way_point_array\n");
+								return 0;
+							}
+							unitPtr->way_point_array = (ResultNode*) mem_add(sizeof(ResultNode)*unitPtr->way_point_array_size);
+							memset(unitPtr->way_point_array, 0, sizeof(ResultNode)*unitPtr->way_point_array_size);
+							for( int j=0; j<unitPtr->way_point_array_size; j++ )
+							{
+								ResultNode *node = unitPtr->way_point_array+j;
+								node->read_record(node_record_array+j);
+							}
+							mem_del(node_record_array);
+						}
+						
+						// Read team_info (use global gf_rec like Unit::read_file does)
+						// Check has_team_info flag from UnitGF before reading TeamInfoGF
+						safe_free((void*&)unitPtr->team_info);
+						if( gf_rec.unit.has_team_info )
+						{
+							if( filePtr->file_read(&gf_rec, sizeof(TeamInfoGF)) )
+							{
+								unitPtr->team_info = (TeamInfo*) mem_add(sizeof(TeamInfo));
+								memset(unitPtr->team_info, 0, sizeof(TeamInfo));
+								unitPtr->team_info->read_record(&gf_rec.team_info);
+							}
+						}
+						
+						// Restore sprite_info
+						if (unitPtr->sprite_id > 0) {
+							if (unitPtr->sprite_id > sprite_res.sprite_info_count) {
+								// fprintf(stderr, "[DEBUG] Recovery: Invalid sprite_id=%d\n", unitPtr->sprite_id);
+							} else {
+								unitPtr->sprite_info = sprite_res[unitPtr->sprite_id];
+								if (unitPtr->sprite_info)
+									unitPtr->sprite_info->load_bitmap_res();
+							}
+						}
+						
+						// Read derived class data
+						if( !unitPtr->read_derived_file( filePtr ) )
+						{
+							// fprintf(stderr, "[DEBUG] Recovery: read_derived_file failed for unitId=%d\n", unitId);
+							return 0;
+						}
+						
+						unitPtr->fix_attack_info();
+						// fprintf(stderr, "[DEBUG] Recovery: Successfully recovered and loaded unit %d\n", unitId);
+						// Continue to next iteration
+						continue;
+					} else if( actualUnitId == 0 ) {
+						// If actualUnitId is 0, this might be a deleted unit that had its data written
+						// We need to skip the unit data to maintain alignment
+						// fprintf(stderr, "[DEBUG] Recovery: Detected deleted unit (unit_id=0) with unit data written - this is the misalignment cause\n");
+						// fprintf(stderr, "[DEBUG] Recovery: Need to skip unit data for this deleted unit to maintain alignment\n");
+						// Skip the rest of UnitGF (we've already read it into tempGF)
+						// Then skip result_node_array, way_point_array, team_info, and derived data
+						// This is complex without knowing unit_id - for now, fail with clear message
+						// fprintf(stderr, "[DEBUG] Recovery: File format mismatch - deleted units have unit data written.\n");
+						// fprintf(stderr, "[DEBUG] Recovery: Please resave the game with the current version.\n");
+						return 0;
+					} else {
+						// fprintf(stderr, "[DEBUG] Recovery failed: actual unit_id=%d is also invalid (out of range 1-%d)\n", 
+						// 	actualUnitId, unit_res.unit_info_count);
+						// fprintf(stderr, "[DEBUG] Recovery: This suggests severe file corruption or incompatible format\n");
+					}
+				} else {
+					// fprintf(stderr, "[DEBUG] Recovery failed: could not read UnitGF structure\n");
+				}
+			}
+			
+			// fprintf(stderr, "[DEBUG] The save file appears to be from an incompatible version or corrupted.\n");
+			// fprintf(stderr, "[DEBUG] Please resave the game with the current version, or use a save file created with this version.\n");
+            return 0;
          }
          //----- create unit object -----------//
          unitPtr = create_unit( unitId );
          unitPtr->unit_id = unitId;
 
+         long filePosBeforeUnitData = filePtr->file_pos();
+         
          //---- read data in base class -----//
 
          if( !unitPtr->read_file( filePtr ) )
+         {
+			// fprintf(stderr, "[DEBUG] Unit::read_file failed for unitId=%d, i=%d\n", unitId, i);
             return 0;
+		}
+		// long filePosAfterUnitData = filePtr->file_pos();
+		// fprintf(stderr, "[DEBUG] Unit %d (unitId=%d): read_file consumed %ld bytes\n", i, unitId, filePosAfterUnitData - filePosBeforeUnitData);
 
          //----- read data in derived class -----//
 
          if( !unitPtr->read_derived_file( filePtr ) )
+         {
+			// fprintf(stderr, "[DEBUG] Unit::read_derived_file failed for unitId=%d, i=%d\n", unitId, i);
             return 0;
+		}
+		// long filePosAfterDerived = filePtr->file_pos();
+		// fprintf(stderr, "[DEBUG] Unit %d (unitId=%d): read_derived_file consumed %ld bytes\n", i, unitId, filePosAfterDerived - filePosAfterUnitData);
 
 			unitPtr->fix_attack_info();
       }
    }
+   // long filePosAfterAllUnits = filePtr->file_pos();
+   // fprintf(stderr, "[DEBUG] UnitArray::read_file: Finished reading all %d units, total bytes read: %ld\n", unitCount, filePosAfterAllUnits - filePosBeforeUnits);
 
 	//-------- linkout() those record added by add_blank() ----------//
    //-- So they will be marked deleted in DynArrayB and can be -----//
@@ -194,8 +397,36 @@ int UnitArray::read_file(File* filePtr)
    }
 
    //------- read empty room array --------//
-
-   read_empty_room(filePtr);
+   // fprintf(stderr, "[DEBUG] UnitArray::read_file: About to read empty_room_array, expected emptyRoomCount=%d\n", emptyRoomCount);
+   if( !read_empty_room(filePtr) )
+   {
+      // fprintf(stderr, "[DEBUG] UnitArray::read_file: read_empty_room failed\n");
+      return 0;
+   }
+   // fprintf(stderr, "[DEBUG] UnitArray::read_file: Finished reading empty_room_array, empty_room_count=%d (expected %d)\n", empty_room_count, emptyRoomCount);
+   
+   // Log file position after reading empty_room_array
+   // long filePosAfterEmptyRoom = filePtr->file_pos();
+   // fprintf(stderr, "[DEBUG] UnitArray::read_file: File position after empty_room_array: %ld\n", filePosAfterEmptyRoom);
+   
+   // Defensive: Validate empty_room_count matches what we expect
+   // If there's a significant mismatch (> 10 units difference), the file is likely corrupted or from incompatible version
+   if( empty_room_count != emptyRoomCount )
+   {
+      int diff = abs(empty_room_count - emptyRoomCount);
+      if( diff > 10 || empty_room_count > 100 )
+      {
+         // fprintf(stderr, "[DEBUG] UnitArray::read_file: ERROR - empty_room_count mismatch! Read %d but expected %d (diff=%d) - file may be corrupted or from incompatible version\n", 
+         //    empty_room_count, emptyRoomCount, diff);
+         // fprintf(stderr, "[DEBUG] UnitArray::read_file: This suggests the save file format is incompatible. Please resave the game with the current version.\n");
+         return 0; // Fail the load
+      }
+      else
+      {
+         // fprintf(stderr, "[DEBUG] UnitArray::read_file: WARNING - empty_room_count mismatch! Read %d but expected %d (diff=%d) - minor difference, continuing\n", 
+         //    empty_room_count, emptyRoomCount, diff);
+      }
+   }
 
    //------- verify the empty_room_array loading -----//
 
@@ -209,6 +440,7 @@ int UnitArray::read_file(File* filePtr)
    }
 #endif
 
+   // fprintf(stderr, "[DEBUG] UnitArray::read_file: Returning success\n");
    return 1;
 }
 //--------- End of function UnitArray::read_file ---------------//
@@ -338,19 +570,33 @@ int Unit::read_file(File* filePtr)
 	//#### end alex 15/10 ####//
 
 	safe_free((void*&)team_info);
-	if( filePtr->file_read(&gf_rec, sizeof(TeamInfoGF)) )
+	// Check has_team_info flag from UnitGF before reading TeamInfoGF
+	// This matches the write logic which only writes TeamInfoGF if team_info exists
+	if( gf_rec.unit.has_team_info )
 	{
-		team_info = (TeamInfo*) mem_add(sizeof(TeamInfo));
-		memset(team_info, 0, sizeof(TeamInfo)); // Patch: zero-initialize
-		team_info->read_record(&gf_rec.team_info);
+		if( filePtr->file_read(&gf_rec, sizeof(TeamInfoGF)) )
+		{
+			team_info = (TeamInfo*) mem_add(sizeof(TeamInfo));
+			memset(team_info, 0, sizeof(TeamInfo)); // Patch: zero-initialize
+			team_info->read_record(&gf_rec.team_info);
+		}
 	}
 
 	//----------- post-process the data read ----------//
-	if (sprite_id > 0 && sprite_res[sprite_id]) {
-		sprite_info = sprite_res[sprite_id];
-		if (sprite_info) // Patch: defensive check
-			sprite_info->load_bitmap_res();
+	// Restore sprite_info from sprite_res if sprite_id is valid
+	// This is necessary because sprite_info is not saved to file (it's a pointer)
+	if (sprite_id > 0) {
+		if (sprite_id > sprite_res.sprite_info_count) {
+			// fprintf(stderr, "[DEBUG] Unit::read_file: Invalid sprite_id=%d, sprite_info_count=%d, unit_id=%d\n", 
+			// 	sprite_id, sprite_res.sprite_info_count, unit_id);
+			// Don't fail load, just skip sprite_info restoration
+		} else {
+			sprite_info = sprite_res[sprite_id];
+			if (sprite_info) // Patch: defensive check
+				sprite_info->load_bitmap_res();
+		}
 	}
+	// If sprite_info is still NULL, it will be handled by our validation checks in other functions
 
 	return 1;
 }
