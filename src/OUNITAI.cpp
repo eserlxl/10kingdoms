@@ -1290,12 +1290,8 @@ int Unit::ai_handle_seek_path_fail()
 			if (!locPtr) continue;
 
 			// Check for enemy town, but skip independent towns (nation_recno == 0)
-			if (locPtr->is_town()) {
-				short blockingTownRecno = locPtr->town_recno();
-				if (blockingTownRecno <= 0) {
-					printf("[AI DEBUG] Invalid blockingTownRecno: %d at (%d,%d)\n", blockingTownRecno, checkX, checkY);
-					continue;
-				}
+			short blockingTownRecno = locPtr->town_recno();
+			if (blockingTownRecno > 0) {
 				if (town_array.is_deleted(blockingTownRecno)) {
 					printf("[AI DEBUG] Deleted town recno: %d at (%d,%d)\n", blockingTownRecno, checkX, checkY);
 					continue;
@@ -1348,13 +1344,8 @@ int Unit::ai_handle_seek_path_fail()
 				if (!locPtr) continue;
 
 				// Check for enemy town, but skip independent towns (nation_recno == 0)
-				short blockingTownRecno = -1;
-				if (locPtr->is_town()) {
-					blockingTownRecno = locPtr->town_recno();
-					if (blockingTownRecno <= 0) {
-						printf("[AI DEBUG] Invalid blockingTownRecno: %d at (%d,%d)\n", blockingTownRecno, checkX, checkY);
-						continue;
-					}
+				short blockingTownRecno = locPtr->town_recno();
+				if (blockingTownRecno > 0) {
 					if (town_array.is_deleted(blockingTownRecno)) {
 						printf("[AI DEBUG] Deleted town recno: %d at (%d,%d)\n", blockingTownRecno, checkX, checkY);
 						continue;
