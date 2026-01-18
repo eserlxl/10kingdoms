@@ -5,10 +5,13 @@ This document describes how to build 10kingdoms using the CMake build system.
 ## Prerequisites
 
 - CMake 3.20 or later
-- C++ compiler with C++11 support (GCC, Clang, or MSVC)
-- SDL2 development libraries
-- OpenAL development libraries
-- enet library (optional, for networking)
+- C++ compiler with C++23 support:
+  - GCC 13.0+ (full C++23 support)
+  - Clang 16.0+ (full C++23 support)
+  - MSVC 2022 17.5+ (Visual Studio 2022 17.5)
+- SDL2 2.24.0+ development libraries (required)
+- OpenAL development libraries (required)
+- enet 1.3.x library (required for networking/multiplayer)
 - curl library (optional, for web services)
 - gettext (optional, for internationalization)
 - jwasm (optional, for x86 assembly optimizations)
@@ -97,23 +100,35 @@ make -j20
 After building, install the game:
 
 ```bash
-make install
+cmake --install .
 ```
 
 Or specify a custom installation prefix:
 
 ```bash
 cmake -DCMAKE_INSTALL_PREFIX=/usr/local ..
-make install
+cmake --build . -j20
+cmake --install .
 ```
+
+The installation will place:
+- Executable in `PREFIX/bin/10kingdoms`
+- Data files in `PREFIX/share/10kingdoms`
+- Documentation in `PREFIX/share/doc/10kingdoms`
 
 ## Running
 
-The executable will be built in the `build` directory:
+The executable will be built in the `build/src` directory:
 
 ```bash
-./build/10kingdoms
+# From the build directory
+./src/10kingdoms
+
+# Or from the project root with TKDATA set
+TKDATA=data build/src/10kingdoms
 ```
+
+The `TKDATA` environment variable must point to the directory containing the game data files (typically the `data/` directory in the source tree).
 
 ## Troubleshooting
 
@@ -140,18 +155,11 @@ If building with `ENABLE_ASM=ON` fails:
 
 The game requires 387 FPU support for stable gameplay. If your compiler doesn't support `-mfpmath=387`, the build will continue but multiplayer may be disabled.
 
-## Comparison with Autotools
-
-The CMake build system is designed to produce functionally identical binaries to the autotools build. Key differences:
-
-- CMake uses modern dependency detection
-- CMake supports out-of-source builds by default
-- CMake provides better IDE integration
-- Both build systems can coexist - you can use either one
-
 ## Notes
 
-- The CMake build system is parallel to the existing autotools build
-- Both build systems should produce equivalent results
-- The autotools build remains the primary build system for releases
-- CMake build is provided for modern development workflows
+- **CMake is now the only build system** - The autotools build system has been removed
+- CMake uses modern dependency detection with fallback to pkg-config
+- CMake supports out-of-source builds by default
+- CMake provides better IDE integration and cross-platform support
+- The project uses C++23 standard with compiler version checks
+- Parallel builds are enabled by default (20 jobs)

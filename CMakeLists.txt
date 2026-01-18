@@ -279,4 +279,4 @@ add_subdirectory(src)
 install(DIRECTORY data DESTINATION share/10kingdoms)
 
 # Documentation
-install(FILES COPYING README DESTINATION share/doc/10kingdoms)
+install(FILES COPYING README.md DESTINATION share/doc/10kingdoms)
