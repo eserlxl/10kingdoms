@@ -1187,13 +1187,25 @@ int Spy::mobilize_firm_spy()
 	if( spy_place != SPY_FIRM )
 		return 0;
 
+	// Defensive check: ensure the firm exists before accessing it
+	if( firm_array.is_deleted(spy_place_para) )
+		return 0;
+
 	Firm* firmPtr = firm_array[spy_place_para];
+
+	if( !firmPtr )
+		return 0;
+
 	int 	spyUnitRecno=0;
 
 	//---- check if the spy is the overseer of the firm -----//
 
 	if( firmPtr->overseer_recno )
 	{
+		// Defensive check: ensure the overseer unit exists before accessing it
+		if( unit_array.is_deleted(firmPtr->overseer_recno) )
+			return 0;
+
 		Unit* unitPtr = unit_array[firmPtr->overseer_recno];
 
 		if( unitPtr->spy_recno == spy_recno )
