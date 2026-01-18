@@ -115,16 +115,14 @@
 #include <signal.h>
 
 // Signal handler to ensure proper cleanup on program termination
+// This handler is async-signal-safe: it only sets a flag and lets the main loop
+// handle cleanup gracefully. This prevents issues when signals arrive while
+// SDL is blocked in system calls (e.g., poll() for D-Bus events).
 static void signal_handler(int signal)
 {
-	// Ensure proper cleanup even when terminated by signal
-	if (sys.init_flag)
-	{
-		sys.deinit();
-	}
-	
-	// Exit with appropriate code
-	exit(signal);
+	// Set exit flag to signal termination request
+	// The main loop will check this flag and exit gracefully
+	sys.signal_exit_flag = 1;
 }
 
 //------- define game version constant --------//
@@ -313,10 +311,15 @@ static void extra_error_handler();
 //
 int main(int argc, char **argv)
 {
-	// Set up signal handlers for proper cleanup
-	signal(SIGINT, signal_handler);   // Ctrl+C
-	signal(SIGTERM, signal_handler);  // Termination request
-	signal(SIGABRT, signal_handler);  // Abort signal
+	// Set up signal handlers for proper cleanup using sigaction for better control
+	struct sigaction sa;
+	sa.sa_handler = signal_handler;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;  // Don't use SA_RESTART - we want system calls to be interruptible
+	
+	sigaction(SIGINT, &sa, NULL);   // Ctrl+C
+	sigaction(SIGTERM, &sa, NULL);  // Termination request
+	sigaction(SIGABRT, &sa, NULL);  // Abort signal
 	
 	if (!sys.set_game_dir())
 		return 1;
