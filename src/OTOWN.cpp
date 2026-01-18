@@ -4074,6 +4074,9 @@ int Town::average_loyalty()
 	for( i=0 ; i<MAX_RACE ; i++ )
 		totalLoyalty += (int) race_loyalty_array[i] * race_pop_array[i];
 
+	if( population == 0 )
+		return 0;
+
 	return totalLoyalty / population;
 }
 //---------- End of function Town::average_loyalty --------//
@@ -4087,6 +4090,9 @@ int Town::average_target_loyalty()
 
 	for( i=0 ; i<MAX_RACE ; i++ )
 		totalLoyalty += (int) race_target_loyalty_array[i] * race_pop_array[i];
+
+	if( population == 0 )
+		return 0;
 
 	return totalLoyalty / population;
 }
@@ -4110,6 +4116,9 @@ int Town::average_resistance(int nationRecno)
 		if( thisPop > 0 )
 			totalResistance += race_resistance_array[i][nationRecno-1] * thisPop;
 	}
+
+	if( population == 0 )
+		return 0;
 
 	return int(totalResistance / population);
 }
@@ -4139,6 +4148,9 @@ int Town::average_target_resistance(int nationRecno)
 				totalResistance += (int) race_resistance_array[i][nationRecno-1] * thisPop;
 		}
 	}
+
+	if( population == 0 )
+		return 0;
 
 	return int(totalResistance / population);
 }
