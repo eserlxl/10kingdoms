@@ -2458,12 +2458,21 @@ void Unit::handle_blocked_wait(Unit* unitPtr)
 			nextY >>= ZOOM_Y_SHIFT_COUNT;
 
 			locPtr = world.get_loc(nextX, nextY);
+			// Defensive check: if location is out of bounds, treat as blocked
+			if( !locPtr )
+			{
+				blocked = 1; // out of bounds = can't move there
+				break;
+			}
 			blocked = locPtr->has_unit(mobile_type);
 
 			//---------------- the unit is also waiting ---------------//
 			if(blocked && (blockedUnitPtr->move_to_x_loc!=blockedUnitPtr->cur_x_loc() ||
 				blockedUnitPtr->move_to_y_loc!=blockedUnitPtr->cur_y_loc()))
 			{
+				// Defensive check: ensure locPtr is valid before accessing it
+				if( !locPtr )
+					break;
 				if(locPtr->unit_recno(mobile_type) == sprite_recno)
 					cycleWait = 1;
 				else
@@ -2496,6 +2505,10 @@ void Unit::handle_blocked_wait(Unit* unitPtr)
 					cycle_wait_unit_array[cycle_wait_unit_index++] = blockedUnitPtr->sprite_recno;
 					locPtr = world.get_loc(nextX, nextY);
 					err_when(blockedUnitPtr->mobile_type!=mobile_type);
+					
+					// Defensive check: ensure locPtr is valid before accessing it
+					if( !locPtr )
+						break;
 					
 					int nextUnitRecno = locPtr->unit_recno(mobile_type);
 					// Defensive check: ensure the next blocked unit exists before accessing it
@@ -2550,7 +2563,8 @@ void Unit::handle_blocked_wait(Unit* unitPtr)
 			// codes used to speed up frame rate
 			//-----------------------------------------------------------------//
 			locPtr = world.get_loc(move_to_x_loc, move_to_y_loc);
-			if(!locPtr->can_move(mobile_type) && action_mode2!=ACTION_MOVE)
+			// Defensive check: if location is out of bounds, treat as not moveable
+			if( !locPtr || (!locPtr->can_move(mobile_type) && action_mode2!=ACTION_MOVE) )
 				stop(KEEP_PRESERVE_ACTION); // let reactivate..() call searching later
 			else
 				search_or_wait();
