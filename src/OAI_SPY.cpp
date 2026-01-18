@@ -384,6 +384,10 @@ int Nation::think_assign_spy_target_camp(int raceId, int regionId)
 
 		//---------------------------------//
 
+		// Defensive check: ensure the overseer unit exists before accessing it
+		if( unit_array.is_deleted(firmPtr->overseer_recno) )
+			continue;
+
 		Unit* overseerUnit = unit_array[firmPtr->overseer_recno];
 
 		if( overseerUnit->spy_recno )		// if the overseer is already a spy

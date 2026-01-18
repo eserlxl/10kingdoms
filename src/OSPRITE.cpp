@@ -311,6 +311,15 @@ void Sprite::draw()
 // ---------- Begin of function Sprite::display_dir ---------//
 uint8_t Sprite::display_dir()
 {
+	// Validate sprite_info before accessing it
+	// If NULL, try to restore it from sprite_res using sprite_id
+	if( !sprite_info && sprite_id > 0 )
+		sprite_info = sprite_res[sprite_id];
+	
+	// If still NULL, return cur_dir as fallback
+	if( !sprite_info )
+		return cur_dir;
+	
 	uint8_t curDir = cur_dir;
 	switch( sprite_info->turn_resolution)
 	{
@@ -364,6 +373,15 @@ uint8_t Sprite::display_dir()
 // ---------- Begin of function Sprite::need_mirror --------//
 int Sprite::need_mirror(uint8_t dispDir)
 {
+	// Validate sprite_info before accessing it
+	// If NULL, try to restore it from sprite_res using sprite_id
+	if( !sprite_info && sprite_id > 0 )
+		sprite_info = sprite_res[sprite_id];
+	
+	// If still NULL, return safe default (no mirror)
+	if( !sprite_info )
+		return 0;
+	
 	return (dispDir < 8 || sprite_info->turn_resolution <= 8) ? (dispDir & 7) >= 5 : (dispDir & 7) >= 4;
 }
 // ---------- End of function Sprite::need_mirror --------//

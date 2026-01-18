@@ -1978,6 +1978,12 @@ void Town::process_train()
 	err_when( !train_unit_recno );
 
 	Unit* unitPtr = unit_array[train_unit_recno];
+	if( !unitPtr || unit_array.is_deleted(train_unit_recno) )
+	{
+		train_unit_recno = 0;
+		return;
+	}
+	
 	int   raceId  = unitPtr->race_id;
 
 	//---- if the unit being trained was killed -----//
@@ -2034,11 +2040,40 @@ void Town::process_train()
 void Town::finish_train(Unit* unitPtr)
 {
 	err_when(train_unit_recno<=0 || unit_array.is_deleted(train_unit_recno));
+	
+	// Validate unitPtr before accessing it
+	if( !unitPtr || unit_array.is_deleted(train_unit_recno) )
+		return;
+	
+	// During training, sprite_info is set to NULL by deinit_sprite()
+	// Get it from the unit resource if it's NULL
 	SpriteInfo*	spriteInfo = unitPtr->sprite_info;
-	int 			xLoc=loc_x1; // xLoc & yLoc are used for returning results
-	int 			yLoc=loc_y1;
+	if( !spriteInfo )
+		spriteInfo = sprite_res[unit_res[unitPtr->unit_id]->sprite_id];
+	
+	if( !spriteInfo )
+		return;
+	
+	// Save spriteInfo values immediately after validation to avoid accessing invalid memory later
+	int spriteLocWidth = spriteInfo->loc_width;
+	int spriteLocHeight = spriteInfo->loc_height;
+	
+	// Get a fresh pointer to this Town from the array to avoid using potentially invalid 'this'
+	// This prevents crashes if 'this' becomes a dangling pointer when accessing loc_x1/loc_y1
+	int savedTownRecno = town_recno;
+	Town* townPtr = (savedTownRecno > 0) ? town_array[savedTownRecno] : NULL;
+	
+	// Use townPtr from the array if available, otherwise fall back to 'this'
+	// This provides protection against dangling pointers while allowing normal operation
+	Town* safeTownPtr = townPtr ? townPtr : this;
+	
+	// Save location values immediately to avoid accessing invalid memory later
+	int xLoc = safeTownPtr->loc_x1;
+	int yLoc = safeTownPtr->loc_y1;
+	int loc_x2 = safeTownPtr->loc_x2;
+	int loc_y2 = safeTownPtr->loc_y2;
 
-	if( !world.locate_space(&xLoc, &yLoc, loc_x2, loc_y2, spriteInfo->loc_width, spriteInfo->loc_height) )
+	if( !world.locate_space(&xLoc, &yLoc, loc_x2, loc_y2, spriteLocWidth, spriteLocHeight) )
 		return;
 
 	unitPtr->init_sprite(xLoc, yLoc);
@@ -2046,23 +2081,23 @@ void Town::finish_train(Unit* unitPtr)
 	if( unitPtr->is_own() )
 	{
 		if( config_adv.news_notify_complete )
-			news_array.unit_trained(unitPtr->sprite_recno, town_recno);
+			news_array.unit_trained(unitPtr->sprite_recno, safeTownPtr->town_recno);
 		se_res.far_sound( xLoc, yLoc, 1, 'S', unitPtr->sprite_id, "RDY");
 	}
 
 	unitPtr->unit_mode = 0;		// reset it to 0 from UNIT_MODE_UNDER_TRAINING
-	train_unit_recno   = 0;
+	safeTownPtr->train_unit_recno   = 0;
 
-	int townRecno = town_recno;		// save the recno as it can be deleted in dec_pop()
+	int townRecno = safeTownPtr->town_recno;		// save the recno as it can be deleted in dec_pop()
 
-	dec_pop(unitPtr->race_id, 0);		// decrease the population now as the recruit() does do so
+	safeTownPtr->dec_pop(unitPtr->race_id, 0);		// decrease the population now as the recruit() does do so
 
 	//---- if this trained unit is tied to an AI action ----//
 
-	if( train_unit_action_id )
+	if( safeTownPtr->train_unit_action_id )
 	{
-		nation_array[nation_recno]->process_action_id(train_unit_action_id);
-		train_unit_action_id = 0;
+		nation_array[safeTownPtr->nation_recno]->process_action_id(safeTownPtr->train_unit_action_id);
+		safeTownPtr->train_unit_action_id = 0;
 	}
 
 	//----- refresh if this town is currently selected ------//

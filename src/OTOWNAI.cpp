@@ -1359,7 +1359,12 @@ int Town::think_attack_nearby_enemy()
 
 			if( locPtr->has_unit(UNIT_LAND) )
 			{
-				unitPtr = unit_array[ locPtr->unit_recno(UNIT_LAND) ];
+				int recno = locPtr->unit_recno(UNIT_LAND);
+				// Defensive check: ensure the unit exists before accessing it
+				if( !recno || unit_array.is_deleted(recno) )
+					continue;
+				
+				unitPtr = unit_array[recno];
 
 				if( !unitPtr->nation_recno )
 					continue;
@@ -1385,7 +1390,15 @@ int Town::think_attack_nearby_enemy()
 
 			else if( locPtr->is_firm() )
 			{
-				firmPtr = firm_array[locPtr->firm_recno()];
+				int firmRecno = locPtr->firm_recno();
+				// Defensive check: ensure the firm exists before accessing it
+				if( !firmRecno || firm_array.is_deleted(firmRecno) )
+					continue;
+
+				firmPtr = firm_array[firmRecno];
+
+				if( !firmPtr )
+					continue;
 
 				//------- if this is a monster firm ------//
 

@@ -238,7 +238,12 @@ void UnitMonster::king_leave_scroll()
 
 		if( locPtr->has_unit(UNIT_LAND) )
 		{
-			Unit* unitPtr = unit_array[locPtr->unit_recno(UNIT_LAND)];
+			int unitRecno = locPtr->unit_recno(UNIT_LAND);
+			// Defensive check: ensure the unit exists before accessing it
+			if( !unitRecno || unit_array.is_deleted(unitRecno) )
+				continue;
+
+			Unit* unitPtr = unit_array[unitRecno];
 			if ( unitPtr->race_id > 0 ) {
 				raceCountArray[ unitPtr->race_id-1 ]++;
 			}

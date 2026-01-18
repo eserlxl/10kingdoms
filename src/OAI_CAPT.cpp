@@ -124,6 +124,10 @@ int Nation::think_capture_independent()
 
 			if( firmPtr->overseer_recno )
 			{
+				// Defensive check: ensure the overseer unit exists before accessing it
+				if( unit_array.is_deleted(firmPtr->overseer_recno) )
+					continue;
+
 				Unit* unitPtr = unit_array[firmPtr->overseer_recno];
 
 				if( unitPtr->skill.skill_level >= 70 &&

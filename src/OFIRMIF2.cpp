@@ -689,8 +689,14 @@ int Firm::can_worker_capture(int captureNationRecno)
 
 	if( firm_res[firm_id]->need_overseer )
 	{
-		return overseer_recno &&
-				 unit_array[overseer_recno]->true_nation_recno() == captureNationRecno;
+		if( !overseer_recno )
+			return 0;
+
+		// Defensive check: ensure the overseer unit exists before accessing it
+		if( unit_array.is_deleted(overseer_recno) )
+			return 0;
+
+		return unit_array[overseer_recno]->true_nation_recno() == captureNationRecno;
 	}
 
 	//--- if this firm doesn't need an overseer, can capture it if all the units in the firm are the player's spies ---//
@@ -707,10 +713,18 @@ int Firm::can_worker_capture(int captureNationRecno)
 		}
 		else if( workerPtr->town_recno )
 		{
-			if( town_array[ workerPtr->town_recno ]->nation_recno == captureNationRecno )
-				captureUnitCount++;
+			// Defensive check: ensure the town exists before accessing it
+			if( !town_array.is_deleted(workerPtr->town_recno) )
+			{
+				if( town_array[ workerPtr->town_recno ]->nation_recno == captureNationRecno )
+					captureUnitCount++;
+				else
+					otherUnitCount++;
+			}
 			else
-				otherUnitCount++;
+			{
+				otherUnitCount++;  // deleted town, count as other
+			}
 		}
 		else
 		{

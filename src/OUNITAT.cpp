@@ -359,6 +359,10 @@ void Unit::hit_target(Unit* parentUnit, Unit* targetUnit, float attackDamage, sh
 //
 void Unit::unit_auto_guarding(Unit *attackUnit)
 {
+	// Defensive check: ensure attackUnit is valid before accessing it
+	if( !attackUnit )
+		return;
+
 	if( force_move_flag )
 		return;
 
@@ -429,6 +433,10 @@ void Unit::unit_auto_guarding(Unit *attackUnit)
 			// select the weaker target to attack first, if more than one
 			// unit attack this unit
 			//------------------------------------------------------------//
+			// Defensive check: ensure attackUnit's sprite_info exists before accessing it
+			if( !attackUnit->sprite_info )
+				return;
+
 			int attackXLoc = attackUnit->next_x_loc();
 			int attackYLoc = attackUnit->next_y_loc();
 
@@ -469,6 +477,10 @@ void Unit::unit_auto_guarding(Unit *attackUnit)
 			UnitMarine *shipPtr = (UnitMarine*) this;
 			if(shipPtr->auto_mode && shipPtr->stop_defined_num>1)
 			{
+				// Defensive check: ensure attackUnit's sprite_info exists before accessing it
+				if( !attackUnit->sprite_info )
+					return;
+
 				int targetXLoc = attackUnit->next_x_loc();
 				int targetYLoc = attackUnit->next_y_loc();
 				SpriteInfo *targetSpriteInfo = attackUnit->sprite_info;
@@ -791,6 +803,10 @@ void Unit::hit_wall(Unit* attackUnit, int targetXLoc, int targetYLoc, float atta
 //
 int Unit::cal_distance(int targetXLoc, int targetYLoc, int targetWidth, int targetHeight)
 {
+	// Validate sprite_info before accessing it
+	if( !sprite_info )
+		return 0;
+	
 	int curXLoc = next_x_loc();
 	int curYLoc = next_y_loc();
 	int dispX=0, dispY=0;

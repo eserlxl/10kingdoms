@@ -337,7 +337,23 @@ int Unit::reactivate_idle_action()
                else
                {
                   unitPtr = unit_array[action_para2];
+                  if( !unitPtr )
+                  {
+                     stop2();
+                     break;
+                  }
+
                   spriteInfo = unitPtr->sprite_info;
+                  // Get spriteInfo from unit resource if sprite_info is NULL
+                  // (sprite_info may be NULL if deinit_sprite was called)
+                  if( !spriteInfo )
+                     spriteInfo = sprite_res[unit_res[unitPtr->unit_id]->sprite_id];
+
+                  if( !spriteInfo )
+                  {
+                     stop2();
+                     break;
+                  }
 
                   if(space_for_attack(action_x_loc2, action_y_loc2, unitPtr->mobile_type, spriteInfo->loc_width, spriteInfo->loc_height))
                   {
@@ -769,6 +785,10 @@ int Unit::idle_detect_attack(int startLoc, int dimensionInput, char defenseMode)
 //
 int Unit::idle_detect_unit_checking(short targetRecno)
 {
+	// Defensive check: ensure the target unit exists before accessing it
+	if( unit_array.is_deleted(targetRecno) )
+		return 0;
+
 	Unit *targetUnitPtr = unit_array[targetRecno];
 
 	if(targetUnitPtr->unit_id == UNIT_CARAVAN)
@@ -819,6 +839,11 @@ int Unit::idle_detect_unit_checking(short targetRecno)
 	//###### trevor 15/10 #######//
 
 	SpriteInfo *spriteInfo = targetUnitPtr->sprite_info;
+	
+	// Defensive check: ensure sprite_info exists before accessing it
+	if( !spriteInfo )
+		return 0;
+
 	Nation   *nationPtr = nation_recno ? nation_array[nation_recno] : NULL;
 	short    targetNationRecno = targetUnitPtr->nation_recno;
 

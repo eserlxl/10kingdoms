@@ -54,6 +54,10 @@ int SeekPathReuse::can_walk(int xLoc, int yLoc)
 		return 0;
 
 	Location *locPtr = world.get_loc(xLoc, yLoc);
+	// Defensive check: ensure locPtr is valid before accessing it
+	if( !locPtr )
+		return 0;
+
 	short	recno = (mobile_type!=UNIT_AIR) ? locPtr->cargo_recno : locPtr->air_cargo_recno;
 	Unit *unitPtr;
 	uint8_t	unitCurAction;
@@ -73,7 +77,15 @@ int SeekPathReuse::can_walk(int xLoc, int yLoc)
 			if(!recno)
 				return 1;
 
+			// Defensive check: ensure the unit exists before accessing it
+			if( unit_array.is_deleted(recno) )
+				return 0;
+
 			unitPtr = unit_array[recno];
+
+			if( !unitPtr )
+				return 0;
+
 			if(search_mode==SEARCH_MODE_A_UNIT_IN_GROUP)
 				return unitPtr->cur_action==SPRITE_MOVE;
 			else
@@ -94,7 +106,15 @@ int SeekPathReuse::can_walk(int xLoc, int yLoc)
 			if(!recno)
 				return 1;
 
+			// Defensive check: ensure the unit exists before accessing it
+			if( unit_array.is_deleted(recno) )
+				return 0;
+
 			unitPtr = unit_array[recno];
+
+			if( !unitPtr )
+				return 0;
+
 			if(search_mode==SEARCH_MODE_A_UNIT_IN_GROUP)
 				return unitPtr->cur_action==SPRITE_MOVE;
 			else
@@ -111,7 +131,15 @@ int SeekPathReuse::can_walk(int xLoc, int yLoc)
 			if(!recno)
 				return 1;
 
+			// Defensive check: ensure the unit exists before accessing it
+			if( unit_array.is_deleted(recno) )
+				return 0;
+
 			unitPtr = unit_array[recno];
+
+			if( !unitPtr )
+				return 0;
+
 			if(search_mode==SEARCH_MODE_A_UNIT_IN_GROUP)
 				return unitPtr->cur_action==SPRITE_MOVE;
 			else

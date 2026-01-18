@@ -74,6 +74,10 @@ int Nation::process_action(int priorityActionRecno, int processActionMode)
 
 		actionNode = get_action(actionRecno);
 
+		// Defensive check: ensure actionNode is valid before accessing it
+		if( !actionNode )
+			continue;
+
 		//----- if only process specific action mode -----//
 
 		if( processActionMode && actionNode->action_mode != processActionMode )

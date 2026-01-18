@@ -421,14 +421,17 @@ void Spy::process_firm_action()
 
 		if( firmPtr->overseer_recno )
 		{
-			Unit* unitPtr = unit_array[firmPtr->overseer_recno];
-
-			if( unitPtr->race_id == race_id )
+			// Defensive check: ensure the overseer unit exists before accessing it
+			if( !unit_array.is_deleted(firmPtr->overseer_recno) )
 			{
-				if( misc.random(10 - spy_skill/10 + unitPtr->skill.skill_level/10)==0  // a commander with a higher leadership skill will be less influenced by the spy's dissents
-					 && unitPtr->loyalty>0 )
+				Unit* unitPtr = unit_array[firmPtr->overseer_recno];
+				if( unitPtr && unitPtr->race_id == race_id )
 				{
-					unitPtr->change_loyalty( -1 );
+					if( misc.random(10 - spy_skill/10 + unitPtr->skill.skill_level/10)==0  // a commander with a higher leadership skill will be less influenced by the spy's dissents
+						 && unitPtr->loyalty>0 )
+					{
+						unitPtr->change_loyalty( -1 );
+					}
 				}
 			}
 		}
@@ -688,13 +691,18 @@ void Spy::pay_expense()
 
 	if( spy_place == SPY_FIRM )
 	{
-		Firm* firmPtr = firm_array[spy_place_para];
-
-		if( firmPtr->nation_recno == true_nation_recno &&
-			 firmPtr->overseer_recno &&
-			 unit_array[firmPtr->overseer_recno]->spy_recno == spy_recno )
+		// Defensive check: ensure the firm exists before accessing it
+		if( !firm_array.is_deleted(spy_place_para) )
 		{
-			inOwnFirm = 1;
+			Firm* firmPtr = firm_array[spy_place_para];
+
+			if( firmPtr->nation_recno == true_nation_recno &&
+				 firmPtr->overseer_recno &&
+				 !unit_array.is_deleted(firmPtr->overseer_recno) &&
+				 unit_array[firmPtr->overseer_recno]->spy_recno == spy_recno )
+			{
+				inOwnFirm = 1;
+			}
 		}
 	}
 
@@ -797,12 +805,15 @@ void Spy::drop_spy_identity()
 
 		if( firmPtr->overseer_recno )
 		{
-			Unit* unitPtr = unit_array[firmPtr->overseer_recno];
-
-			if( unitPtr->spy_recno == spy_recno )
+			// Defensive check: ensure the overseer unit exists before accessing it
+			if( !unit_array.is_deleted(firmPtr->overseer_recno) )
 			{
-				unitPtr->spy_recno = 0;
-				rc = 1;
+				Unit* unitPtr = unit_array[firmPtr->overseer_recno];
+				if( unitPtr && unitPtr->spy_recno == spy_recno )
+				{
+					unitPtr->spy_recno = 0;
+					rc = 1;
+				}
 			}
 		}
 
@@ -823,9 +834,13 @@ void Spy::drop_spy_identity()
 	}
 	else if( spy_place == SPY_MOBILE )
 	{
-		Unit* unitPtr = unit_array[spy_place_para];
-
-		unitPtr->spy_recno = 0;
+		// Defensive check: ensure the mobile unit exists before accessing it
+		if( !unit_array.is_deleted(spy_place_para) )
+		{
+			Unit* unitPtr = unit_array[spy_place_para];
+			if( unitPtr )
+				unitPtr->spy_recno = 0;
+		}
 	}
 
 	//------ delete this Spy record from spy_array ----//
@@ -932,7 +947,14 @@ int Spy::capture_firm()
 	if( !can_capture_firm() )
 		return 0;
 
+	// Defensive check: ensure the firm still exists before accessing it
+	if( firm_array.is_deleted(spy_place_para) )
+		return 0;
+
 	Firm* firmPtr = firm_array[spy_place_para];
+
+	if( !firmPtr )
+		return 0;
 
 	//------- if the spy is the overseer of the firm --------//
 
@@ -947,6 +969,13 @@ int Spy::capture_firm()
 		// chance for the soldiers to follow the general.
 		//
 		//---------------------------------------------------//
+
+		if( !firmPtr->overseer_recno )
+			return 0;
+
+		// Defensive check: ensure the overseer unit exists before accessing it
+		if( unit_array.is_deleted(firmPtr->overseer_recno) )
+			return 0;
 
 		Unit* unitPtr = unit_array[firmPtr->overseer_recno];
 
@@ -1032,7 +1061,14 @@ int Spy::can_capture_firm()
 	if( spy_place != SPY_FIRM )
 		return 0;
 
+	// Defensive check: ensure the firm exists before accessing it
+	if( firm_array.is_deleted(spy_place_para) )
+		return 0;
+
 	Firm* firmPtr = firm_array[spy_place_para];
+
+	if( !firmPtr )
+		return 0;
 
 	//------- if the spy is the overseer of the firm --------//
 
@@ -1045,8 +1081,14 @@ int Spy::can_capture_firm()
 		//
 		//-----------------------------------------------------//
 
-		if( !firmPtr->overseer_recno ||
-			 unit_array[firmPtr->overseer_recno]->spy_recno != spy_recno )
+		if( !firmPtr->overseer_recno )
+			return 0;
+
+		// Defensive check: ensure the overseer unit exists before accessing it
+		if( unit_array.is_deleted(firmPtr->overseer_recno) )
+			return 0;
+
+		if( unit_array[firmPtr->overseer_recno]->spy_recno != spy_recno )
 		{
 			return 0;
 		}
@@ -1431,12 +1473,24 @@ int Spy::get_assassinate_rating(int targetUnitRecno, int& attackRating, int& def
 	if( spy_place != SPY_FIRM )
 		return 0;
 
+	// Defensive check: ensure the target unit exists before accessing it
+	if( !targetUnitRecno || unit_array.is_deleted(targetUnitRecno) )
+		return 0;
+
 	Unit* targetUnit = unit_array[targetUnitRecno];
+	if( !targetUnit )
+		return 0;
 
 	if( targetUnit->unit_mode != UNIT_MODE_OVERSEE )
 		return 0;
 
+	// Defensive check: ensure the firm exists before accessing it
+	if( !targetUnit->unit_mode_para || firm_array.is_deleted(targetUnit->unit_mode_para) )
+		return 0;
+
 	Firm* firmPtr = firm_array[ targetUnit->unit_mode_para ];
+	if( !firmPtr )
+		return 0;
 
 	if( firmPtr->firm_recno != spy_place_para )
 		return 0;

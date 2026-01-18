@@ -507,9 +507,14 @@ int Unit::space_around_target(int squareXLoc, int squareYLoc, int width, int hei
 				sum ^= locWeight;
 			else if(locPtr->has_unit(mobile_type))
 			{
-				unitPtr = unit_array[locPtr->unit_recno(mobile_type)];
-				if(unitPtr->cur_action!=SPRITE_ATTACK)
-					sum ^= locWeight;
+				int unitRecno = locPtr->unit_recno(mobile_type);
+				// Defensive check: ensure the unit exists before accessing it
+				if( unitRecno && !unit_array.is_deleted(unitRecno) )
+				{
+					unitPtr = unit_array[unitRecno];
+					if(unitPtr->cur_action!=SPRITE_ATTACK)
+						sum ^= locWeight;
+				}
 			}
 		}
 	}
@@ -542,9 +547,14 @@ int Unit::space_around_target(int squareXLoc, int squareYLoc, int width, int hei
 				sum ^= locWeight;
 			else if(locPtr->has_unit(mobile_type))
 			{
-				unitPtr = unit_array[locPtr->unit_recno(mobile_type)];
-				if(unitPtr->cur_action!=SPRITE_ATTACK)
-					sum ^= locWeight;
+				int unitRecno = locPtr->unit_recno(mobile_type);
+				// Defensive check: ensure the unit exists before accessing it
+				if( unitRecno && !unit_array.is_deleted(unitRecno) )
+				{
+					unitPtr = unit_array[unitRecno];
+					if(unitPtr->cur_action!=SPRITE_ATTACK)
+						sum ^= locWeight;
+				}
 			}
 		}
 	}
@@ -577,9 +587,14 @@ int Unit::space_around_target(int squareXLoc, int squareYLoc, int width, int hei
 				sum ^= locWeight;
 			else if(locPtr->has_unit(mobile_type))
 			{
-				unitPtr = unit_array[locPtr->unit_recno(mobile_type)];
-				if(unitPtr->cur_action!=SPRITE_ATTACK)
-					sum ^= locWeight;
+				int unitRecno = locPtr->unit_recno(mobile_type);
+				// Defensive check: ensure the unit exists before accessing it
+				if( unitRecno && !unit_array.is_deleted(unitRecno) )
+				{
+					unitPtr = unit_array[unitRecno];
+					if(unitPtr->cur_action!=SPRITE_ATTACK)
+						sum ^= locWeight;
+				}
 			}
 		}
 	}
@@ -612,9 +627,14 @@ int Unit::space_around_target(int squareXLoc, int squareYLoc, int width, int hei
 				sum ^= locWeight;
 			else if(locPtr->has_unit(mobile_type))
 			{
-				unitPtr = unit_array[locPtr->unit_recno(mobile_type)];
-				if(unitPtr->cur_action!=SPRITE_ATTACK)
-					sum ^= locWeight;
+				int unitRecno = locPtr->unit_recno(mobile_type);
+				// Defensive check: ensure the unit exists before accessing it
+				if( unitRecno && !unit_array.is_deleted(unitRecno) )
+				{
+					unitPtr = unit_array[unitRecno];
+					if(unitPtr->cur_action!=SPRITE_ATTACK)
+						sum ^= locWeight;
+				}
 			}
 		}
 	}
@@ -673,9 +693,14 @@ int Unit::space_around_target_ver2(int targetXLoc, int targetYLoc, int targetWid
 				sum ^= locWeight;
 			else if(locPtr->has_unit(mobile_type))
 			{
-				unitPtr = unit_array[locPtr->unit_recno(mobile_type)];
-				if(unitPtr->cur_action!=SPRITE_ATTACK)
-					sum ^= locWeight;
+				int unitRecno = locPtr->unit_recno(mobile_type);
+				// Defensive check: ensure the unit exists before accessing it
+				if( unitRecno && !unit_array.is_deleted(unitRecno) )
+				{
+					unitPtr = unit_array[unitRecno];
+					if(unitPtr->cur_action!=SPRITE_ATTACK)
+						sum ^= locWeight;
+				}
 			}
 		}
 	}
@@ -709,9 +734,14 @@ int Unit::space_around_target_ver2(int targetXLoc, int targetYLoc, int targetWid
 				sum ^= locWeight;
 			else if(locPtr->has_unit(mobile_type))
 			{
-				unitPtr = unit_array[locPtr->unit_recno(mobile_type)];
-				if(unitPtr->cur_action!=SPRITE_ATTACK)
-					sum ^= locWeight;
+				int unitRecno = locPtr->unit_recno(mobile_type);
+				// Defensive check: ensure the unit exists before accessing it
+				if( unitRecno && !unit_array.is_deleted(unitRecno) )
+				{
+					unitPtr = unit_array[unitRecno];
+					if(unitPtr->cur_action!=SPRITE_ATTACK)
+						sum ^= locWeight;
+				}
 			}
 		}
 	}
@@ -745,9 +775,14 @@ int Unit::space_around_target_ver2(int targetXLoc, int targetYLoc, int targetWid
 				sum ^= locWeight;
 			else if(locPtr->has_unit(mobile_type))
 			{
-				unitPtr = unit_array[locPtr->unit_recno(mobile_type)];
-				if(unitPtr->cur_action!=SPRITE_ATTACK)
-					sum ^= locWeight;
+				int unitRecno = locPtr->unit_recno(mobile_type);
+				// Defensive check: ensure the unit exists before accessing it
+				if( unitRecno && !unit_array.is_deleted(unitRecno) )
+				{
+					unitPtr = unit_array[unitRecno];
+					if(unitPtr->cur_action!=SPRITE_ATTACK)
+						sum ^= locWeight;
+				}
 			}
 		}
 	}
@@ -781,9 +816,14 @@ int Unit::space_around_target_ver2(int targetXLoc, int targetYLoc, int targetWid
 				sum ^= locWeight;
 			else if(locPtr->has_unit(mobile_type))
 			{
-				unitPtr = unit_array[locPtr->unit_recno(mobile_type)];
-				if(unitPtr->cur_action!=SPRITE_ATTACK)
-					sum ^= locWeight;
+				int unitRecno = locPtr->unit_recno(mobile_type);
+				// Defensive check: ensure the unit exists before accessing it
+				if( unitRecno && !unit_array.is_deleted(unitRecno) )
+				{
+					unitPtr = unit_array[unitRecno];
+					if(unitPtr->cur_action!=SPRITE_ATTACK)
+						sum ^= locWeight;
+				}
 			}
 		}
 	}

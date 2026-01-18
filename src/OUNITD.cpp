@@ -193,6 +193,15 @@ int Unit::general_defend_mode_process_attack_target()
 				spriteInfo = unitPtr->sprite_info;
 				
 				//-----------------------------------------------------------------//
+				// Defensive check: if sprite_info is null, treat as invalid target
+				//-----------------------------------------------------------------//
+				if(!spriteInfo)
+				{
+					reset_action_para();
+					return 1;
+				}
+				
+				//-----------------------------------------------------------------//
 				// attack the target if able to reach the target surrounding, otherwise
 				// continue to wait
 				//-----------------------------------------------------------------//
@@ -543,6 +552,12 @@ int Unit::defense_follow_target()
 	if(!abortAction)
 	{
 		SpriteInfo *targetSpriteInfo = targetPtr->sprite_info;
+
+		//-----------------------------------------------------------------//
+		// Defensive check: ensure both sprite_info pointers exist before accessing them
+		//-----------------------------------------------------------------//
+		if( !targetSpriteInfo || !sprite_info )
+			return 1;
 
 		//-----------------------------------------------------------------//
 		// if the target moves faster than this unit, it is more likely for

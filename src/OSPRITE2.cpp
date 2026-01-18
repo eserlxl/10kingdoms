@@ -115,6 +115,19 @@ int Sprite::match_dir()
 {
 	err_when(final_dir<0 || final_dir>MAX_SPRITE_DIR_TYPE);
 
+	// Defensive check: ensure sprite_info exists before accessing it
+	// If NULL, try to restore it from sprite_res using sprite_id
+	if( !sprite_info && sprite_id > 0 )
+		sprite_info = sprite_res[sprite_id];
+	
+	// If still NULL, set cur_dir to final_dir as safe fallback
+	if( !sprite_info )
+	{
+		cur_dir = final_dir;
+		turn_delay = 0;
+		return 1;
+	}
+
 	if(!sprite_info->need_turning)
 	{
 		cur_dir = final_dir;
@@ -183,6 +196,18 @@ void Sprite::set_dir(int curX, int curY, int destX, int destY)
 		turn_delay = 0;
 	}
 
+	// Defensive check: ensure sprite_info exists before accessing it
+	// If NULL, try to restore it from sprite_res using sprite_id
+	if( !sprite_info && sprite_id > 0 )
+		sprite_info = sprite_res[sprite_id];
+	
+	// If still NULL, set cur_dir to final_dir as safe fallback
+	if( !sprite_info )
+	{
+		cur_dir = final_dir;
+		return;
+	}
+
 	if(!sprite_info->need_turning)
 		cur_dir = final_dir;
 	else
@@ -198,6 +223,18 @@ void Sprite::set_dir(uint8_t newDir)
 	{
 		final_dir = newDir;
 		turn_delay = 0;
+	}
+
+	// Defensive check: ensure sprite_info exists before accessing it
+	// If NULL, try to restore it from sprite_res using sprite_id
+	if( !sprite_info && sprite_id > 0 )
+		sprite_info = sprite_res[sprite_id];
+	
+	// If still NULL, set cur_dir to final_dir as safe fallback
+	if( !sprite_info )
+	{
+		cur_dir = final_dir;
+		return;
 	}
 
 	if(!sprite_info->need_turning)

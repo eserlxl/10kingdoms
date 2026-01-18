@@ -1813,8 +1813,17 @@ void Unit::process_wait()
 	short x = nextX>>ZOOM_X_SHIFT_COUNT;
 	short y = nextY>>ZOOM_Y_SHIFT_COUNT; 
 	Location *locPtr = world.get_loc(x, y);
-	short blocked = ( (!locPtr->is_accessible(mobile_type)) || (locPtr->has_unit(mobile_type) &&
+	// Defensive check: ensure locPtr is valid before accessing it
+	short blocked;
+	if( !locPtr )
+	{
+		blocked = 1;  // out of bounds location is considered blocked
+	}
+	else
+	{
+		blocked = ( (!locPtr->is_accessible(mobile_type)) || (locPtr->has_unit(mobile_type) &&
 							locPtr->unit_recno(mobile_type)!=sprite_recno) );
+	}
 
 	if(!blocked || move_action_call_flag)
 	{
@@ -1905,8 +1914,16 @@ void Unit::set_next(int newNextX, int newNextY, int para, int blockedChecked)
 			x = newNextXLoc;
 			y = newNextYLoc;
 			locPtr = world.get_loc(x, y);
-			blocked = ( (!locPtr->is_accessible(mobile_type)) || (locPtr->has_unit(mobile_type) &&
-							locPtr->unit_recno(mobile_type)!=sprite_recno) );
+			// Defensive check: ensure locPtr is valid before accessing it
+			if( !locPtr )
+			{
+				blocked = 1;  // out of bounds location is considered blocked
+			}
+			else
+			{
+				blocked = ( (!locPtr->is_accessible(mobile_type)) || (locPtr->has_unit(mobile_type) &&
+								locPtr->unit_recno(mobile_type)!=sprite_recno) );
+			}
 		}//else, then blockedChecked = 0
 
 		//--- no change to next_x & next_y if the new next location is blocked ---//
@@ -1924,7 +1941,15 @@ void Unit::set_next(int newNextX, int newNextY, int para, int blockedChecked)
 			else
 			{
 				locPtr = world.get_loc(x, y);
-				handle_blocked_move(locPtr);
+				// Defensive check: ensure locPtr is valid before passing it to handle_blocked_move
+				if( !locPtr )
+				{
+					set_wait();
+				}
+				else
+				{
+					handle_blocked_move(locPtr);
+				}
 			}
 
 		#ifdef DEBUG
@@ -2144,6 +2169,13 @@ void Unit::set_next(int newNextX, int newNextY, int para, int blockedChecked)
 //
 void Unit::handle_blocked_move(Location* blockedLoc)
 {
+	// Defensive check: ensure blockedLoc is valid before accessing it
+	if( !blockedLoc )
+	{
+		set_wait();
+		return;
+	}
+
 	//--- check if the tile we are moving at is blocked by a building ---//
 	if(blockedLoc->is_firm() || blockedLoc->is_town() || blockedLoc->is_wall())
    {
@@ -2175,7 +2207,15 @@ void Unit::handle_blocked_move(Location* blockedLoc)
 	blocked_by_member = 1;
 	err_when(!blockedLoc->unit_recno(mobile_type));
 	
-	Unit* unitPtr = unit_array[blockedLoc->unit_recno(mobile_type)];
+	int unitRecno = blockedLoc->unit_recno(mobile_type);
+	// Defensive check: ensure the unit exists before accessing it
+	if( !unitRecno || unit_array.is_deleted(unitRecno) )
+	{
+		set_wait();
+		return;
+	}
+	
+	Unit* unitPtr = unit_array[unitRecno];
 	//if(unitPtr->sprite_info->loc_width>1 || sprite_info->loc_width>1)
 	//{
 	//	set_wait();
@@ -2357,6 +2397,20 @@ int Unit::on_my_path(short checkXLoc, short checkYLoc)
 //
 void Unit::handle_blocked_wait(Unit* unitPtr)
 {
+	// Defensive check: ensure unitPtr is valid before accessing it
+	if( !unitPtr )
+	{
+		set_wait();
+		return;
+	}
+
+	// Defensive check: ensure both sprite_info pointers exist before accessing them
+	if( !sprite_info || !unitPtr->sprite_info )
+	{
+		set_wait();
+		return;
+	}
+
 	err_when(sprite_info->loc_width>1 || unitPtr->sprite_info->loc_width>1);
 
 	int			stepMagn = move_step_magn();
@@ -2438,12 +2492,23 @@ void Unit::handle_blocked_wait(Unit* unitPtr)
 					}
 					else
 					{
-						//-------- store recno of next blocked unit ----------//
-						cycle_wait_unit_array[cycle_wait_unit_index++] = blockedUnitPtr->sprite_recno;
-						locPtr = world.get_loc(nextX, nextY);
-						err_when(blockedUnitPtr->mobile_type!=mobile_type);
-						blockedUnitPtr = unit_array[locPtr->unit_recno(mobile_type)];
-						unitSpriteInfo = blockedUnitPtr->sprite_info;
+					//-------- store recno of next blocked unit ----------//
+					cycle_wait_unit_array[cycle_wait_unit_index++] = blockedUnitPtr->sprite_recno;
+					locPtr = world.get_loc(nextX, nextY);
+					err_when(blockedUnitPtr->mobile_type!=mobile_type);
+					
+					int nextUnitRecno = locPtr->unit_recno(mobile_type);
+					// Defensive check: ensure the next blocked unit exists before accessing it
+					if( !nextUnitRecno || unit_array.is_deleted(nextUnitRecno) )
+						break;
+					
+					blockedUnitPtr = unit_array[nextUnitRecno];
+					
+					// Defensive check: ensure sprite_info exists before accessing it
+					if( !blockedUnitPtr->sprite_info )
+						break;
+					
+					unitSpriteInfo = blockedUnitPtr->sprite_info;
 					}
 				}
 			}

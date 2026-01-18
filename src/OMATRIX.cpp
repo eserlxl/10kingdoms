@@ -939,7 +939,18 @@ int Location::is_unit_group_accessible(int mobileType, uint32_t curGroupId)
 	{
 		int unitRecno = unit_recno(mobileType);
 
-		return unitRecno==0 || unit_array[unitRecno]->unit_group_id == curGroupId;
+		if( unitRecno == 0 )
+			return 1;
+
+		// Defensive check: ensure the unit exists before accessing it
+		if( unit_array.is_deleted(unitRecno) )
+			return 1; // Unit deleted, location is accessible
+
+		Unit* unitPtr = unit_array[unitRecno];
+		if( !unitPtr )
+			return 1; // Unit pointer null, location is accessible
+
+		return unitPtr->unit_group_id == curGroupId;
 	}
 
 	return 0;

@@ -388,9 +388,18 @@ void Unit::ask_team_help_attack(Unit* attackerUnit)
 
 	if( leaderUnitRecno )
 	{
-		TeamInfo* teamInfo = unit_array[leaderUnitRecno]->team_info;
+		// Defensive check: ensure the leader unit exists before accessing it
+		if( unit_array.is_deleted(leaderUnitRecno) )
+			return;
+
+		Unit* leaderUnit = unit_array[leaderUnitRecno];
+		TeamInfo* teamInfo = leaderUnit->team_info;
 
 		err_when( !teamInfo );
+
+		// Defensive check: ensure team_info exists before accessing it
+		if( !teamInfo )
+			return;
 
 		for( int i=teamInfo->member_count-1 ; i>=0 ; i-- )
 		{

@@ -569,10 +569,19 @@ int Unit::think_normal_human_action()
 	if( home_camp_firm_recno )
 		return 0;
 
-	if( leader_unit_recno &&
-		 unit_array[leader_unit_recno]->is_visible() )		// if the unit is led by a commander, let the commander makes the decision. If the leader has been assigned to a firm, don't consider it as a leader anymore
+	if( leader_unit_recno )
 	{
-		return 0;
+		// Defensive check: ensure the leader unit exists before accessing it
+		if( !unit_array.is_deleted(leader_unit_recno) &&
+			 unit_array[leader_unit_recno]->is_visible() )		// if the unit is led by a commander, let the commander makes the decision. If the leader has been assigned to a firm, don't consider it as a leader anymore
+		{
+			return 0;
+		}
+		// If leader is deleted, clear the reference
+		else if( unit_array.is_deleted(leader_unit_recno) )
+		{
+			leader_unit_recno = 0;
+		}
 	}
 
 	err_when( !race_id );
@@ -1016,6 +1025,13 @@ int Unit::think_king_flee()
 	// back to its camp.
 	//------------------------------------------------//
 
+	// Defensive: Validate ownNation before accessing it
+	if( !ownNation || nation_recno < 1 || nation_recno > nation_array.size() || nation_array.is_deleted(nation_recno) )
+	{
+		// Nation is invalid, skip flee logic
+		return 0;
+	}
+
 	if( ( team_info->member_count==0 && !ai_action_id ) ||
 		 hit_points < 125-ownNation->pref_military_courage/4 )
 	{
@@ -1097,6 +1113,13 @@ int Unit::think_general_flee()
 	// when the general is injured, the general will flee
 	// back to its camp.
 	//------------------------------------------------//
+
+	// Defensive: Validate ownNation before accessing it
+	if( !ownNation || nation_recno < 1 || nation_recno > nation_array.size() || nation_array.is_deleted(nation_recno) )
+	{
+		// Nation is invalid, skip flee logic
+		return 0;
+	}
 
 	if( ( team_info->member_count==0 && !ai_action_id ) ||
 		 hit_points < max_hit_points * (75+ownNation->pref_military_courage/2) / 200 )		// 75 to 125 / 200

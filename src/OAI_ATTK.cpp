@@ -223,6 +223,9 @@ int Nation::ai_attack_target(int targetXLoc, int targetYLoc, int targetCombatLev
 
 		//---- don't order this camp if the overseer is injured ----//
 
+		if( unit_array.is_deleted(firmCamp->overseer_recno) )
+			continue;
+
 		Unit* overseerUnit = unit_array[firmCamp->overseer_recno];
 
 		if( overseerUnit->hit_points < overseerUnit->max_hit_points &&

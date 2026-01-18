@@ -777,7 +777,15 @@ void TalkRes::send_talk_msg_now(TalkMsg* talkMsgPtr)
 {
 	//--------- add the message ------------//
 
+	// Defensive check: ensure both nations exist before accessing them
+	if( nation_array.is_deleted(talkMsgPtr->to_nation_recno) || 
+	    nation_array.is_deleted(talkMsgPtr->from_nation_recno) )
+		return;
+
 	Nation* toNation = nation_array[talkMsgPtr->to_nation_recno];
+	
+	if( !toNation )
+		return;
 
 	talkMsgPtr->date = info.game_date;
 	talkMsgPtr->relation_status = toNation->get_relation_status(talkMsgPtr->from_nation_recno);

@@ -42,11 +42,22 @@ void TalkRes::process_accepted_reply(TalkMsg *talkMsg)
 	//---- delete duplicate message in reverse now this has been accepted ----//
 	delete_msg_in_reverse(talkMsg); // do this now because talkMsg may be invalid after sending a reply
 
+	// Defensive check: ensure both nations exist before accessing them
+	if( nation_array.is_deleted(talkMsg->to_nation_recno) || 
+	    nation_array.is_deleted(talkMsg->from_nation_recno) )
+		return;
+
 	Nation* toNation   = nation_array[talkMsg->to_nation_recno];
 	Nation* fromNation = nation_array[talkMsg->from_nation_recno];
+	
+	if( !toNation || !fromNation )
+		return;
 
 	NationRelation* fromRelation = fromNation->get_relation(talkMsg->to_nation_recno);
 	NationRelation* toRelation = toNation->get_relation(talkMsg->from_nation_recno);
+	
+	if( !fromRelation || !toRelation )
+		return;
 
 	int goodRelationDec=0;		// whether the message is for requesting help.
 

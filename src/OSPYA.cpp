@@ -172,7 +172,13 @@ int SpyArray::add_spy()
 //
 void SpyArray::del_spy(int spyRecno)
 {
-	Spy* spyPtr = operator[](spyRecno);
+	// Defensive check: ensure the spy exists before accessing it
+	if( is_deleted(spyRecno) )
+		return;
+
+	Spy* spyPtr = (Spy*) get_ptr(spyRecno);
+	if( !spyPtr )
+		return;
 
 	spyPtr->deinit();
 	delete spyPtr;

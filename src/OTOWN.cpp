@@ -1276,6 +1276,10 @@ void Town::update_target_loyalty()
 
 		//-------- get nation and commander info ------------//
 
+		// Defensive check: ensure the overseer unit exists before accessing it
+		if( unit_array.is_deleted(firmPtr->overseer_recno) )
+			continue;
+
 		unitPtr = unit_array[firmPtr->overseer_recno];
 		commanderRaceId = unitPtr->race_id;
 
@@ -1505,6 +1509,10 @@ void Town::update_target_resistance()
 
 		//-------- get nation and commander info ------------//
 
+		// Defensive check: ensure the overseer unit exists before accessing it
+		if( unit_array.is_deleted(firmPtr->overseer_recno) )
+			continue;
+
 		unitPtr = unit_array[firmPtr->overseer_recno];
 
 		curValue = race_target_resistance_array[unitPtr->race_id-1][unitPtr->nation_recno-1];
@@ -1535,8 +1543,20 @@ void Town::update_target_resistance()
 //
 int Town::camp_influence(int unitRecno)
 {
+	// Defensive check: ensure the unit exists before accessing it
+	if( unit_array.is_deleted(unitRecno) )
+		return 0;
+
 	Unit*   unitPtr = unit_array[unitRecno];
+	
+	// Defensive check: ensure the unit's nation exists before accessing it
+	if( !unitPtr->nation_recno || nation_array.is_deleted(unitPtr->nation_recno) )
+		return 0;
+	
 	Nation* nationPtr = nation_array[unitPtr->nation_recno];   // nation of the unit
+	
+	if( !nationPtr )
+		return 0;
 
 	int thisInfluence = unitPtr->skill.get_skill(SKILL_LEADING)*2/3;		// 66% of the leadership
 
@@ -3105,7 +3125,14 @@ int Town::unjob_town_people(int raceId, int unjobSpy, int unjobOverseer, int kil
 
 	for( i=linked_firm_count-1 ; i>=0 ; i-- )
 	{
+		// Defensive check: ensure the firm exists before accessing it
+		if( !linked_firm_array[i] || firm_array.is_deleted(linked_firm_array[i]) )
+			continue;
+
 		firmPtr = firm_array[linked_firm_array[i]];
+
+		if( !firmPtr )
+			continue;
 
 		//------- scan for workers -----------//
 
@@ -3139,15 +3166,29 @@ int Town::unjob_town_people(int raceId, int unjobSpy, int unjobOverseer, int kil
 
 		for( i=linked_firm_count-1 ; i>=0 ; i-- )
 		{
+			// Defensive check: ensure the firm exists before accessing it
+			if( !linked_firm_array[i] || firm_array.is_deleted(linked_firm_array[i]) )
+				continue;
+
 			firmPtr = firm_array[linked_firm_array[i]];
+
+			if( !firmPtr )
+				continue;
 
 			//------- scan for overseer -----------//
 
 			if( firmPtr->overseer_recno )
 			{
+				// Defensive check: ensure the overseer unit exists before accessing it
+				if( unit_array.is_deleted(firmPtr->overseer_recno) )
+					continue;
+
 				//--- if the overseer lives in this town ----//
 
 				overseerUnit = unit_array[firmPtr->overseer_recno];
+
+				if( !overseerUnit )
+					continue;
 
 				if( overseerUnit->race_id == raceId &&
 					 firmPtr->overseer_town_recno == town_recno )

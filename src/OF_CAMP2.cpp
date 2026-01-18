@@ -519,7 +519,7 @@ int FirmCamp::ai_combat_level_needed()
 
 	//--- if the overseer is the king, increase its combat level needed ---//
 
-	if( overseer_recno && unit_array[overseer_recno]->rank_id == RANK_KING )
+	if( overseer_recno && !unit_array.is_deleted(overseer_recno) && unit_array[overseer_recno]->rank_id == RANK_KING )
 		combatNeeded = MAX(400, combatNeeded);
 
 	//---------------------------------------//
@@ -558,7 +558,7 @@ int FirmCamp::total_combat_level()
 		err_when( totalCombatLevel < 0 );
 	}
 
-	if( overseer_recno )
+	if( overseer_recno && !unit_array.is_deleted(overseer_recno) )
 	{
 		Unit* unitPtr = unit_array[overseer_recno];
 
@@ -739,6 +739,10 @@ int FirmCamp::think_capture_target_town()
 	Town* townPtr;
 	int   prefPeacefulness = nation_array[nation_recno]->pref_peacefulness;
 	Nation* ownNation = nation_array[nation_recno];
+	
+	if( unit_array.is_deleted(overseer_recno) )
+		return 0;
+	
 	int   overseerRaceId = unit_array[overseer_recno]->race_id;
 
 	for( i=0 ; i<linked_town_count ; i++ )
@@ -892,6 +896,9 @@ int FirmCamp::think_assign_better_overseer(Town* targetTown)
 
 	//----- check how the current overseer is doing the job -----//
 
+	if( unit_array.is_deleted(overseer_recno) )
+		return 1;		// overseer deleted, need to assign new one
+	
 	Unit* unitPtr = unit_array[overseer_recno];
 	int raceId = unitPtr->race_id;
 
@@ -957,7 +964,7 @@ int FirmCamp::think_assign_better_overseer2(int targetTownRecno, int raceId)
 
 	//---- only assign new overseer if the new one's leadership is significantly higher than the current one ----//
 
-	if( overseer_recno && 
+	if( overseer_recno && !unit_array.is_deleted(overseer_recno) && 
 		 unit_array[bestUnitRecno]->skill.skill_level < unit_array[overseer_recno]->skill.skill_level + 15 )
 	{
 		return 0;
@@ -1478,7 +1485,7 @@ int FirmCamp::cur_commander_leadership(int bestRaceId)
 
 	//--- get the current leadership of the commander ----//
 
-	if( overseer_recno )
+	if( overseer_recno && !unit_array.is_deleted(overseer_recno) )
 	{
 		if( !bestRaceId )
 			bestRaceId = best_commander_race();

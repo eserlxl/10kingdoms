@@ -562,11 +562,12 @@ void Firm::assign_unit(int unitRecno)
 	FirmInfo* firmInfo = firm_res[firm_id];
 
 	if( firmInfo->need_overseer &&
-		 ( !overseer_recno ||
-			( unitPtr->skill.skill_id == firm_skill_id &&
-			  unit_array[overseer_recno]->skill.skill_id != firm_skill_id ) ||     // the current overseer does not have the required skill
-			( unitPtr->skill.skill_id == firm_skill_id &&
-			  unitPtr->skill.skill_level > unit_array[overseer_recno]->skill.skill_level )
+		 ( !overseer_recno || unit_array.is_deleted(overseer_recno) ||
+			( overseer_recno && !unit_array.is_deleted(overseer_recno) &&
+			  unitPtr->skill.skill_id == firm_skill_id &&
+			  ( unit_array[overseer_recno]->skill.skill_id != firm_skill_id ||     // the current overseer does not have the required skill
+			    unitPtr->skill.skill_level > unit_array[overseer_recno]->skill.skill_level )
+			)
 		 ) )
 	{
 		assign_overseer(unitRecno);
@@ -620,8 +621,25 @@ void Firm::assign_overseer(int newOverseerRecno)
 		// the old overseer may be kept in firm or killed if remove_firm is true
 		//------------------------------------------------------------------------------------------------//
 		err_when(!overseer_recno);
+		
+		// Defensive check: ensure the old overseer unit exists before accessing it
+		if( unit_array.is_deleted(overseer_recno) )
+		{
+			overseer_recno = 0;
+			overseer_town_recno = 0;
+			return;
+		}
+		
 		Unit *oldUnitPtr = unit_array[overseer_recno];
 		SpriteInfo *spriteInfo = sprite_res[unit_res[oldUnitPtr->unit_id]->sprite_id];
+		
+		// Defensive check: ensure sprite_info exists before accessing it
+		if( !spriteInfo )
+		{
+			kill_overseer();
+			return;
+		}
+		
 		int xLoc = loc_x1;
 		int yLoc = loc_y1;
 
@@ -758,6 +776,14 @@ int Firm::mobilize_overseer()
 
 	int overseerRecno = overseer_recno;
 
+	// Defensive check: ensure the overseer unit exists before accessing it
+	if( unit_array.is_deleted(overseer_recno) )
+	{
+		overseer_recno = 0;
+		overseer_town_recno = 0;
+		return 0;
+	}
+
 	Unit* unitPtr = unit_array[overseer_recno];
 
 	//-------- if the overseer is a spy -------//
@@ -807,9 +833,33 @@ int Firm::mobilize_overseer()
 int Firm::mobilize_builder(short recno)
 {
 	//----------- mobilize the builder -------------//
-	Unit* unitPtr = unit_array[recno];
+	
+	// Defensive check: ensure the builder unit exists before accessing it
+	if( unit_array.is_deleted(recno) )
+	{
+		builder_recno = 0;
+		return 0;
+	}
 
+	Unit* unitPtr = unit_array[recno];
+	if( !unitPtr )
+	{
+		builder_recno = 0;
+		return 0;
+	}
+
+	// Get spriteInfo from unit resource if sprite_info is NULL
+	// (similar to mobilize_overseer - sprite_info may be NULL if deinit_sprite was called)
 	SpriteInfo *spriteInfo = unitPtr->sprite_info;
+	if( !spriteInfo )
+		spriteInfo = sprite_res[unit_res[unitPtr->unit_id]->sprite_id];
+	
+	if( !spriteInfo )
+	{
+		kill_builder(recno);
+		return 0;
+	}
+	
 	int xLoc=loc_x1, yLoc=loc_y1;
 
 	if(!locate_space(remove_firm, xLoc, yLoc, loc_x2, loc_y2, spriteInfo->loc_width, spriteInfo->loc_height, UNIT_LAND, builder_region_id) &&
@@ -1403,6 +1453,13 @@ void Firm::process_construction()
 
 	//------ increase the construction progress ------//
 
+	// Defensive check: ensure the builder unit exists before accessing it
+	if( unit_array.is_deleted(builder_recno) )
+	{
+		builder_recno = 0;
+		return;
+	}
+
 	Unit *unitPtr = unit_array[builder_recno];
 
 	if( unitPtr->skill.skill_id == SKILL_CONSTRUCTION )	// if builder unit has construction skill
@@ -1519,7 +1576,7 @@ int Firm::set_builder(short newBuilderRecno)
 
 	//-------- assign the new builder ---------//
 
-	if(builder_recno)
+	if(builder_recno && !unit_array.is_deleted(builder_recno))
 	{
 		Unit* unitPtr = unit_array[builder_recno];
 		//### begin alex 18/10 ###//
@@ -1717,6 +1774,13 @@ void Firm::process_repair()
 
 	if( !builder_recno )
 		return;
+
+	// Defensive check: ensure the builder unit exists before accessing it
+	if( unit_array.is_deleted(builder_recno) )
+	{
+		builder_recno = 0;
+		return;
+	}
 
 	Unit *unitPtr = unit_array[builder_recno];
 
@@ -3002,6 +3066,10 @@ int Worker::target_loyalty(int firmRecno)
 
 		if( firmPtr->overseer_recno )
 		{
+			// Defensive check: ensure the overseer unit exists before accessing it
+			if( unit_array.is_deleted(firmPtr->overseer_recno) )
+				return worker_loyalty;
+
 			Unit* overseerUnit = unit_array[firmPtr->overseer_recno];
 
 			int overseerSkill = overseerUnit->skill.get_skill(SKILL_LEADING);
@@ -3408,7 +3476,7 @@ void Firm::change_nation(int newNationRecno)
 
 	//------ if there is a builder in this firm, change its nation also ----//
 
-	if( builder_recno )
+	if( builder_recno && !unit_array.is_deleted(builder_recno) )
 	{
 		Unit* unitPtr = unit_array[builder_recno];
 
@@ -3822,7 +3890,7 @@ int Firm::should_show_info()
 
 	//------ if the builder is a spy of the player ------//
 
-	if( builder_recno )
+	if( builder_recno && !unit_array.is_deleted(builder_recno) )
 	{
 		if( unit_array[builder_recno]->true_nation_recno() == nation_array.player_recno )
 			return 1;
@@ -3849,7 +3917,7 @@ char Firm::majority_race()
 {
 	//--- if there is a overseer, return the overseer's race ---//
 
-	if( overseer_recno )
+	if( overseer_recno && !unit_array.is_deleted(overseer_recno) )
 		return unit_array[overseer_recno]->race_id;
 
 	if( worker_count==0 )

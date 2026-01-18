@@ -1643,13 +1643,27 @@ void Unit::change_nation(int newNationRecno)
 
 	if( leader_unit_recno )
 	{
-		Unit* leaderUnit = unit_array[leader_unit_recno];
-
-		if( leaderUnit->nation_recno != nation_recno )
+		// Defensive check: ensure the leader unit exists before accessing it
+		if( unit_array.is_deleted(leader_unit_recno) )
 		{
-			leaderUnit->del_team_member(sprite_recno);
 			leader_unit_recno = 0;
 			team_id = 0;
+		}
+		else
+		{
+			Unit* leaderUnit = unit_array[leader_unit_recno];
+
+			if( !leaderUnit )
+			{
+				leader_unit_recno = 0;
+				team_id = 0;
+			}
+			else if( leaderUnit->nation_recno != nation_recno )
+			{
+				leaderUnit->del_team_member(sprite_recno);
+				leader_unit_recno = 0;
+				team_id = 0;
+			}
 		}
 	}
 
@@ -1705,6 +1719,13 @@ void Unit::pay_expense()
    //-------------------------------------------//
 
    Nation* nationPtr = nation_array[nation_recno];
+   
+   // Defensive: Validate nationPtr before accessing it
+   if( !nationPtr || nation_recno < 1 || nation_recno > nation_array.size() || nation_array.is_deleted(nation_recno) )
+   {
+      // Nation is invalid or deleted, skip expense payment
+      return;
+   }
 
    if( unit_res[unit_id]->race_id )
    {
@@ -1886,9 +1907,22 @@ void Unit::set_combat_level(int combatLevel)
 
    if( combatLevel >= unitInfo->guard_combat_level)
    {
-      can_guard_flag = sprite_info->can_guard_flag;
-		if( unit_id == UNIT_ZULU )
-			can_guard_flag |= 4;			// shield during attack delay
+      // Validate sprite_info before accessing it
+      // If NULL, restore it from sprite_res using sprite_id
+      if( !sprite_info && sprite_id > 0 )
+         sprite_info = sprite_res[sprite_id];
+      
+      // If sprite_info is still NULL, set can_guard_flag to 0
+      if( sprite_info )
+      {
+         can_guard_flag = sprite_info->can_guard_flag;
+         if( unit_id == UNIT_ZULU )
+            can_guard_flag |= 4;			// shield during attack delay
+      }
+      else
+      {
+         can_guard_flag = 0;
+      }
    }
    else
    {
@@ -2437,6 +2471,10 @@ uint8_t Unit::region_id()
 void Unit::del_team_member(int unitRecno)
 {
 	err_when( !team_info );
+
+	// Defensive check: ensure team_info exists before accessing it
+	if( !team_info )
+		return;
 
    for( int i=0 ; i<team_info->member_count ; i++ )
    {

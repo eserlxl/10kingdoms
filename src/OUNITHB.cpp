@@ -160,6 +160,13 @@ void Unit::search_or_wait()
 //
 void Unit::handle_blocked_move_s11(Unit *unitPtr)
 {
+	// Defensive check: ensure unitPtr is valid before accessing it
+	if( !unitPtr )
+	{
+		set_wait();
+		return;
+	}
+
 	err_when( world.get_unit_recno(next_x_loc(), next_y_loc(), mobile_type) != sprite_recno );
 	err_when( world.get_unit_recno(unitPtr->next_x_loc(), unitPtr->next_y_loc(), unitPtr->mobile_type) != unitPtr->sprite_recno );
 	err_when(cur_x!=next_x || cur_y!=next_y);

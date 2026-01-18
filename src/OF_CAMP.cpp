@@ -653,6 +653,10 @@ void FirmCamp::train_unit()
 	if( !overseer_recno )
 		return;
 
+	// Defensive check: ensure the overseer unit exists before accessing it
+	if( unit_array.is_deleted(overseer_recno) )
+		return;
+
 	Unit* overseerUnit = unit_array[overseer_recno];
 
 	if( overseerUnit->skill.skill_id != SKILL_LEADING )
@@ -812,20 +816,29 @@ void FirmCamp::patrol()
 
 	if(overseer_recno)
 	{
-		TeamInfo* teamInfo = unit_array[overseer_recno]->team_info;
-
-		if( worker_count>0 && teamInfo->member_count>0 )
+		// Defensive check: ensure the overseer unit exists before accessing it
+		if( unit_array.is_deleted(overseer_recno) )
 		{
-			int unitRecno;
+			overseer_recno = 0;
+		}
+		else
+		{
+			Unit* overseerUnit = unit_array[overseer_recno];
+			TeamInfo* teamInfo = overseerUnit->team_info;
 
-			for( int i=0 ; i<teamInfo->member_count ; i++ )
+			if( worker_count>0 && teamInfo && teamInfo->member_count>0 )
 			{
-				unitRecno = teamInfo->member_unit_array[i];
+				int unitRecno;
 
-				if( unit_array.is_deleted(unitRecno) )
-					continue;
+				for( int i=0 ; i<teamInfo->member_count ; i++ )
+				{
+					unitRecno = teamInfo->member_unit_array[i];
 
-				unit_array[unitRecno]->leader_unit_recno = 0;
+					if( unit_array.is_deleted(unitRecno) )
+						continue;
+
+					unit_array[unitRecno]->leader_unit_recno = 0;
+				}
 			}
 		}
 	}
@@ -857,6 +870,10 @@ void FirmCamp::patrol()
 
 	if(overseerRecno && !overseer_recno) // has overseer and the overseer is mobilized
 	{
+		// Defensive check: ensure the overseer unit exists before accessing it
+		if( unit_array.is_deleted(overseerRecno) )
+			return;
+
 		Unit* overseerUnit = unit_array[overseerRecno];
 
 		if(overseerUnit->is_own() )
@@ -876,6 +893,10 @@ void FirmCamp::patrol()
 		//------- set the team_info of the overseer -------//
 
 		err_when( !overseerUnit->team_info );
+
+		// Defensive check: ensure team_info exists before accessing it
+		if( !overseerUnit->team_info )
+			return;
 
 		for( int i=0 ; i<patrol_unit_count ; i++ )
 			overseerUnit->team_info->member_unit_array[i] = patrol_unit_array[i];

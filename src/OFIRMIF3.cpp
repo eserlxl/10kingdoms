@@ -269,7 +269,19 @@ int Firm::can_spy_bribe(int bribeWorkerId, int briberNationRecno)
 	if( bribeWorkerId )		// the overseer is selected
 		spyRecno = worker_array[bribeWorkerId-1].spy_recno;
 	else
-		spyRecno = unit_array[overseer_recno]->spy_recno;
+	{
+		// Defensive check: ensure the overseer unit exists before accessing it
+		if( overseer_recno && !unit_array.is_deleted(overseer_recno) )
+		{
+			Unit* unitPtr = unit_array[overseer_recno];
+			if( unitPtr )
+				spyRecno = unitPtr->spy_recno;
+			else
+				spyRecno = 0;
+		}
+		else
+			spyRecno = 0;
+	}
 
 	if( spyRecno )
 	{
@@ -280,7 +292,19 @@ int Firm::can_spy_bribe(int bribeWorkerId, int briberNationRecno)
 		if( bribeWorkerId )
 			canBribe = worker_array[bribeWorkerId-1].race_id>0;		// cannot bribe if it's a weapon
 		else
-			canBribe = unit_array[overseer_recno]->rank_id != RANK_KING;		// cannot bribe a king
+		{
+			// Defensive check: ensure the overseer unit exists before accessing it
+			if( overseer_recno && !unit_array.is_deleted(overseer_recno) )
+			{
+				Unit* unitPtr = unit_array[overseer_recno];
+				if( unitPtr )
+					canBribe = unitPtr->rank_id != RANK_KING;		// cannot bribe a king
+				else
+					canBribe = 0;
+			}
+			else
+				canBribe = 0;
+		}
 	}
 
 	return canBribe;

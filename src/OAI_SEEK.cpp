@@ -463,7 +463,14 @@ int Nation::find_best_firm_loc(short buildFirmId, short refXLoc, short refYLoc, 
 	{
 		originFirmRecno = locPtr->firm_recno();
 
+		// Defensive check: ensure the firm exists before accessing it
+		if( firm_array.is_deleted(originFirmRecno) )
+			return 0;
+
 		firmPtr = firm_array[originFirmRecno];
+
+		if( !firmPtr )
+			return 0;
 
 		centerX = firmPtr->center_x;
 		centerY = firmPtr->center_y;
@@ -483,7 +490,14 @@ int Nation::find_best_firm_loc(short buildFirmId, short refXLoc, short refYLoc, 
 	{
 		originTownRecno = locPtr->town_recno();
 
+		// Defensive check: ensure the town exists before accessing it
+		if( town_array.is_deleted(originTownRecno) )
+			return 0;
+
 		townPtr = town_array[originTownRecno];
+
+		if( !townPtr )
+			return 0;
 
 		centerX = townPtr->center_x;
 		centerY = townPtr->center_y;
@@ -580,7 +594,15 @@ int Nation::find_best_firm_loc(short buildFirmId, short refXLoc, short refYLoc, 
 
 			if( locPtr->is_firm() )
 			{
-				firmPtr = firm_array[locPtr->firm_recno()];
+				int firmRecno = locPtr->firm_recno();
+				// Defensive check: ensure the firm exists before accessing it
+				if( !firmRecno || firm_array.is_deleted(firmRecno) )
+					continue;
+
+				firmPtr = firm_array[firmRecno];
+
+				if( !firmPtr )
+					continue;
 
 				if( buildFirmId==FIRM_MARKET || buildFirmId==FIRM_FACTORY )		// only factories & market places need building close to other firms
 				{
@@ -627,7 +649,15 @@ int Nation::find_best_firm_loc(short buildFirmId, short refXLoc, short refYLoc, 
 
 			else if( locPtr->is_town() )
 			{
-				townPtr = town_array[locPtr->town_recno()];
+				int townRecno = locPtr->town_recno();
+				// Defensive check: ensure the town exists before accessing it
+				if( !townRecno || town_array.is_deleted(townRecno) )
+					continue;
+
+				townPtr = town_array[townRecno];
+
+				if( !townPtr )
+					continue;
 
 				refBX1 = townPtr->center_x - EFFECTIVE_FIRM_TOWN_DISTANCE;
 				refBY1 = townPtr->center_y - EFFECTIVE_FIRM_TOWN_DISTANCE;
