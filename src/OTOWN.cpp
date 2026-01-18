@@ -813,10 +813,18 @@ void Town::set_nation(int newNationRecno)
 
 	if( train_unit_recno )
 	{
-		if( newNationRecno )
+		if( unit_array.is_deleted(train_unit_recno) )
+		{
+			train_unit_recno = 0;
+		}
+		else if( newNationRecno )
+		{
 			unit_array[train_unit_recno]->change_nation(newNationRecno);
+		}
 		else // independent nations cannot train units
+		{
 			cancel_train_unit();
+		}
 	}
 
 	//-------- update loyalty ---------//
@@ -1886,7 +1894,7 @@ void Town::think_rebel()
 	int i, discontentedCount=0, rebelLeaderRaceId=0, largestRebelRace=0, trainRaceId=0;
 	int restrictRebelCount[MAX_RACE];
 
-	if( train_unit_recno )
+	if( train_unit_recno && !unit_array.is_deleted(train_unit_recno) )
 		trainRaceId = unit_array[train_unit_recno]->race_id;
 
 	for( i=0 ; i<MAX_RACE ; i++ )
@@ -4315,7 +4323,7 @@ int Town::recruitable_race_pop(int raceId, int recruitSpy)
 
 	short recruitableCount = jobless_race_pop_array[raceId-1];
 	
-	if( train_unit_recno && unit_array[train_unit_recno]->race_id==raceId )
+	if( train_unit_recno && !unit_array.is_deleted(train_unit_recno) && unit_array[train_unit_recno]->race_id==raceId )
 		recruitableCount--;
 
 	if( !recruitSpy )
