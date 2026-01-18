@@ -1,16 +1,83 @@
-# git-ls-files --others --exclude-from=.git/info/exclude
-# Lines that start with '#' are comments.
-# For a project mostly in C, the following would be a good set of
-# exclude patterns (uncomment them if you want to use them):
+###############################################################################
+# GENERAL BUILD OUTPUT
+###############################################################################
+build/
+**/build/
+**/build-*/
+**/cmake-build-*/
+**/build_*/
+**/build_test/
+**/build_examples/
+build_check/
+build-coverage/
+out/
+dist/
+target/
+bin/
+lib/
+artifacts/
+
+###############################################################################
+# C++ / COMPILER OUTPUTS
+###############################################################################
+# Object & precompiled files
+*.o
+*.obj
+*.lo
+*.gch
+*.pch
+*.h.gch
+*.h.pch
 *.[oa]
-*~
+
+# Static libraries
+*.a
+*.a.*
+*.lib
+*.lib.*
+
+# Shared/Dynamic libs
+*.so
+*.so.*
+*.dylib
+*.dylib.*
+*.dll
+*.dll.*
+
+# Executables / binary formats
+*.exe
 *.exe*
-*.swp
-tags
-cscope.out
+*.out
+*.elf
+*.bin
+*.app
+*.hex
 10kingdoms
+
+###############################################################################
+# CMAKE / NINJA / MAKE
+###############################################################################
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+DartConfiguration.tcl
+CTestTestfile.cmake
+install_manifest.txt
 Makefile
 Makefile.in
+*.mk
+*.make
+
+# CompDB ignored globally (default)
+compile_commands.json
+
+build.ninja
+.ninja_deps
+.ninja_log
+
+###############################################################################
+# AUTOTOOLS / AUTOCONF / AUTOMAKE
+###############################################################################
 .deps
 aclocal.m4
 autom4te.cache
@@ -25,12 +92,14 @@ include/config.h
 include/config.h.in
 include/stamp-h1
 install-sh
-m4/sdl.m4
 missing
-m4/pkg.m4
-m4/sdl2.m4
 ABOUT-NLS
 config.rpath
+
+# M4 macros (project-specific)
+m4/sdl.m4
+m4/pkg.m4
+m4/sdl2.m4
 m4/ax_cxx_compile_stdcxx.m4
 m4/ax_cxx_compile_stdcxx_11.m4
 m4/codeset.m4
@@ -66,9 +135,10 @@ m4/visibility.m4
 m4/wchar_t.m4
 m4/wint_t.m4
 m4/xsize.m4
-data/RESOURCE/STD/
-data/RESOURCE/TUT_INTR/
-data/RESOURCE/TUT_TEXT/
+
+###############################################################################
+# GETTEXT / INTERNATIONALIZATION
+###############################################################################
 po/10kingdoms.res.pot
 po/10kingdoms.src.pot
 po/Makefile.in.in
@@ -83,6 +153,11 @@ po/quot.sed
 po/remove-potcdate.sin
 po/*.gmo
 po/stamp-po
+
+###############################################################################
+# GENERATED DOCUMENTATION
+###############################################################################
+# LaTeX build artifacts
 doc/*.aux
 doc/src/*.aux
 doc/main.synctex.gz
@@ -96,10 +171,248 @@ doc/main.fdb_latexmk
 doc/main.fls
 doc/main.ilg
 doc/main.ind
+
+# Doxygen output
+doc/api/
+doc/api-test*/
+doc/html/
+doc/xml/
+doc/rtf/
+doc/man/
+doc/latex/
+docs/api/
+docs/api-test*/
+docs/html/
+docs/xml/
+docs/latex/
+docs/rtf/
+docs/man/
+doxygen/
+
+# User-specific config
+doxyfile.user
+
+# Sphinx output
+docs/_build/
+
+###############################################################################
+# COVERAGE & TEST OUTPUT
+###############################################################################
+*.gcov
+*.gcda
+*.gcno
+*.lcov
+coverage/
+
+# Test result directories
+test_results/
+test_results_*/
+*.test
+*.junit
+*.xml
+*.log
+*.csv
+*.txt
+
+# CTest dirs
+Testing/
+Testing*/
+
+# Valgrind / Sanitizer
+*.vglog
+valgrind-out.txt
+valgrind_output.txt*
+*.asan
+*.tsan
+*.msan
+*.ubsan
+data/vgcore*
+
+# Test directories
+tests/
+
+###############################################################################
+# DEBUG / PROFILING ARTIFACTS
+###############################################################################
+# macOS / Clang
+*.dSYM/
+*.dSYM
+
+# MSVC
+*.pdb
+*.idb
+*.ilk
+*.exp
+*.map
+*.su
+
+# Profiling
+*.prof
+*.gprof
+gmon.out
+perf.data
+perf.data.old
+
+# Core dumps
+core
+core.*
+*.core
+
+###############################################################################
+# IDE / EDITOR FILES
+###############################################################################
+# Vim / Emacs
+*~
+*.swp
+*.swo
+*.swn
+*.bak
+.netrwhist
+\#*\#
+.\#*
+*.elc
+
+# VS Code
+.vscode/
+*.code-workspace
+*.code-workspace.lock
+
+# JetBrains (CLion, Rider, etc)
+.idea/
+*.iml
+*.ipr
+*.iws
+*.iws.lock
+.idea/shelf/
+
+# Sublime
+*.sublime-project
+*.sublime-workspace
+
+# Tags
+tags
+cscope.out
+
+###############################################################################
+# FRAMEWORK GENERATED FILES
+###############################################################################
+# Qt
+moc_*.cpp
+qrc_*.cpp
+ui_*.h
+*.qm
+*.moc
+
+# CodeBlocks
+*.depend
+*.layout
+*.cbp
+*.workspace
+
+###############################################################################
+# PACKAGE / DEPENDENCY MANAGERS
+###############################################################################
+# AUR
+aur/pkg/
+aur/src/
+aur/lint/
+aur/PKGBUILD
+aur/.SRCINFO
+aur/PKGBUILD.git
+
+# Conan
+conan/
+conan_trace.log
+conanfile.txt.lock
+
+# vcpkg
+vcpkg_installed/
+
+# CMake FetchContent / ExternalProject
+external/
+_deps/
+**/_deps/
+**/build/_deps/
+
+###############################################################################
+# LANGUAGE / TOOL RUNTIME
+###############################################################################
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+env/
+venv/
+env.bak/
+venv.bak/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+###############################################################################
+# OS JUNK FILES
+###############################################################################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+
+###############################################################################
+# TEMP / CACHE / BACKUP
+###############################################################################
+*.tmp
+*.temp
+*.lock
+*.lock.*
+*.backup
+*.backup.*
+*.bak
+Backup*/
+backup*/
+
+.cache/
+.ccache/
+.ccache-tmp/
+/tmp/
+
+###############################################################################
+# SECURITY / SECRETS
+###############################################################################
+.env
+.env.local
+*.pem
+*.key
+*.secret
+
+###############################################################################
+# PROJECT-SPECIFIC
+###############################################################################
+# Generated resource directories
+data/RESOURCE/STD/
+data/RESOURCE/TUT_INTR/
+data/RESOURCE/TUT_TEXT/
+
+# Build tools
 tools/bmpicn
 tools/genfont
 tools/icnpack
-.vscode/
-data/vgcore*
-valgrind_output.txt*
-tests/
+
+###############################################################################
+# CURSOR EDITOR (IMPORTANT)
+###############################################################################
+# Ignore everything except rule/plan/prompts
+.cursor/*
+!.cursor/rules/
+!.cursor/rules/**
+!.cursor/plans/
+!.cursor/plans/**
+.cursor/plans/backup/
+!.cursor/prompts/
+!.cursor/prompts/**
+!.cursor/last-change-notes.md
