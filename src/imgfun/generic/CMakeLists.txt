@@ -47,5 +47,9 @@ target_include_directories(imgfun_generic PRIVATE
 
 target_compile_options(imgfun_generic PRIVATE
   ${GLOBAL_CFLAGS}
-  "-include" "${CMAKE_BINARY_DIR}/include/config.h"
+)
+
+# Compile definitions (replaces config.h)
+target_compile_definitions(imgfun_generic PRIVATE
+  ${PROJECT_COMPILE_DEFINITIONS}
 )

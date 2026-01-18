@@ -305,19 +305,21 @@ add_executable(10kingdoms ${10KINGDOMS_SOURCES})
 # Compiler flags
 target_compile_options(10kingdoms PRIVATE
   ${GLOBAL_CFLAGS}
-  "-include" "${CMAKE_BINARY_DIR}/include/config.h"
+  -DOPENAL_AL_H=${OPENAL_AL_H_VALUE}
+  -DOPENAL_ALC_H=${OPENAL_ALC_H_VALUE}
 )
 
 # Include directories
 target_include_directories(10kingdoms PRIVATE
   ${CMAKE_SOURCE_DIR}/include
-  ${CMAKE_BINARY_DIR}/include
   ${SDL2_INCLUDE_DIRS}
   ${OpenAL_INCLUDE_DIRS}
 )
 
-# Compile definitions
+# Compile definitions (replaces config.h)
 target_compile_definitions(10kingdoms PRIVATE
+  ${PROJECT_COMPILE_DEFINITIONS}
+  PACKAGE="10kingdoms"
   PACKAGE_DATA_DIR="${CMAKE_INSTALL_PREFIX}/share/10kingdoms"
   LOCALE_DIR="${CMAKE_INSTALL_PREFIX}/share/locale"
 )

@@ -122,62 +122,51 @@ else()
   set(REGISTER_KEYWORD "")
 endif()
 
-# Configure defines for config.h
+# Collect compile definitions (replaces config.h for CMake builds)
+set(PROJECT_COMPILE_DEFINITIONS)
+
+# Debug defines
 if(ENABLE_DEBUG)
-  set(DEBUG_DEFINE "#define DEBUG 1")
-  set(DYNARRAY_DEBUG_ELEMENT_ACCESS_DEFINE "#define DYNARRAY_DEBUG_ELEMENT_ACCESS 1")
-else()
-  set(DEBUG_DEFINE "/* #undef DEBUG */")
-  set(DYNARRAY_DEBUG_ELEMENT_ACCESS_DEFINE "/* #undef DYNARRAY_DEBUG_ELEMENT_ACCESS */")
+  list(APPEND PROJECT_COMPILE_DEFINITIONS DEBUG=1 DYNARRAY_DEBUG_ELEMENT_ACCESS=1)
 endif()
 
-if(ENABLE_MULTIPLAYER)
-  set(DISABLE_MULTI_PLAYER_DEFINE "/* #undef DISABLE_MULTI_PLAYER */")
-else()
-  set(DISABLE_MULTI_PLAYER_DEFINE "#define DISABLE_MULTI_PLAYER 1")
+# Multiplayer
+if(NOT ENABLE_MULTIPLAYER)
+  list(APPEND PROJECT_COMPILE_DEFINITIONS DISABLE_MULTI_PLAYER=1)
 endif()
 
+# FPU support
 if(FPU_387_SUPPORTED)
-  set(HAVE_KNOWN_BUILD_DEFINE "#define HAVE_KNOWN_BUILD 1")
-else()
-  set(HAVE_KNOWN_BUILD_DEFINE "/* #undef HAVE_KNOWN_BUILD */")
+  list(APPEND PROJECT_COMPILE_DEFINITIONS HAVE_KNOWN_BUILD=1)
 endif()
 
+# Feature flags
 if(ENABLE_CURL)
-  set(HAVE_LIBCURL_DEFINE "#define HAVE_LIBCURL 1")
-else()
-  set(HAVE_LIBCURL_DEFINE "/* #undef HAVE_LIBCURL */")
+  list(APPEND PROJECT_COMPILE_DEFINITIONS HAVE_LIBCURL=1)
 endif()
 
 if(ENABLE_ASM)
-  set(USE_ASM_DEFINE "#define USE_ASM 1")
-else()
-  set(USE_ASM_DEFINE "/* #undef USE_ASM */")
+  list(APPEND PROJECT_COMPILE_DEFINITIONS USE_ASM=1)
 endif()
 
 if(ENABLE_ENET)
-  set(USE_ENET_DEFINE "#define USE_ENET 1")
-else()
-  set(USE_ENET_DEFINE "/* #undef USE_ENET */")
+  list(APPEND PROJECT_COMPILE_DEFINITIONS USE_ENET=1)
 endif()
 
+# Platform defines
 if(USE_POSIX)
-  set(USE_POSIX_DEFINE "#define USE_POSIX 1")
-else()
-  set(USE_POSIX_DEFINE "/* #undef USE_POSIX */")
+  list(APPEND PROJECT_COMPILE_DEFINITIONS USE_POSIX=1)
 endif()
 
 if(USE_WINDOWS)
-  set(USE_WINDOWS_DEFINE "#define USE_WINDOWS 1")
-else()
-  set(USE_WINDOWS_DEFINE "/* #undef USE_WINDOWS */")
+  list(APPEND PROJECT_COMPILE_DEFINITIONS USE_WINDOWS=1)
 endif()
 
-# OpenAL is always used (required)
-set(USE_OPENAL_DEFINE "#define USE_OPENAL 1")
+# Required dependencies
+list(APPEND PROJECT_COMPILE_DEFINITIONS USE_OPENAL=1 USE_SDL=1)
 
-# SDL is always used (required)
-set(USE_SDL_DEFINE "#define USE_SDL 1")
+# Memory management
+list(APPEND PROJECT_COMPILE_DEFINITIONS NO_MEM_CLASS=1)
 
 # Dependency detection
 # SDL2 (required)
@@ -197,18 +186,19 @@ if(NOT OpenAL_FOUND)
   set(OpenAL_INCLUDE_DIRS ${OPENAL_INCLUDE_DIRS})
 endif()
 
-# Define OpenAL header paths for config.h (required for openal_audio.h)
-# Check which header format is available
+# Define OpenAL header paths (required for openal_audio.h)
+# These are string macros used in #include directives - need special handling
+# Store as separate variables for use with target_compile_options
 if(EXISTS "${OpenAL_INCLUDE_DIRS}/AL/al.h")
-  set(OPENAL_AL_H "#define OPENAL_AL_H <AL/al.h>")
-  set(OPENAL_ALC_H "#define OPENAL_ALC_H <AL/alc.h>")
+  set(OPENAL_AL_H_VALUE "<AL/al.h>")
+  set(OPENAL_ALC_H_VALUE "<AL/alc.h>")
 elseif(EXISTS "${OpenAL_INCLUDE_DIRS}/OpenAL/al.h")
-  set(OPENAL_AL_H "#define OPENAL_AL_H <OpenAL/al.h>")
-  set(OPENAL_ALC_H "#define OPENAL_ALC_H <OpenAL/alc.h>")
+  set(OPENAL_AL_H_VALUE "<OpenAL/al.h>")
+  set(OPENAL_ALC_H_VALUE "<OpenAL/alc.h>")
 else()
   # Default to AL/al.h format (most common)
-  set(OPENAL_AL_H "#define OPENAL_AL_H <AL/al.h>")
-  set(OPENAL_ALC_H "#define OPENAL_ALC_H <AL/alc.h>")
+  set(OPENAL_AL_H_VALUE "<AL/al.h>")
+  set(OPENAL_ALC_H_VALUE "<AL/alc.h>")
 endif()
 
 # enet (optional, for networking)
@@ -246,23 +236,16 @@ endif()
 # Gettext/NLS - check if available
 find_package(Gettext)
 if(Gettext_FOUND)
-  set(ENABLE_NLS_DEFINE "#define ENABLE_NLS 1")
+  list(APPEND PROJECT_COMPILE_DEFINITIONS ENABLE_NLS=1)
   find_library(INTL_LIBRARY NAMES intl)
   find_library(ICONV_LIBRARY NAMES iconv)
-else()
-  set(ENABLE_NLS_DEFINE "/* #undef ENABLE_NLS */")
 endif()
 
 # Set strcasecmp defines
 if(HAVE_STRING_STRCASECMP)
-  set(HAVE_STRING_STRCASECMP_DEFINE "#define HAVE_STRING_STRCASECMP 1")
-  set(HAVE_STRINGS_STRCASECMP_DEFINE "/* #undef HAVE_STRINGS_STRCASECMP */")
+  list(APPEND PROJECT_COMPILE_DEFINITIONS HAVE_STRING_STRCASECMP=1)
 elseif(HAVE_STRINGS_STRCASECMP)
-  set(HAVE_STRING_STRCASECMP_DEFINE "/* #undef HAVE_STRING_STRCASECMP */")
-  set(HAVE_STRINGS_STRCASECMP_DEFINE "#define HAVE_STRINGS_STRCASECMP 1")
-else()
-  set(HAVE_STRING_STRCASECMP_DEFINE "/* #undef HAVE_STRING_STRCASECMP */")
-  set(HAVE_STRINGS_STRCASECMP_DEFINE "/* #undef HAVE_STRINGS_STRCASECMP */")
+  list(APPEND PROJECT_COMPILE_DEFINITIONS HAVE_STRINGS_STRCASECMP=1)
 endif()
 
 # Windows-specific libraries
@@ -288,10 +271,8 @@ endif()
 
 # Include directories
 include_directories(${CMAKE_SOURCE_DIR}/include)
-include_directories(${CMAKE_BINARY_DIR}/include)
 
-# Add subdirectories
-add_subdirectory(include)
+# Add subdirectories (no longer need include/CMakeLists.txt for config.h)
 add_subdirectory(src)
 
 # Data directory

@@ -10,7 +10,11 @@ target_include_directories(WebService PRIVATE
 
 target_compile_options(WebService PRIVATE
   ${GLOBAL_CFLAGS}
-  "-include" "${CMAKE_BINARY_DIR}/include/config.h"
+)
+
+# Compile definitions (replaces config.h)
+target_compile_definitions(WebService PRIVATE
+  ${PROJECT_COMPILE_DEFINITIONS}
 )
 
 # Link curl to the static library (needed for symbols)

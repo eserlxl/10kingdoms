@@ -11,7 +11,13 @@ target_include_directories(audio_openal PRIVATE
 
 target_compile_options(audio_openal PRIVATE
   ${GLOBAL_CFLAGS}
-  "-include" "${CMAKE_BINARY_DIR}/include/config.h"
+  -DOPENAL_AL_H=${OPENAL_AL_H_VALUE}
+  -DOPENAL_ALC_H=${OPENAL_ALC_H_VALUE}
+)
+
+# Compile definitions (replaces config.h)
+target_compile_definitions(audio_openal PRIVATE
+  ${PROJECT_COMPILE_DEFINITIONS}
 )
 
 # Link OpenAL to the static library (needed for symbols)
