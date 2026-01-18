@@ -275,7 +275,15 @@ int Unit::think_stop_chase()
 	else
 		leaderUnitRecno = sprite_recno;
 
-	TeamInfo* teamInfo = unit_array[leaderUnitRecno]->team_info;
+	// Defensive check: ensure the leader unit exists before accessing it
+	if( unit_array.is_deleted(leaderUnitRecno) )
+		return 1;
+
+	Unit* leaderUnit = unit_array[leaderUnitRecno];
+	if( !leaderUnit )
+		return 1;
+
+	TeamInfo* teamInfo = leaderUnit->team_info;
 
 	if( teamInfo )
 	{
