@@ -2,9 +2,28 @@ cmake_minimum_required(VERSION 3.20)
 project(10kingdoms VERSION 2.15.7 LANGUAGES CXX)
 
 # Set C++ standard
-set(CMAKE_CXX_STANDARD 11)
+# C++23 requires:
+# - GCC 13+ (full support in GCC 13.0)
+# - Clang 16+ (full support in Clang 16.0)
+# - MSVC 2022 17.5+ (Visual Studio 2022 17.5)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+# Verify compiler version supports C++23
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "13.0")
+        message(FATAL_ERROR "GCC 13.0 or later is required for C++23 support. Found: ${CMAKE_CXX_COMPILER_VERSION}")
+    endif()
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "16.0")
+        message(FATAL_ERROR "Clang 16.0 or later is required for C++23 support. Found: ${CMAKE_CXX_COMPILER_VERSION}")
+    endif()
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "19.35")
+        message(FATAL_ERROR "MSVC 2022 17.5 (19.35) or later is required for C++23 support. Found: ${CMAKE_CXX_COMPILER_VERSION}")
+    endif()
+endif()
 
 # Enable parallel builds (equivalent to make -j20)
 # This sets the default parallel build level for cmake --build

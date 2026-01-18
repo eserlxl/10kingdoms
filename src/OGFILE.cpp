@@ -423,8 +423,8 @@ void GameFile::load_process()
 static void posix_to_filetime(time_t t, GameFileDate* gameFileDate)
 {
 	uint64_t t2 = (uint64_t)t;
-	t2 *= 10000000ULL;
-	t2 += 11644473600000ULL * 10000;
+	t2 *= 10'000'000ULL;
+	t2 += 11'644'473'600'000ULL * 10'000;
 	gameFileDate->dwLowDateTime = (uint32_t)t2;
 	gameFileDate->dwHighDateTime = (uint32_t)(t2 >> 32);
 }

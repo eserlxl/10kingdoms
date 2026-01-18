@@ -36,6 +36,7 @@ public:
 	RemoteQueue();
 	RemoteQueue(int);
 	RemoteQueue(RemoteQueue &);
+	RemoteQueue& operator=(RemoteQueue &);
 	~RemoteQueue();
 
 	int	validate_queue(int start=0); // start = offset from buffer beginning in bytes

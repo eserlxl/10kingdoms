@@ -46,6 +46,13 @@ RemoteQueue::RemoteQueue(RemoteQueue &q) : VLenQueue(q)
 }
 // ------- end of function RemoteQueue::RemoteQueue -------//
 
+// ------- begin of function RemoteQueue::operator= -------//
+RemoteQueue& RemoteQueue::operator=(RemoteQueue &q)
+{
+	VLenQueue::operator=(q);
+	return *this;
+}
+// ------- end of function RemoteQueue::operator= -------//
 
 // ------- begin of function RemoteQueue::~RemoteQueue -------//
 RemoteQueue::~RemoteQueue()

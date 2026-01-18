@@ -1213,8 +1213,10 @@ void Unit::set_attack_dir(short curX, short curY, short targetX, short targetY)
 //
 void Unit::set_unreachable_location(int xLoc, int yLoc)
 {
-	static unsigned short bitFlag[16] = {0x0001, 0x0002, 0x0004, 0x0008, 0x0010, 0x0020, 0x0040, 0x0080,
-	 												 0x0100, 0x0200, 0x0400, 0x0800, 0x1000, 0x2000, 0x4000, 0x8000};
+	static unsigned short bitFlag[16] = {0b0000000000000001, 0b0000000000000010, 0b0000000000000100, 0b0000000000001000,
+	                                     0b0000000000010000, 0b0000000000100000, 0b0000000001000000, 0b0000000010000000,
+	                                     0b0000000100000000, 0b0000001000000000, 0b0000010000000000, 0b0000100000000000,
+	                                     0b0001000000000000, 0b0010000000000000, 0b0100000000000000, 0b1000000000000000};
 	/*int curXLoc = next_x_loc();
 	int curYLoc = next_y_loc();
 	int xDist = xLoc-curXLoc+1;

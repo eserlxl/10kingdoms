@@ -80,8 +80,8 @@ void SpriteRes::load_sprite_info()
 
 	sprite_info_count = dbSprite->rec_count();
 	// Defensive check for sprite_info_count to prevent overflow and allocation issues
-	if (sprite_info_count <= 0 || sprite_info_count > 1000000) { // 1 million is an arbitrary upper bound for sanity
-		err_when(sprite_info_count <= 0 || sprite_info_count > 1000000); // triggers error handling macro
+	if (sprite_info_count <= 0 || sprite_info_count > 1'000'000) { // 1 million is an arbitrary upper bound for sanity
+		err_when(sprite_info_count <= 0 || sprite_info_count > 1'000'000); // triggers error handling macro
 		return;
 	}
 

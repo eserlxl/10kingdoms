@@ -761,7 +761,7 @@ static time_t filetime_to_posix(const GameFileDate* gameFileDate)
 	t -= 11644473600000 * 10000;
 
 	// converts back from 100-nanoseconds to seconds
-	t /= 10000000;
+	t /= 10'000'000;
 
 	return t;
 }
