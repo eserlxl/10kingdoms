@@ -753,32 +753,80 @@ void Nation::enable_should_attack_on_target(int targetXLoc, int targetYLoc)
 int Nation::get_target_nation_recno(int targetXLoc, int targetYLoc)
 {
 	Location* locPtr = world.get_loc(targetXLoc, targetYLoc);
+	
+	// Defensive check: ensure locPtr is valid before accessing it
+	if( !locPtr )
+		return -1;
 
-	if( locPtr->has_unit(UNIT_AIR) &&
-		unit_array[locPtr->unit_recno(UNIT_AIR)]->nation_recno != nation_recno )
+	// Check for air units
+	if( locPtr->has_unit(UNIT_AIR) )
 	{
-		// BUGHERE : if land unit, not air unit is the intended target
-		return unit_array[locPtr->unit_recno(UNIT_AIR)]->nation_recno;
+		int unitRecno = locPtr->unit_recno(UNIT_AIR);
+		if( unitRecno > 0 && !unit_array.is_deleted(unitRecno) )
+		{
+			Unit* unitPtr = unit_array[unitRecno];
+			if( unitPtr && unitPtr->nation_recno != nation_recno )
+			{
+				// BUGHERE : if land unit, not air unit is the intended target
+				return unitPtr->nation_recno;
+			}
+		}
 	}
-	if( locPtr->is_firm() &&
-		firm_array[locPtr->firm_recno()]->nation_recno != nation_recno )
+	
+	// Check for firms
+	if( locPtr->is_firm() )
 	{
-		return firm_array[locPtr->firm_recno()]->nation_recno;
+		int firmRecno = locPtr->firm_recno();
+		if( firmRecno > 0 && !firm_array.is_deleted(firmRecno) )
+		{
+			Firm* firmPtr = firm_array[firmRecno];
+			if( firmPtr && firmPtr->nation_recno != nation_recno )
+			{
+				return firmPtr->nation_recno;
+			}
+		}
 	}
-	if( locPtr->is_town() &&
-		town_array[locPtr->town_recno()]->nation_recno != nation_recno )
+	
+	// Check for towns
+	if( locPtr->is_town() )
 	{
-		return town_array[locPtr->town_recno()]->nation_recno;
+		int townRecno = locPtr->town_recno();
+		if( townRecno > 0 && !town_array.is_deleted(townRecno) )
+		{
+			Town* townPtr = town_array[townRecno];
+			if( townPtr && townPtr->nation_recno != nation_recno )
+			{
+				return townPtr->nation_recno;
+			}
+		}
 	}
-	if( locPtr->has_unit(UNIT_LAND) &&
-		unit_array[locPtr->unit_recno(UNIT_LAND)]->nation_recno != nation_recno )
+	
+	// Check for land units
+	if( locPtr->has_unit(UNIT_LAND) )
 	{
-		return unit_array[locPtr->unit_recno(UNIT_LAND)]->nation_recno;
+		int unitRecno = locPtr->unit_recno(UNIT_LAND);
+		if( unitRecno > 0 && !unit_array.is_deleted(unitRecno) )
+		{
+			Unit* unitPtr = unit_array[unitRecno];
+			if( unitPtr && unitPtr->nation_recno != nation_recno )
+			{
+				return unitPtr->nation_recno;
+			}
+		}
 	}
-	if( locPtr->has_unit(UNIT_SEA) &&
-		unit_array[locPtr->unit_recno(UNIT_SEA)]->nation_recno != nation_recno )
+	
+	// Check for sea units
+	if( locPtr->has_unit(UNIT_SEA) )
 	{
-		return unit_array[locPtr->unit_recno(UNIT_SEA)]->nation_recno;
+		int unitRecno = locPtr->unit_recno(UNIT_SEA);
+		if( unitRecno > 0 && !unit_array.is_deleted(unitRecno) )
+		{
+			Unit* unitPtr = unit_array[unitRecno];
+			if( unitPtr && unitPtr->nation_recno != nation_recno )
+			{
+				return unitPtr->nation_recno;
+			}
+		}
 	}
 
 	return -1;
