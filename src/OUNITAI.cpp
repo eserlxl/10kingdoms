@@ -1314,12 +1314,8 @@ int Unit::ai_handle_seek_path_fail()
 				}
 			}
 			// Check for enemy firm (including walls if walls are a type of firm)
-			if (locPtr->is_firm()) {
-				short blockingFirmRecno = locPtr->firm_recno();
-				if (blockingFirmRecno <= 0) {
-					printf("[AI DEBUG] Invalid blockingFirmRecno: %d at (%d,%d)\n", blockingFirmRecno, checkX, checkY);
-					continue;
-				}
+			short blockingFirmRecno = locPtr->firm_recno();
+			if (blockingFirmRecno > 0) {
 				if (firm_array.is_deleted(blockingFirmRecno)) {
 					printf("[AI DEBUG] Deleted firm recno: %d at (%d,%d)\n", blockingFirmRecno, checkX, checkY);
 					continue;
@@ -1377,13 +1373,8 @@ int Unit::ai_handle_seek_path_fail()
 					}
 				}
 				// Check for enemy firm (including walls if walls are a type of firm)
-				short blockingFirmRecno = -1;
-				if (locPtr->is_firm()) {
-					blockingFirmRecno = locPtr->firm_recno();
-					if (blockingFirmRecno <= 0) {
-						printf("[AI DEBUG] Invalid blockingFirmRecno: %d at (%d,%d)\n", blockingFirmRecno, checkX, checkY);
-						continue;
-					}
+				short blockingFirmRecno = locPtr->firm_recno();
+				if (blockingFirmRecno > 0) {
 					if (firm_array.is_deleted(blockingFirmRecno)) {
 						printf("[AI DEBUG] Deleted firm recno: %d at (%d,%d)\n", blockingFirmRecno, checkX, checkY);
 						continue;
