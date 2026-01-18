@@ -35,7 +35,7 @@ public:
 
 /* Reads a little-endian integer */
 template <typename T>
-bool read_le_integer(InputStream *is, T *valp)
+[[nodiscard]] bool read_le_integer(InputStream *is, T *valp)
 {
    T val = T();
    unsigned char c;
@@ -54,7 +54,7 @@ bool read_le_integer(InputStream *is, T *valp)
 }
 
 template <typename T>
-bool read_le(InputStream *is, T *valp)
+[[nodiscard]] bool read_le(InputStream *is, T *valp)
 {
    return read_le_integer<T>(is, valp);
 }

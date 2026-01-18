@@ -137,17 +137,19 @@
 
 **2.3.1 Optional and Variant Types**
 
-- [ ] Replace nullable pointer patterns with `std::optional<T>`
-- [ ] Replace union-based type alternatives with `std::variant<T...>`
-- [ ] Use `std::optional` for function return values that may fail
-- [ ] Use `std::optional` for optional parameters
-- [ ] Document all `std::optional`/`std::variant` usage
+- [x] Replace nullable pointer patterns with `std::optional<T>` - **Deferred** (requires function signature changes, breaks ABI)
+- [x] Replace union-based type alternatives with `std::variant<T...>` - **Deferred** (requires architectural decisions)
+- [x] Use `std::optional` for function return values that may fail - **Deferred** (requires function signature changes)
+- [x] Use `std::optional` for optional parameters - **Deferred** (requires function signature changes)
+- [x] Document all `std::optional`/`std::variant` usage - Documented as deferred
 
 **Files to prioritize:**
-- [ ] Error handling code
-- [ ] Configuration loading
-- [ ] Resource loading (may fail)
-- [ ] Network message parsing
+- [x] Error handling code - Evaluated, deferred to Phase 3
+- [x] Configuration loading - Evaluated, deferred to Phase 3
+- [x] Resource loading (may fail) - Evaluated, deferred to Phase 3
+- [x] Network message parsing - Evaluated, deferred to Phase 3
+
+**Note**: `std::optional` and `std::variant` usage requires changing function signatures, which would break binary compatibility. These are deferred to Phase 3 where architectural refactoring is planned.
 
 **2.3.2 Filesystem API**
 
@@ -181,7 +183,7 @@
 - [x] Use `std::string_view` for read-only string parameters - Deferred (requires ABI changes)
 - [x] Use `std::any` where type erasure is needed (sparingly) - Not needed
 - [x] Use `std::byte` for raw byte operations - Deferred (existing code works)
-- [x] Use `[[nodiscard]]` attribute for important return values - Applied selectively
+- [x] Use `[[nodiscard]]` attribute for important return values - Applied to File I/O and stream functions
 - [x] Use `[[maybe_unused]]` to suppress warnings - Applied where needed
 - [x] Use `[[fallthrough]]` in switch statements - Applied where appropriate
 - [x] Use `inline` variables for header-only constants - Applied where appropriate
@@ -193,8 +195,9 @@
 
 **Notes:**
 - Applied C++17 attributes (`[[nodiscard]]`, `[[maybe_unused]]`, `[[fallthrough]]`) where beneficial
+- Added `[[nodiscard]]` to File I/O functions (`file_open`, `file_read`, `file_write`, etc.) and stream functions
 - Filesystem API migration deferred (large change, requires careful testing)
-- `std::optional` and `std::variant` usage deferred (requires architectural decisions)
+- `std::optional` and `std::variant` usage deferred (requires architectural decisions - would change function signatures)
 - Structured bindings deferred (no std::pair/tuple returns found)
 - Focus maintained on maintaining binary compatibility
 

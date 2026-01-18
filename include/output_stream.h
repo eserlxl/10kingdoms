@@ -35,7 +35,7 @@ public:
 
 /* Writes a little-endian integer */
 template <typename T>
-bool write_le_integer(OutputStream *os, T val)
+[[nodiscard]] bool write_le_integer(OutputStream *os, T val)
 {
    unsigned char c;
 
@@ -51,7 +51,7 @@ bool write_le_integer(OutputStream *os, T val)
 }
 
 template <typename T>
-bool write_le(OutputStream *os, T val)
+[[nodiscard]] bool write_le(OutputStream *os, T val)
 {
    return write_le_integer<T>(os, val);
 }

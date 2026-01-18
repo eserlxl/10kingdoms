@@ -47,16 +47,16 @@ public:
 	File(): file_handle(NULL) {}
 	~File();
 
-	int   file_open(const char*, int=1, int=0);
-	int   file_create(const char*, int=1, int=0);
+	[[nodiscard]] int   file_open(const char*, int=1, int=0);
+	[[nodiscard]] int   file_create(const char*, int=1, int=0);
 	void  file_close();
 
-	long  file_size();
-	long  file_seek(long, int = SEEK_SET);
-	long  file_pos();
+	[[nodiscard]] long  file_size();
+	[[nodiscard]] long  file_seek(long, int = SEEK_SET);
+	[[nodiscard]] long  file_pos();
 
-	int   file_read(void*, unsigned);
-	int   file_write(void*, unsigned);
+	[[nodiscard]] int   file_read(void*, unsigned);
+	[[nodiscard]] int   file_write(void*, unsigned);
 
 	int     file_put_char(int8_t);
 	int8_t  file_get_char();
