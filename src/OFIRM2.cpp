@@ -38,6 +38,13 @@ void Firm::kill_overseer()
 	if( !overseer_recno )
 		return;
 
+	//-------- check if unit is already deleted -------//
+	if( unit_array.is_truly_deleted(overseer_recno) )
+	{
+		overseer_recno = 0;
+		return;
+	}
+
 	//-------- if the overseer is a spy -------//
 
 	Unit* unitPtr = unit_array[overseer_recno];
@@ -50,7 +57,7 @@ void Firm::kill_overseer()
 	//-----------------------------------------//
 
 	if( overseer_town_recno )
-		town_array[overseer_town_recno]->dec_pop(unit_array[overseer_recno]->race_id, 1);
+		town_array[overseer_town_recno]->dec_pop(unitPtr->race_id, 1);
 
 	unit_array.del(overseer_recno);
 
