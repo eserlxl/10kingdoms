@@ -34,15 +34,20 @@
 
 #ifndef HAVE_SETENV
 static String lc_all_str;
+static String lc_name_str;
 int setenv(const char *name, const char *value, int overwrite)
 {
 	if( !value )
-		return putenv(name);
+	{
+		// putenv requires a mutable string, create a copy in static buffer
+		lc_name_str = name;
+		return putenv((char*)lc_name_str);
+	}
 
 	lc_all_str = name;
 	lc_all_str += "=";
 	lc_all_str += value;
-	return putenv(lc_all_str);
+	return putenv((char*)lc_all_str);
 }
 #endif
 

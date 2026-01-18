@@ -25,6 +25,7 @@
 #include <string.h>
 #include <ODATE.h>
 #include <ODIR.h>
+#include <posix_string_compat.h>
 
 #ifdef USE_WINDOWS
 #include <windows.h>

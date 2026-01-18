@@ -21,6 +21,7 @@
 //Filename    : OGAMMAIN.CPP
 //Description : Main Game Object - Main menu
 
+#include <algorithm>
 #include <version.h>
 #include <OVGA.h>
 #include <vga_util.h>

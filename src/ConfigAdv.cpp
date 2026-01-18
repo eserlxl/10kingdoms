@@ -22,13 +22,13 @@
 //Description : Advanced Config
 
 #include <ConfigAdv.h>
+#include <posix_string_compat.h>
 #include <FilePath.h>
 #include <ONATIONB.h>
 #include <OFILETXT.h>
 #include <OMISC.h>
 #include <OMOUSE.h>
 #include <OSYS.h>
-#include <posix_string_compat.h>
 #include <version.h>
 #include <errno.h>
 #include "gettext.h"
