@@ -1,0 +1,228 @@
+# Deprecated and Unsafe Pattern Analysis
+
+Generated: Sun Jan 18 10:06:00 +03 2026
+
+## #pragma pack(1) Usage
+
+  - `/opt/lxl/c++/10kingdoms/src/OFONT.cpp:52:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/src/OFONT.cpp:61:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/src/OFONT.cpp:65:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/src/OFONT.cpp:73:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OCONFIG.h:54:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OCONFIG.h:239:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OGAMHALL.h:35:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OGAMHALL.h:50:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OINFO.h:85:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OINFO.h:95:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OINFO.h:110:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OINFO.h:257:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OGF_REC.h:66:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OGF_REC.h:1739:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OUNITRES.h:225:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OUNITRES.h:307:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OUNITRES.h:313:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OUNITRES.h:340:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OMATRIX.h:71:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OMATRIX.h:299:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OU_GOD.h:40:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OU_GOD.h:111:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/ODYNARRB.h:41:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/ODYNARRB.h:47:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/ODYNARRB.h:51:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/ODYNARRB.h:83:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OTALKRES.h:59:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OTALKRES.h:124:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OTALKRES.h:130:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OTALKRES.h:139:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OTALKRES.h:145:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OTALKRES.h:225:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OROCK.h:32:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OROCK.h:55:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/ONATIONA.h:47:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/ONATIONA.h:152:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OREGION.h:53:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OREGION.h:68:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OREGION.h:75:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OREGION.h:145:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OMP_CRC.h:39:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OMP_CRC.h:488:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OF_RESE.h:36:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OF_RESE.h:91:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OREBEL.h:45:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OREBEL.h:100:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OSITE.h:47:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OSITE.h:80:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OSITE.h:84:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OSITE.h:131:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OUNIT.h:193:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OUNIT.h:205:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OUNIT.h:213:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OUNIT.h:750:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OFIRMRES.h:152:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OFIRMRES.h:210:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OU_CART.h:32:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OU_CART.h:55:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OSPRITE.h:54:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OSPRITE.h:162:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OB_PROJ.h:32:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OB_PROJ.h:58:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OU_MONS.h:42:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OU_MONS.h:74:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OFIRMDIE.h:64:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OFIRMDIE.h:83:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OFIRMDIE.h:87:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OFIRMDIE.h:103:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OGFILE.h:40:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OGFILE.h:45:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OFIRM.h:95:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OFIRM.h:136:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OFIRM.h:153:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OFIRM.h:453:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OTOWN.h:89:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OTOWN.h:414:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/ONEWS.h:102:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/ONEWS.h:192:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OU_CARA.h:80:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OU_CARA.h:97:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OU_CARA.h:103:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OU_CARA.h:115:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OU_CARA.h:123:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OU_CARA.h:213:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/ORESX.h:33:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/ORESX.h:39:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OGODRES.h:73:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OGODRES.h:101:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/ODB.h:38:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/ODB.h:65:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/ONATIONB.h:96:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/ONATIONB.h:139:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/ONATIONB.h:146:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/ONATIONB.h:447:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OWEATHER.h:59:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OWEATHER.h:118:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OWEATHER.h:125:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OWEATHER.h:158:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OGAME.h:58:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OGAME.h:72:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OGAME.h:94:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OGAME.h:172:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OB_HOMIN.h:32:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OB_HOMIN.h:60:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OF_MONS.h:46:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OF_MONS.h:67:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OF_MONS.h:74:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OF_MONS.h:161:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OF_CAMP.h:41:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OF_CAMP.h:50:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OF_CAMP.h:59:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OF_CAMP.h:183:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OBULLET.h:51:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OBULLET.h:96:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OU_VEHI.h:36:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OU_VEHI.h:58:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OF_MARK.h:62:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OF_MARK.h:89:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OF_MARK.h:96:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OF_MARK.h:185:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OF_WAR.h:40:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OF_WAR.h:102:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OSNOWG.h:63:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OSNOWG.h:88:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OSKILL.h:53:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OSKILL.h:80:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OTECHRES.h:87:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OTECHRES.h:110:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OTECHRES.h:116:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OTECHRES.h:159:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OTORNADO.h:47:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OTORNADO.h:77:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OU_MARI.h:63:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OU_MARI.h:72:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OU_MARI.h:79:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OU_MARI.h:225:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OPOWER.h:76:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OPOWER.h:138:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OF_FACT.h:36:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OF_FACT.h:103:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OSPATH.h:128:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OSPATH.h:137:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/ONATION.h:115:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/ONATION.h:125:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/ONATION.h:131:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/ONATION.h:163:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/ONATION.h:170:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/ONATION.h:181:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/ONATION.h:191:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/ONATION.h:648:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OB_FLAME.h:34:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OB_FLAME.h:49:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OF_HARB.h:42:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OF_HARB.h:150:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OF_BASE.h:49:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OF_BASE.h:102:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OGF_V1.h:47:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OGF_V1.h:140:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OGF_V1.h:144:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OGF_V1.h:199:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OGF_V1.h:201:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OGF_V1.h:322:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OGF_V1.h:326:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OGF_V1.h:437:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OF_INN.h:47:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OF_INN.h:63:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OF_INN.h:70:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OF_INN.h:129:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OF_MINE.h:44:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OF_MINE.h:108:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/ODYNARR.h:53:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/ODYNARR.h:129:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OSPY.h:54:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OSPY.h:146:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OREGIONS.h:41:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OREGIONS.h:50:#pragma pack()`
+  - `/opt/lxl/c++/10kingdoms/include/OREGIONS.h:56:#pragma pack(1)`
+  - `/opt/lxl/c++/10kingdoms/include/OREGIONS.h:97:#pragma pack()`
+
+## register Keyword Usage
+
+  - `/opt/lxl/c++/10kingdoms/src/imgfun/generic/I_FONT.cpp:55://		     AX - bitmap byte register`
+  - `/opt/lxl/c++/10kingdoms/src/imgfun/generic/I_FONT.cpp:58:// 		     DX - temporary register for color`
+  - `/opt/lxl/c++/10kingdoms/src/OSPYA.cpp:132:	//--- spies hold a use right of the name id even though the unit itself will register the usage right of the name already ---//`
+  - `/opt/lxl/c++/10kingdoms/src/OUNIT.cpp:838:   //-------- register usage of the new name id. ------//`
+  - `/opt/lxl/c++/10kingdoms/src/OVIDEO.cpp:491:   //--------- register window class --------//`
+  - `/opt/lxl/c++/10kingdoms/include/config.h:116:/* Define to the register keyword your compiler allows */`
+  - `/opt/lxl/c++/10kingdoms/include/config.h:117:#define REGISTER register`
+
+## C-Style Casts
+
+  - `/opt/lxl/c++/10kingdoms/src/dbglog.cpp:40:	if (debug_log_initialized) return 1;`
+  - `/opt/lxl/c++/10kingdoms/src/dbglog.cpp:43:	if (debug_env_var)`
+  - `/opt/lxl/c++/10kingdoms/src/dbglog.cpp:44:		len = strlen(debug_env_var);`
+  - `/opt/lxl/c++/10kingdoms/src/dbglog.cpp:118:	if (strftime(curTimeStr, sizeof(curTimeStr)/sizeof(curTimeStr[0]), "%H:%M:%S", curTime) == 0)`
+  - `/opt/lxl/c++/10kingdoms/src/dbglog.cpp:126:		va_end(valist);`
+  - `/opt/lxl/c++/10kingdoms/src/dbglog.cpp:134:		va_end(valist);`
+  - `/opt/lxl/c++/10kingdoms/src/OSPRTRES.cpp:61:		mem_del(sub_sprite_info_array);`
+  - `/opt/lxl/c++/10kingdoms/src/OSPRTRES.cpp:73:	Database   	    *dbSprite 	 = game_set.open_db(SPRITE_DB);`
+  - `/opt/lxl/c++/10kingdoms/src/OSPRTRES.cpp:90:	memset( sprite_info_array, 0, sizeof(SpriteInfo)*sprite_info_count );`
+  - `/opt/lxl/c++/10kingdoms/src/OSPRTRES.cpp:93:	short* dir_count_array		  = (short*) mem_add( sizeof(short) * sprite_info_count );`
+  - `/opt/lxl/c++/10kingdoms/src/OSPRTRES.cpp:99:		spriteRec  = (SpriteRec*) dbSprite->read(i+1);`
+  - `/opt/lxl/c++/10kingdoms/src/OSPRTRES.cpp:149:	Database *dbSpriteMove = game_set.open_db(SPRITE_ACTION_DB);`
+  - `/opt/lxl/c++/10kingdoms/src/OSPRTRES.cpp:157:			spriteActionRec = (SpriteActionRec*) dbSpriteMove->read(actionRecno);`
+  - `/opt/lxl/c++/10kingdoms/src/OSPRTRES.cpp:249:	Database *dbSubSprite = game_set.open_db(SUB_SPRITE_DB);`
+  - `/opt/lxl/c++/10kingdoms/src/OSPRTRES.cpp:252:	sub_sprite_info_array = (SubSpriteInfo*) mem_add( sizeof(SubSpriteInfo) * subSpriteCount );`
+  - `/opt/lxl/c++/10kingdoms/src/OSPRTRES.cpp:254:	memset( sub_sprite_info_array, 0, sizeof(SubSpriteInfo) * subSpriteCount);`
+  - `/opt/lxl/c++/10kingdoms/src/OU_GOD.cpp:73:		if(debug_sim_game_type)`
+  - `/opt/lxl/c++/10kingdoms/src/OU_GOD.cpp:80:	if( firm_array.is_deleted(base_firm_recno) )`
+  - `/opt/lxl/c++/10kingdoms/src/OU_GOD.cpp:82:		hit_points=(float)0;`
+  - `/opt/lxl/c++/10kingdoms/src/OU_GOD.cpp:89:	FirmBase* firmBase = (FirmBase*) firm_array[base_firm_recno];`
+  - `/opt/lxl/c++/10kingdoms/src/OU_GOD.cpp:93:	firmBase->pray_points -= (float) god_res[god_id]->exist_pray_points / 200;`
+  - `/opt/lxl/c++/10kingdoms/src/OU_GOD.cpp:96:		firmBase->pray_points = (float) 0;`
+  - `/opt/lxl/c++/10kingdoms/src/OU_GOD.cpp:100:	hit_points = (short) firmBase->pray_points;`
+  - `/opt/lxl/c++/10kingdoms/src/OU_GOD.cpp:120:		if(debug_sim_game_type)`
+  - `/opt/lxl/c++/10kingdoms/src/OU_GOD.cpp:157:		switch(god_id)`
+  - `/opt/lxl/c++/10kingdoms/src/OU_GOD.cpp:293:	if( firm_array.is_deleted(base_firm_recno) )`
+  - `/opt/lxl/c++/10kingdoms/src/OU_GOD.cpp:396:	if( locPtr->has_unit(UNIT_LAND) )`
+  - `/opt/lxl/c++/10kingdoms/src/OU_GOD.cpp:398:		cast_on_unit( locPtr->unit_recno(UNIT_LAND), 1 );`
+  - `/opt/lxl/c++/10kingdoms/src/OU_GOD.cpp:400:	else if( locPtr->has_unit(UNIT_SEA) )`
+  - `/opt/lxl/c++/10kingdoms/src/OU_GOD.cpp:402:		Unit* unitPtr = unit_array[ locPtr->unit_recno(UNIT_SEA) ];`
+

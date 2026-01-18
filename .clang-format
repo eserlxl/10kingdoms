@@ -1,0 +1,6 @@
+BasedOnStyle: LLVM
+IndentWidth: 1
+TabWidth: 1
+UseTab: Always
+ColumnLimit: 0
+AccessModifierOffset: -1

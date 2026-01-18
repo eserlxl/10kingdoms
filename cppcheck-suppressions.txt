@@ -1,0 +1,10 @@
+# Cppcheck suppressions for 10kingdoms
+
+# Legacy code patterns
+unusedFunction:src/*
+missingIncludeSystem:*
+unmatchedSuppression:*
+
+# Known issues
+constParameter:src/*
+passedByValue:src/*
