@@ -173,6 +173,12 @@ else()
   set(USE_WINDOWS_DEFINE "/* #undef USE_WINDOWS */")
 endif()
 
+# OpenAL is always used (required)
+set(USE_OPENAL_DEFINE "#define USE_OPENAL 1")
+
+# SDL is always used (required)
+set(USE_SDL_DEFINE "#define USE_SDL 1")
+
 # Dependency detection
 # SDL2 (required)
 find_package(SDL2 REQUIRED)
@@ -189,6 +195,20 @@ if(NOT OpenAL_FOUND)
   pkg_check_modules(OPENAL REQUIRED openal)
   set(OpenAL_LIBRARIES ${OPENAL_LIBRARIES})
   set(OpenAL_INCLUDE_DIRS ${OPENAL_INCLUDE_DIRS})
+endif()
+
+# Define OpenAL header paths for config.h (required for openal_audio.h)
+# Check which header format is available
+if(EXISTS "${OpenAL_INCLUDE_DIRS}/AL/al.h")
+  set(OPENAL_AL_H "#define OPENAL_AL_H <AL/al.h>")
+  set(OPENAL_ALC_H "#define OPENAL_ALC_H <AL/alc.h>")
+elseif(EXISTS "${OpenAL_INCLUDE_DIRS}/OpenAL/al.h")
+  set(OPENAL_AL_H "#define OPENAL_AL_H <OpenAL/al.h>")
+  set(OPENAL_ALC_H "#define OPENAL_ALC_H <OpenAL/alc.h>")
+else()
+  # Default to AL/al.h format (most common)
+  set(OPENAL_AL_H "#define OPENAL_AL_H <AL/al.h>")
+  set(OPENAL_ALC_H "#define OPENAL_ALC_H <AL/alc.h>")
 endif()
 
 # enet (optional, for networking)
