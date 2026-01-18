@@ -1842,7 +1842,7 @@ int Game::mp_select_session()
 				// capture into browseArea, scrollArea, textArea
 				for( b = 0; b < MAX_BUTTON; ++b)
 				{
-					browseArea[b].resize(2*sizeof(short) + (SESSION_BUTTON_X2-SESSION_BUTTON_X1+1)*SESSION_BUTTON_Y_SPACING);
+					browseArea[b].resize(2*sizeof(short) + (static_cast<int>(SESSION_BUTTON_X2)-static_cast<int>(SESSION_BUTTON_X1)+1)*SESSION_BUTTON_Y_SPACING);
 					vga_front.read_bitmap(
 						SESSION_BUTTON_X1, b*SESSION_BUTTON_Y_SPACING+SESSION_BUTTON_Y1,
 						SESSION_BUTTON_X2, (b+1)*SESSION_BUTTON_Y_SPACING+SESSION_BUTTON_Y1-1,
@@ -3450,7 +3450,7 @@ int Game::mp_select_option(NewNationPara *nationPara, int *mpPlayerCount)
 			{
 				// ###### begin Gilbert 24/10 ######//
 				MpStructSeedStr oldMapStr(msgSeedStr);
-				if( keyCode = mapIdField.detect() )
+				if( (keyCode = mapIdField.detect()) )
 				{
 					if( strcmp(oldMapStr.seed_str, msgSeedStr.seed_str) )
 						mp_obj.send( BROADCAST_PID, &msgSeedStr, sizeof(msgSeedStr) );

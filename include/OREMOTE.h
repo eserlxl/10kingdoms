@@ -171,7 +171,7 @@ enum { MSG_QUEUE_HEADER=FIRST_REMOTE_MSG_ID,
 		 LAST_REMOTE_MSG_ID			// keep this item last
 	  };
 
-enum { REMOTE_MSG_TYPE_COUNT= LAST_REMOTE_MSG_ID - FIRST_REMOTE_MSG_ID };
+enum { REMOTE_MSG_TYPE_COUNT= static_cast<int>(LAST_REMOTE_MSG_ID) - static_cast<int>(FIRST_REMOTE_MSG_ID) };
 
 
 

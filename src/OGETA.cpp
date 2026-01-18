@@ -488,7 +488,8 @@ int GetA::detect_click()
 			// less than the character x
 			for( cursor_pos = strlen(input_field); 
 				cursor_pos > 0 && mouse.click_x() < cursor_x(cursor_pos);
-				--cursor_pos );
+				--cursor_pos )
+				;
 			err_when( cursor_pos < 0 || cursor_pos > strlen(input_field));
 			clear_select();
 			mouse_drag_flag = 1;
@@ -508,7 +509,8 @@ int GetA::detect_click()
 		}
 		for( cursor_pos = strlen(input_field); 
 			cursor_pos > 0 && mouse.cur_x < cursor_x(cursor_pos);
-			--cursor_pos );
+			--cursor_pos )
+			;
 		err_when( cursor_pos < 0 || cursor_pos > strlen(input_field));
 		return 1;
 	}

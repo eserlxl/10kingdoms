@@ -256,7 +256,7 @@ int OpenALAudio::init_wav()
 			break;
 		case ALC_STEREO_SOURCES:
 			MSG("ALC_STEREO_SOURCES: %i\n", attributes[n + 1]);
-			attributes[n + 1];
+			// ALC_STEREO_SOURCES value is logged but not used
 			break;
 		}
 	}
@@ -297,6 +297,7 @@ err:
 	
 	// Clear any OpenAL errors that might have occurred during initialization
 	alGetError();
+	return 0;
 }
 
 void OpenALAudio::deinit_wav()

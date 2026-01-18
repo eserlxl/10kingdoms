@@ -860,20 +860,7 @@ int UnitRes::write_file(File* filePtr)
 
 	for( int i=1 ; i<=unit_res.unit_info_count ; i++, unitInfo++ )
 	{
-		// Defensive: Ensure arrays are allocated and zeroed before writing
-		if (!unitInfo->nation_tech_level_array) {
-			// Should never happen for POD struct, but patch for safety
-			static_assert(sizeof(unitInfo->nation_tech_level_array) == MAX_NATION, "nation_tech_level_array size mismatch");
-			memset(unitInfo->nation_tech_level_array, 0, sizeof(unitInfo->nation_tech_level_array));
-		}
-		if (!unitInfo->nation_unit_count_array) {
-			static_assert(sizeof(unitInfo->nation_unit_count_array) == sizeof(short)*MAX_NATION, "nation_unit_count_array size mismatch");
-			memset(unitInfo->nation_unit_count_array, 0, sizeof(unitInfo->nation_unit_count_array));
-		}
-		if (!unitInfo->nation_general_count_array) {
-			static_assert(sizeof(unitInfo->nation_general_count_array) == sizeof(short)*MAX_NATION, "nation_general_count_array size mismatch");
-			memset(unitInfo->nation_general_count_array, 0, sizeof(unitInfo->nation_general_count_array));
-		}
+		// Arrays are part of the struct, so they're always valid
 
 		if( !filePtr->file_write( unitInfo->nation_tech_level_array, sizeof(unitInfo->nation_tech_level_array) ) )
 			return 0;
@@ -908,16 +895,7 @@ int UnitRes::read_file(File* filePtr)
 			continue;
 		}
 
-		// Defensive: Ensure arrays are allocated and zeroed before reading
-		if (!unitInfo->nation_tech_level_array) {
-			memset(unitInfo->nation_tech_level_array, 0, sizeof(unitInfo->nation_tech_level_array));
-		}
-		if (!unitInfo->nation_unit_count_array) {
-			memset(unitInfo->nation_unit_count_array, 0, sizeof(unitInfo->nation_unit_count_array));
-		}
-		if (!unitInfo->nation_general_count_array) {
-			memset(unitInfo->nation_general_count_array, 0, sizeof(unitInfo->nation_general_count_array));
-		}
+		// Arrays are part of the struct, so they're always valid
 
 		if( !filePtr->file_read( unitInfo->nation_tech_level_array, sizeof(unitInfo->nation_tech_level_array) ) )
 			return 0;
@@ -997,7 +975,7 @@ int TownRes::read_file(File* filePtr)
 {
 	if(!game_file_array.same_version)
 	{
-		memset(town_name_used_array, 0, sizeof(town_name_used_array));
+		memset(town_name_used_array, 0, sizeof(town_name_used_array[0]) * VERSION_1_TOWNRES_TOWN_NAME_COUNT);
 		return filePtr->file_read( town_name_used_array, sizeof(town_name_used_array[0]) * VERSION_1_TOWNRES_TOWN_NAME_COUNT );
 	}
 	else

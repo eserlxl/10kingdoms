@@ -339,7 +339,7 @@ void FirmHarbor::disp_main_menu(int refreshFlag)
 	if( refreshFlag == INFO_REPAINT )
 	{
 		button_build.paint( SHIP_DET_X1, SHIP_DET_Y2+4, 'A', "MAKESHIP" );
-		button_sail.paint ( SHIP_DET_X1+BUTTON_ACTION_WIDTH, SHIP_DET_Y2+4, 'A', "SAILOUT" );
+		button_sail.paint ( static_cast<int>(SHIP_DET_X1)+static_cast<int>(BUTTON_ACTION_WIDTH), SHIP_DET_Y2+4, 'A', "SAILOUT" );
 	}
 
 	if( ship_count > 0 )

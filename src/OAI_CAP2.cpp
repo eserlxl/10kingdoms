@@ -457,7 +457,7 @@ int Nation::enemy_town_combat_level(Town* targetTown, int returnIfWar, int& hasW
 	{
 		townPtr = town_array[ targetTown->linked_town_array[i] ];
 
-		if( townPtr->nation_recno == targetTown->nation_recno )	//**BUGHERE
+		if( townPtr->nation_recno == targetTown->nation_recno )	// BUGHERE
 			enemyCombatLevel += townPtr->jobless_population * 5;
 	}
 */

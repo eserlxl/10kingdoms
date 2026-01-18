@@ -1760,7 +1760,7 @@ void News::firm_constructed()
 	//
 	//----------------------------------------------//
 
-	snprintf(str, MAX_STR_LEN+1, _(firm_constructed_msg[short_para1-1]));
+	snprintf(str, MAX_STR_LEN+1, "%s", _(firm_constructed_msg[short_para1-1]));
 }
 //------- End of function News::firm_constructed -----//
 
@@ -1835,7 +1835,7 @@ void News::weapon_ship_built()
 	else
 	{
 		// ships don't have tech levels, and harbors aren't always near towns
-		snprintf(str, MAX_STR_LEN+1, _(weapon_ship_built_msg[short_para1-UNIT_CATAPULT]));
+		snprintf(str, MAX_STR_LEN+1, "%s", _(weapon_ship_built_msg[short_para1-UNIT_CATAPULT]));
 	}
 }
 //------- End of function News::weapon_ship_built -----//

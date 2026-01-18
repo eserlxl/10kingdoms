@@ -466,7 +466,7 @@ int Nation::mobilize_capturer(int unitRecno)
 	{
 		//--- if the picked unit is an overseer of an existing camp ---//
 
-		if( cash < EXPENSE_TRAIN_UNIT ) // training a replacement costs money
+		if( cash < static_cast<float>(EXPENSE_TRAIN_UNIT) ) // training a replacement costs money
 			return 0;
 
 		Firm* firmPtr = firm_array[unitPtr->unit_mode_para];

@@ -37,6 +37,7 @@ static String lc_all_str;
 static String lc_name_str;
 int setenv(const char *name, const char *value, int overwrite)
 {
+	// Note: Standard setenv marks value as nonnull, but this implementation handles null
 	if( !value )
 	{
 		// putenv requires a mutable string, create a copy in static buffer

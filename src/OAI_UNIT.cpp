@@ -379,7 +379,7 @@ int Nation::hire_unit(int skillId, int raceId, short destX, short destY)
 //
 int Nation::train_unit(int skillId, int raceId, short destX, short destY, int& trainTownRecno, int actionId)
 {
-	if( skillId && cash < EXPENSE_TRAIN_UNIT ) // training costs money
+	if( skillId && cash < static_cast<float>(EXPENSE_TRAIN_UNIT) ) // training costs money
 		return 0;
 
 	//----- locate the best town for training the unit -----//

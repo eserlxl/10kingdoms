@@ -121,7 +121,7 @@ void ColorTable::init(int absScale, int tableSize, BYTE *customTable)
 	deinit();
 
 	abs_scale = absScale;
-	table_size = table_size;
+	table_size = tableSize;
 	remap_table = (BYTE *)mem_add(table_size * (2*absScale+1) );
 	memcpy(remap_table, customTable, tableSize * (2*absScale+1) );
 	remap_table_array = (BYTE **)mem_add(sizeof(BYTE *) * (2*abs_scale+1) );

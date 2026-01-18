@@ -216,7 +216,8 @@ void Game::view_encyclopedia()
 			int monsterSubClass;
 			for( monsterSubClass = 1; monsterSubClass <= FRYHTAN_MAX_PAGE &&
 				sub_class_id_array[main_class_id-1]-1 >= monster_page_index[monsterSubClass];
-				++monsterSubClass);
+				++monsterSubClass)
+				;
 			err_when( monsterSubClass > FRYHTAN_MAX_PAGE );
 
 			int pictButtonCount = monster_page_index[monsterSubClass] - 
@@ -400,7 +401,8 @@ static void disp_class_buttons()
 		int monsterSubClass;
 		for( monsterSubClass = 1; monsterSubClass <= FRYHTAN_MAX_PAGE &&
 			sub_class_id_array[main_class_id-1]-1 >= monster_page_index[monsterSubClass];
-			++monsterSubClass);
+			++monsterSubClass)
+			;
 		err_when( monsterSubClass > FRYHTAN_MAX_PAGE );
 		vga_back.put_bitmap(12, SUBCLASS_BUTTON_Y-SUBCLASS_TOP_BORDER, 
 			image_encyc.get_ptr(monster_button_name_array[monsterSubClass-1]) );

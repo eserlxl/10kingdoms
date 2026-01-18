@@ -317,7 +317,7 @@ void NationBase::init_relation(int relationNationRecno)
 	nationRelation->trade_treaty = relationNationRecno==nation_recno;
 
 	nationRelation->status       		 = NATION_NEUTRAL;
-	nationRelation->ai_relation_level = NATION_NEUTRAL * RELATION_LEVEL_PER_STATUS;
+	nationRelation->ai_relation_level = static_cast<int>(NATION_NEUTRAL) * static_cast<int>(RELATION_LEVEL_PER_STATUS);
 	nationRelation->last_change_status_date = info.game_date;
 
 	if( relationNationRecno == nation_recno )		// own nation

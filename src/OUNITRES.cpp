@@ -253,12 +253,8 @@ void UnitRes::load_info()
 		memset( unitInfo->nation_unit_count_array, 0, sizeof(unitInfo->nation_unit_count_array) );
 		memset( unitInfo->nation_general_count_array, 0, sizeof(unitInfo->nation_general_count_array) );
 		
-		// Additional safety check to ensure arrays are properly initialized
-		if (!unitInfo->nation_tech_level_array || !unitInfo->nation_unit_count_array || !unitInfo->nation_general_count_array)
-		{
-			err.msg("Failed to initialize UnitInfo arrays for unit %d\n", i+1);
-			return;
-		}
+		// Arrays are part of the struct, so they're always valid
+		// (Previous null check removed as arrays can never be null)
 	}
 
 	//--------- set vehicle info  ---------//

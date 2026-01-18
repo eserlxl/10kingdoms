@@ -151,7 +151,7 @@ void InGameMenu::disp(int needRepaint)
             // darked disabled button
             Vga::active_buf->adjust_brightness(
                GAME_OPTION_X1, GAME_OPTION_Y1 + b*GAME_OPTION_HEIGHT,
-               GAME_OPTION_X1+GAME_OPTION_WIDTH-1,
+               static_cast<int>(GAME_OPTION_X1)+static_cast<int>(GAME_OPTION_WIDTH)-1,
                GAME_OPTION_Y1 + (b+1)*GAME_OPTION_HEIGHT-1, -8);
          }
       }
@@ -181,7 +181,7 @@ int InGameMenu::detect()
 
    for( i=1 ; i<=GAME_OPTION_COUNT ; i++, y+=GAME_OPTION_HEIGHT )
    {
-      x2 = GAME_OPTION_X1+GAME_OPTION_WIDTH-1;
+      x2 = static_cast<int>(GAME_OPTION_X1)+static_cast<int>(GAME_OPTION_WIDTH)-1;
       y2 = y+GAME_OPTION_HEIGHT-1;
 
       if( game_menu_option_flag[i-1] == 1 &&

@@ -1113,8 +1113,8 @@ int Unit::monster_defend_follow_target()
 /*
 	if(firm_array.is_deleted(action_misc_para))
 	{
-		stop2(); //**** BUGHERE
-		//set_mode(0); //***BUGHERE
+		stop2(); // BUGHERE
+		//set_mode(0); // BUGHERE
 		if(monster_array.is_deleted(unit_mode_para))
 			return 0;
 

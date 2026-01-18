@@ -446,6 +446,11 @@ void Mouse::add_event(MouseEventType type)
 	case RIGHT_BUTTON_RELEASE:
 		right_press = 0;
 		break;
+	case KEY_PRESS:
+	case KEY_RELEASE:
+	case KEY_TYPING:
+		// Key events are handled elsewhere
+		break;
 	}
 
 	if(++head_ptr >= EVENT_BUFFER_SIZE)       // increment the head ptr

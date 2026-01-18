@@ -371,7 +371,7 @@ void Town::disp_main_menu(int refreshFlag)
 
 			if( has_linked_own_camp )
 			{
-				button_train.paint( BUTTON_X1+BUTTON_ACTION_WIDTH, y, 'A', "TRAIN" );
+				button_train.paint( static_cast<int>(BUTTON_X1)+static_cast<int>(BUTTON_ACTION_WIDTH), y, 'A', "TRAIN" );
 				button_tax.paint( BUTTON_X1+BUTTON_ACTION_WIDTH*2, y, 'A', "COLLTAX" );
 				button_grant.paint( BUTTON_X1+BUTTON_ACTION_WIDTH*3, y, 'A', "GRANT" );
 

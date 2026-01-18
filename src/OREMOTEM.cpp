@@ -1607,7 +1607,7 @@ void RemoteMsg::firm_set_repair()
 // ------- Begin of function RemoteMsg::firm_train_level ---------//
 void RemoteMsg::firm_train_level()
 {
-/*		//**BUGHERE, no more training in game 
+/*		// BUGHERE, no more training in game 
 	err_when( id != MSG_FIRM_TRAIN_LEVEL);
 	// packet structure : <firm recno> <new train level>
 	short *shortPtr = (short *)data_buf;
