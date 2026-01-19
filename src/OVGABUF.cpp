@@ -214,6 +214,9 @@ void VgaBuf::put_bitmap(int x,int y,char* bitmapPtr)
 {
 	err_when( !buf_locked );
 
+	if( !bitmapPtr )
+		return;
+
 	if( is_front )
 		mouse.hide_area( x, y, x+*((short*)bitmapPtr)-1, y+*(((short*)bitmapPtr)+1)-1 );
 
@@ -233,6 +236,9 @@ void VgaBuf::put_bitmap_trans(int x,int y,char* bitmapPtr)
 {
 	err_when( !buf_locked );
 
+	if( !bitmapPtr )
+		return;
+
 	if( is_front )
 		mouse.hide_area( x, y, x+*((short*)bitmapPtr)-1, y+*(((short*)bitmapPtr)+1)-1 );
 
@@ -251,6 +257,9 @@ void VgaBuf::put_bitmap_trans(int x,int y,char* bitmapPtr)
 void VgaBuf::put_bitmap_remap(int x,int y,char* bitmapPtr,char *colorTable)
 {
 	err_when( !buf_locked );
+
+	if( !bitmapPtr )
+		return;
 
 	if( is_front )
 		mouse.hide_area( x, y, x+*((short*)bitmapPtr)-1, y+*(((short*)bitmapPtr)+1)-1 );

@@ -771,7 +771,21 @@ static time_t filetime_to_posix(const GameFileDate* gameFileDate)
 //
 void GameFileArray::disp_entry_info(const GameFile* entry, int x, int y)
 {
-	vga_front.put_bitmap(x+10, y+10,	unit_res[ race_res[entry->race_id]->basic_unit_id ]->king_icon_ptr);
+	// Defensive check: ensure resources are initialized and pointers are valid
+	if( race_res.init_flag && unit_res.init_flag && 
+	    entry->race_id >= 1 && entry->race_id <= race_res.race_count )
+	{
+		RaceInfo* raceInfo = race_res[entry->race_id];
+		if( raceInfo && raceInfo->basic_unit_id >= 1 && 
+		    raceInfo->basic_unit_id <= unit_res.unit_info_count )
+		{
+			UnitInfo* unitInfo = unit_res[raceInfo->basic_unit_id];
+			if( unitInfo && unitInfo->king_icon_ptr )
+			{
+				vga_front.put_bitmap(x+10, y+10, unitInfo->king_icon_ptr);
+			}
+		}
+	}
 
 	x+=60;
 
