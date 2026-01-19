@@ -154,10 +154,9 @@ cmake --install . --prefix /opt/10kingdoms
 
 ### Codebase Status
 
-The project is currently being modernized:
-- ✅ **Build System:** Migrated from autotools to CMake
-- ✅ **C++ Standard:** Upgraded to C++23
-- 🔄 **Architecture:** Ongoing modernization (see MODERNIZATION_ROADMAP.md)
+Current project status:
+- ✅ **Build System:** CMake (autotools removed)
+- ✅ **C++ Standard:** C++23
 
 ### Building for Development
 
@@ -178,7 +177,6 @@ Contributions are welcome! Please ensure:
 ## Documentation
 
 - `BUILD_CMAKE.md` - Detailed CMake build instructions
-- `MODERNIZATION_ROADMAP.md` - Project modernization plan
 - `docs/` - Architecture and subsystem documentation
 
 ## License
