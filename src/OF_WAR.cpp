@@ -772,6 +772,10 @@ void FirmWar::disp_war_info(int dispY1, int refreshFlag)
 	if( refreshFlag == INFO_REPAINT )
 		vga_util.d3_panel_up( get_scaled_info_x1(), dispY1, get_scaled_info_x2(), dispY1+50 );
 
+	//-------- check if build_unit_id is valid ---------//
+	if( !build_unit_id )
+		return;
+
 	int x=get_scaled_info_x1()+4, y=dispY1+4;
 
 	//-------- display the icon of the researching item ---------//
@@ -781,7 +785,13 @@ void FirmWar::disp_war_info(int dispY1, int refreshFlag)
 	if( refreshFlag == INFO_REPAINT )
 	{
 		vga_util.d3_panel_down( x, y, x+UNIT_LARGE_ICON_WIDTH+3, y+UNIT_LARGE_ICON_HEIGHT+3, 2 );
-		vga_front.put_bitmap( x+2, y+2, unitInfo->get_large_icon_ptr(0) );
+		
+		// Check if the icon pointer is valid before using it
+		char* iconPtr = unitInfo->get_large_icon_ptr(0);
+		if( iconPtr )
+		{
+			vga_front.put_bitmap( x+2, y+2, iconPtr );
+		}
 
 		//----------- display text ------------//
 
