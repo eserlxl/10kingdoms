@@ -195,6 +195,9 @@ doxyfile.user
 # Sphinx output
 docs/_build/
 
+# Generated documentation and analysis files
+docs/
+
 ###############################################################################
 # COVERAGE & TEST OUTPUT
 ###############################################################################
