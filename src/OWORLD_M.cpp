@@ -163,10 +163,26 @@ void MapMatrix::draw()
 //
 void MapMatrix::draw_map()
 {
+	// Defensive: Ensure matrix is properly initialized before drawing
+	if( !loc_matrix || max_x_loc <= 0 || max_y_loc <= 0 )
+	{
+		// Fill with unexplored color if not initialized
+		char* writePtr = vga_back.buf_ptr() + vga_back.buf_pitch() * image_y1 + image_x1;
+		int lineRemain = vga_back.buf_pitch() - image_width;
+		for( int y = image_y1; y <= image_y2; y++, writePtr += lineRemain )
+		{
+			for( int x = image_x1; x <= image_x2; x++, writePtr++ )
+			{
+				*writePtr = UNEXPLORED_COLOR;
+			}
+		}
+		return;
+	}
+
 	char* 	 writePtr  = vga_back.buf_ptr() + vga_back.buf_pitch() * image_y1 + image_x1;
 	int   	 lineRemain = vga_back.buf_pitch() - image_width;
 	int 		 x, y;
-	Location* locPtr = world.loc_matrix;
+	Location* locPtr = loc_matrix;
 	char*     nationColorArray = nation_array.nation_power_color_array;
 
 	//----------- draw map now ------------//
