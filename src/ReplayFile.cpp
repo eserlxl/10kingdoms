@@ -139,7 +139,8 @@ int ReplayFile::open_read(const char* filePath, NewNationPara *mpGame, int *mpPl
 		mpGame[i].dp_player_id = 0;
 		mpGame[i].color_scheme = file.file_get_short();
 		mpGame[i].race_id      = file.file_get_short();
-		file.file_read(&mpGame[i].player_name, HUMAN_NAME_LEN+1);
+		if (!file.file_read(&mpGame[i].player_name, HUMAN_NAME_LEN+1))
+			goto out;
 	}
 
 	remote.set_process_frame_delay(frame_delay);
@@ -164,9 +165,11 @@ int ReplayFile::open_write(const char* filePath, NewNationPara *mpGame, int mpPl
 
 	if( !file.file_create(filePath, 0) )
 		return 0;
-	file.file_write((void *)file_magic, 4);
+	if (!file.file_write((void *)file_magic, 4))
+		return 0;
 	file.file_put_long(replay_version);
-	file.file_write(&current_version, sizeof(GameVer));
+	if (!file.file_write(&current_version, sizeof(GameVer)))
+		return 0;
 	file.file_put_long(config_adv.checksum);
 	file.file_put_long(remote.get_process_frame_delay());
 	file.file_put_long(info.random_seed);
@@ -177,7 +180,8 @@ int ReplayFile::open_write(const char* filePath, NewNationPara *mpGame, int mpPl
 		file.file_put_short(mpGame[i].nation_recno);
 		file.file_put_short(mpGame[i].color_scheme);
 		file.file_put_short(mpGame[i].race_id);
-		file.file_write(&mpGame[i].player_name, HUMAN_NAME_LEN+1);
+		if (!file.file_write(&mpGame[i].player_name, HUMAN_NAME_LEN+1))
+			return 0;
 	}
 
 	mode = ReplayFile::WRITE;
@@ -194,7 +198,8 @@ int ReplayFile::read_queue(RemoteQueue *rq)
 		return 0;
 	if( size > rq->queue_buf_size )
 		rq->reserve(size - rq->queue_buf_size);
-	file.file_read(rq->queue_buf, size);
+	if (!file.file_read(rq->queue_buf, size))
+		return 0;
 	rq->queue_ptr = rq->queue_buf + size;
         rq->queued_size = size;
 	return size;
@@ -207,5 +212,6 @@ void ReplayFile::write_queue(RemoteQueue *rq)
 	if( rq->queued_size <= 0 )
 		return;
 	file.file_put_unsigned_short(rq->queued_size);
-	file.file_write(rq->queue_buf, rq->queued_size);
+	if (!file.file_write(rq->queue_buf, rq->queued_size))
+		return;
 }

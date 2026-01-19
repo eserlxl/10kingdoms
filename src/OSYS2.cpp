@@ -117,6 +117,11 @@ void Sys::detect()
 //
 void Sys::process()
 {
+	// Check exit flag immediately - if set, don't process anything
+	// This prevents processing corrupted game state after a failed load
+	if( signal_exit_flag )
+		return;
+
 	//------- update frame count and is_sync_frame --------//
 
 	frame_count++;

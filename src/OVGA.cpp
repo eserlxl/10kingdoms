@@ -276,9 +276,12 @@ int Vga::load_pal(const char* fileName)
    char palBuf[VGA_PALETTE_SIZE][3];
    File palFile;
 
-   palFile.file_open(fileName);
-   palFile.file_seek(8);               // bypass the header info
-   palFile.file_read(palBuf, VGA_PALETTE_SIZE*3);
+   if (!palFile.file_open(fileName))
+      return 0;
+   if (palFile.file_seek(8) < 0)               // bypass the header info
+      return 0;
+   if (!palFile.file_read(palBuf, VGA_PALETTE_SIZE*3))
+      return 0;
    palFile.file_close();
 
    for (int i = 0; i < VGA_PALETTE_SIZE; i++)
@@ -322,9 +325,12 @@ int Vga::set_custom_palette(char *fileName)
    char palBuf[VGA_PALETTE_SIZE][3];
    File palFile;
 
-   palFile.file_open(fileName);
-   palFile.file_seek(8);     				// bypass the header info
-   palFile.file_read(palBuf, VGA_PALETTE_SIZE*3);
+   if (!palFile.file_open(fileName))
+      return 0;
+   if (palFile.file_seek(8) < 0)     				// bypass the header info
+      return 0;
+   if (!palFile.file_read(palBuf, VGA_PALETTE_SIZE*3))
+      return 0;
    palFile.file_close();
 
    for(int i=0; i<VGA_PALETTE_SIZE; i++)

@@ -82,7 +82,7 @@ struct FontInfo	// info for each character
 //#ifdef GERMAN
 //#define GERMAN_CHAR_COUNT  	7
 
-//	their DOS ascii characters:			 ü    ä    ß    ö    Ä    Ü    Ö
+//	their DOS ascii characters:			 ï¿½    ï¿½    ï¿½    ï¿½    ï¿½    ï¿½    ï¿½
 //static short german_ascii_array[]  = { 252, 228, 223, 246, 196, 220, 214 };
 //static short german_bmp_id_array[] = { 121, 100,  95, 116, 128, 151, 145 };
 //#endif
@@ -160,13 +160,18 @@ void Font::init(const char* fontName, int interCharSpace, int italicShift)
 	str += fontName;
 	str += ".RES";
 
-	fontFile.file_open(str);
+	if (!fontFile.file_open(str))
+		return;
 
 	//-------- read in the font header ---------//
 
 	FontHeader fontHeader;
 
-	fontFile.file_read( &fontHeader, sizeof(FontHeader) );
+	if (!fontFile.file_read( &fontHeader, sizeof(FontHeader) ))
+	{
+		fontFile.file_close();
+		return;
+	}
 
 	max_font_width  = fontHeader.max_width;
 	max_font_height = fontHeader.max_height;
@@ -183,7 +188,13 @@ void Font::init(const char* fontName, int interCharSpace, int italicShift)
 
 	font_info_array = (FontInfo*) mem_add( infoArraySize );
 
-	fontFile.file_read( font_info_array, infoArraySize );
+	if (!fontFile.file_read( font_info_array, infoArraySize ))
+	{
+		mem_del(font_info_array);
+		font_info_array = NULL;
+		fontFile.file_close();
+		return;
+	}
 
 	//------- process italic shift --------//
 
@@ -199,7 +210,13 @@ void Font::init(const char* fontName, int interCharSpace, int italicShift)
 
 	font_bitmap_buf = mem_add( bitmapBufSize);
 
-	fontFile.file_read( font_bitmap_buf, bitmapBufSize );
+	if (!fontFile.file_read( font_bitmap_buf, bitmapBufSize ))
+	{
+		mem_del(font_bitmap_buf);
+		font_bitmap_buf = NULL;
+		fontFile.file_close();
+		return;
+	}
 
 	//---- get the width of the space character ----//
 	//

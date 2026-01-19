@@ -336,9 +336,11 @@ int Game::select_scenario(int scenCount, ScenInfo* scenInfoArray)
 				if( browseRecno && misc.is_file_exist(str) )
 				{
 					File pictFile;
-					pictFile.file_open(str);
-					vga_front.put_large_bitmap(menuX1+21,menuY1+19, &pictFile);
-					pictFile.file_close();
+					if (pictFile.file_open(str))
+					{
+						vga_front.put_large_bitmap(menuX1+21,menuY1+19, &pictFile);
+						pictFile.file_close();
+					}
 				}
 				else
 				{
@@ -361,7 +363,8 @@ int Game::select_scenario(int scenCount, ScenInfo* scenInfoArray)
 				{
 					File textFile;
 					int dataSize;
-					textFile.file_open(str);
+					if (!textFile.file_open(str))
+						continue;
 					// ##### patch begin Gilbert 2/2 ####//
 					dataSize = textFile.file_size();
 

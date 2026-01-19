@@ -112,6 +112,9 @@ public:
 private:
 	char     has_read_hall_of_fame;
 	char     last_file_name[FilePath::MAX_FILE_PATH+1]; // (persisted via HallOfFame)
+	// UI-only state: last load/save error shown inside the file menu
+	char     last_error_msg[256];
+	char     has_error_msg;
 
 public:
 	GameFileArray();

@@ -30,7 +30,10 @@ LongLog::LongLog(char suffix)
 {
 	char filename[] = "LLONGx.LOG";
 	filename[5] = suffix;
-	file_create(filename);
+	if (!file_create(filename))
+	{
+		// Failed to create log file, but continue anyway
+	}
 }
 
 LongLog::~LongLog()
@@ -48,7 +51,10 @@ void LongLog::printf(char *format, ...)
 
 	va_start( argPtr, format );
 	vsprintf( strBuf, format, argPtr );
-	file_write(strBuf, strlen(strBuf));
+	if (!file_write(strBuf, strlen(strBuf)))
+	{
+		// Failed to write to log file
+	}
 	va_end( argPtr );
 }
 

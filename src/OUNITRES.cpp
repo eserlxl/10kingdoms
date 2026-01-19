@@ -384,13 +384,28 @@ void UnitInfo::dec_nation_unit_count(int nationRecno)
 
 	if( nationRecno )
 	{
+		// Defensive: Validate nationRecno before accessing arrays
+		if( nationRecno < 1 || nationRecno > MAX_NATION )
+		{
+			return; // Invalid nationRecno - skip to prevent crash
+		}
+
 		nation_unit_count_array[nationRecno-1]--;
 
 		err_when( nation_unit_count_array[nationRecno-1] < 0 );
 
 		//------ decrease the nation's unit count -------//
+		// Defensive: Check if nation exists and is not deleted
+		if( nation_array.is_deleted(nationRecno) )
+		{
+			return; // Nation is deleted - skip to prevent crash
+		}
 
 		Nation* nationPtr = nation_array[nationRecno];
+		if( !nationPtr )
+		{
+			return; // Nation pointer is NULL - skip to prevent crash
+		}
 
 		nationPtr->total_unit_count--;
 
@@ -443,9 +458,27 @@ void UnitInfo::dec_nation_general_count(int nationRecno)
 
 	if( nationRecno )
 	{
+		// Defensive: Validate nationRecno before accessing arrays
+		if( nationRecno < 1 || nationRecno > MAX_NATION )
+		{
+			return; // Invalid nationRecno - skip to prevent crash
+		}
+
 		nation_general_count_array[nationRecno-1]--;
 
-		nation_array[nationRecno]->total_general_count--;
+		// Defensive: Check if nation exists and is not deleted
+		if( nation_array.is_deleted(nationRecno) )
+		{
+			return; // Nation is deleted - skip to prevent crash
+		}
+
+		Nation* nationPtr = nation_array[nationRecno];
+		if( !nationPtr )
+		{
+			return; // Nation pointer is NULL - skip to prevent crash
+		}
+
+		nationPtr->total_general_count--;
 
 		err_when( nation_general_count_array[nationRecno-1] < 0 );
 	}

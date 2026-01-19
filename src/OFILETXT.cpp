@@ -39,7 +39,13 @@
 //
 FileTxt::FileTxt(char* fileName)
 {
-   file_open(fileName);
+   if (!file_open(fileName))
+   {
+      data_buf = NULL;
+      data_ptr = NULL;
+      file_length = 0;
+      return;
+   }
 
    //-----------------------------------//
 
@@ -52,7 +58,15 @@ FileTxt::FileTxt(char* fileName)
 
    //-----------------------------------//
 
-   file_read( data_buf, file_length );
+   if (!file_read( data_buf, file_length ))
+   {
+      mem_del(data_buf);
+      data_buf = NULL;
+      data_ptr = NULL;
+      file_length = 0;
+      file_close();
+      return;
+   }
 
    file_close();
 }
@@ -79,7 +93,13 @@ FileTxt::FileTxt(File* filePtr, int dataSize)
 
 	//-----------------------------------//
 
-	filePtr->file_read( data_buf, file_length );
+	if (!filePtr->file_read( data_buf, file_length ))
+	{
+		mem_del(data_buf);
+		data_buf = NULL;
+		data_ptr = NULL;
+		file_length = 0;
+	}
 }
 //---------- End of function FileTxt::FileTxt ----------//
 

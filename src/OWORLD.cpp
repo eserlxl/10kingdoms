@@ -714,9 +714,14 @@ void World::load_map(char* fileName)
 
    File mapFile;
 
-   mapFile.file_open(fileName);
+   if (!mapFile.file_open(fileName))
+      return;
 
-   mapFile.file_read(loc_matrix, sizeof(Location)*MAX_WORLD_X_LOC*MAX_WORLD_Y_LOC );
+   if (!mapFile.file_read(loc_matrix, sizeof(Location)*MAX_WORLD_X_LOC*MAX_WORLD_Y_LOC ))
+   {
+      mapFile.file_close();
+      return;
+   }
 
    mapFile.file_close();
 

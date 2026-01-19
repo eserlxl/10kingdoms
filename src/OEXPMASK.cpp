@@ -47,20 +47,38 @@ void ExploredMask::init(ColorTable *colorTable)
 	str = DIR_RES;
 	str += MASK_FILENAME;
 	File maskFile;
-	maskFile.file_open(str);
+	if (!maskFile.file_open(str))
+		return;
 	int fileSize = maskFile.file_size();
 	mask_bitmap = (char *) mem_add( fileSize );
-	maskFile.file_read(mask_bitmap, fileSize);
+	if (!maskFile.file_read(mask_bitmap, fileSize))
+	{
+		mem_del(mask_bitmap);
+		mask_bitmap = NULL;
+		maskFile.file_close();
+		return;
+	}
 	maskFile.file_close();
 
 	// ------- read into exploration remap bitmap ------//
 	str = DIR_RES;
 	str += REMAP_FILENAME;
 	File remapFile;
-	remapFile.file_open(str);
+	if (!remapFile.file_open(str))
+	{
+		mem_del(mask_bitmap);
+		mask_bitmap = NULL;
+		return;
+	}
 	fileSize = remapFile.file_size();
 	remap_bitmap = (char *) mem_add(fileSize);
-	remapFile.file_read(remap_bitmap, fileSize);
+	if (!remapFile.file_read(remap_bitmap, fileSize))
+	{
+		mem_del(remap_bitmap);
+		remap_bitmap = NULL;
+		remapFile.file_close();
+		return;
+	}
 	remapFile.file_close();
 }
 // ------- End of function ExploredMask::init ---------//

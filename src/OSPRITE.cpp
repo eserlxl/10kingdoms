@@ -92,7 +92,7 @@ void Sprite::init(short spriteId, short startXLoc, short startYLoc)
 //
 void Sprite::deinit()
 {
-	if( sprite_id && cur_x >= 0 )
+	if( sprite_id && cur_x >= 0 && sprite_info )
 	{
 		sprite_info->free_bitmap_res();
 		sprite_id = 0;

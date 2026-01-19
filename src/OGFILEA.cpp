@@ -122,6 +122,8 @@ GameFileArray::GameFileArray() : DynArray( sizeof(GameFile), 10 )
 
 	has_read_hall_of_fame = 0;
 	last_file_name[0] = '\0';
+	has_error_msg = 0;
+	last_error_msg[0] = '\0';
 }
 //-------- End of function GameFileArray constuctor ------//
 
@@ -177,6 +179,10 @@ void GameFileArray::deinit()
 //
 int GameFileArray::menu(int actionMode, int *recno)
 {
+	// clear any previous inline error message whenever the menu is (re)entered
+	has_error_msg = 0;
+	last_error_msg[0] = '\0';
+
 	if( actionMode == -2 || actionMode == -1)
 	{
 		// copy or restore screen to back buffer
@@ -430,6 +436,21 @@ int GameFileArray::menu(int actionMode, int *recno)
 				// disp_browse();
 			}
 
+			// If there is a pending error message from the last load/save attempt,
+			// render it inside the load/save window so it is always visible.
+			if( has_error_msg )
+			{
+				int msgX1 = menu_x1 + 34;
+				int msgY1 = menu_y1 + FILE_MENU_HEIGHT - 32;
+				int msgX2 = menu_x1 + FILE_MENU_WIDTH - 34;
+				int msgY2 = msgY1 + 20;
+
+				mouse.hide_area(msgX1, msgY1, msgX2, msgY2);
+				// Draw a simple inline message using the standard UI font.
+				font_san.center_put(msgX1, msgY1, msgX2, msgY2, last_error_msg);
+				mouse.show_area();
+			}
+
 			refreshFlag = 0;
 		}
 
@@ -485,15 +506,51 @@ int GameFileArray::menu(int actionMode, int *recno)
 					*recno = browse_recno;
 				retFlag = process_action(0);
 				// fprintf(stderr, "[DEBUG] process_action returned: %d\n", retFlag);
-				// ##### begin Gilbert 15/10 #####//
+				// ##### begin Gilbert 15/10 (modified) #####//
 				// retFlag: 1 = success, 0 = cancelled, -1 = error
-				// For load mode (action_mode == 2), always break after process_action
+				if( action_mode == 2 )
+				{
+					// In load mode, stay in the load-game UI on error (-1)
+					// so the user can see the error message and pick another slot.
+					if( retFlag < 0 )
+					{
+						// Error already reported by process_action (via box.msg).
+						// The message box has been shown and dismissed.
+						// Force a full menu refresh to ensure it's visible after the message.
+						retFlag = 0;
+						refreshFlag = LSOPTION_ALL;
+						// Redraw the entire menu to ensure it's visible
+						mouse.hide_area(menu_x1, menu_y1, menu_x1+FILE_MENU_WIDTH, menu_y1+FILE_MENU_HEIGHT);
+						image_interface.put_front( menu_x1, menu_y1, (char*)"LOADGAME" );
+						scrollUp.paint(menu_x1+SCROLL_X1+1,menu_y1+SCROLL_Y1-17, "SV-UP-U", "SV-UP-D");
+						scrollDown.paint(menu_x1+SCROLL_X1+1,menu_y1+SCROLL_Y2+1, "SV-DW-U", "SV-DW-D");
+						saveButton.paint(menu_x1+34, menu_y1+354, "LOAD", "CANCEL1D");
+						cancelButton.paint(menu_x1+473, menu_y1+354, "CANCEL1", "CANCEL1D");
+						// Re-capture browse areas
+						for( int j = 0; j < MAX_BROWSE_DISP_REC; ++j)
+						{
+							browseArea[j].resize(2*sizeof(short)+BROWSE_REC_WIDTH*BROWSE_REC_HEIGHT);
+							vga_front.read_bitmap(
+								menu_x1+BROWSE_X1, menu_y1+BROWSE_Y1+j*BROWSE_REC_HEIGHT,
+								menu_x1+BROWSE_X2, menu_y1+BROWSE_Y1+j*BROWSE_REC_HEIGHT+BROWSE_REC_HEIGHT-1,
+								browseArea[j].ptr);
+						}
+						scrollArea.resize(2*sizeof(short)+SCROLL_WIDTH*SCROLL_HEIGHT);
+						vga_front.read_bitmap( menu_x1+SCROLL_X1, menu_y1+SCROLL_Y1,
+							menu_x1+SCROLL_X2, menu_y1+SCROLL_Y2, scrollArea.ptr);
+						mouse.show_area();
+						sys.blt_virtual_buf();
+						continue;
+					}
+					// Success (1) or user-cancel (0): leave the load-game UI.
+					break;
+				}
 				// For save mode (action_mode == 1), only break on success or error, not on cancel
-				if( action_mode == 2 || retFlag != 0 )
+				if( retFlag != 0 )
 				{
 					break;
 				}
-				// ##### end Gilbert 15/10 #####//
+				// ##### end Gilbert 15/10 (modified) #####//
 			}
 		}
 		else if( action_mode == 2 && !browse_recno )
@@ -579,9 +636,22 @@ int GameFileArray::menu(int actionMode, int *recno)
 					if( recno )
 						*recno = browse_recno;
 					retFlag = process_action(0);
-//					if( retFlag < 0 )
-//						box.msg("Error");
-					break;
+					// retFlag: 1 = success, 0 = cancelled, -1 = error
+					if( action_mode == 2 )
+					{
+						// In load mode, keep the browser open on error
+						if( retFlag < 0 )
+						{
+							retFlag = 0;
+							refreshFlag = LSOPTION_ALL;
+							continue;
+						}
+						// Success or cancel: exit menu
+						break;
+					}
+					// Save mode: exit on success or error, stay on cancel
+					if( retFlag != 0 )
+						break;
 				}
 				// ######## end Gilbert 31/10 ########//
 			}
@@ -649,21 +719,27 @@ int GameFileArray::menu(int actionMode, int *recno)
 		else if( (action_mode == 1 || (action_mode == 2 && browse_recno))
 			&& mouse.any_click(saveButton.x1, saveButton.y1, saveButton.x2, saveButton.y2, LEFT_BUTTON) )
 		{
-			// Debug output
-			// fprintf(stderr, "[DEBUG] Load/Save button detected: action_mode=%d, browse_recno=%d, mouse.cur_x=%d, mouse.cur_y=%d, button coords: (%d,%d)-(%d,%d)\n",
-			// 	action_mode, browse_recno, mouse.cur_x, mouse.cur_y, saveButton.x1, saveButton.y1, saveButton.x2, saveButton.y2);
 			// save / load button
 			refreshFlag = LSOPTION_ALL;
 			if( recno )
 				*recno = browse_recno;
 			retFlag = process_action(0);
-			// fprintf(stderr, "[DEBUG] process_action returned: %d\n", retFlag);
-			// ##### begin Gilbert 15/10 #####//
 			// retFlag: 1 = success, 0 = cancelled, -1 = error
-			// Always break after process_action to exit menu, regardless of result
-			// The error message will be displayed by process_action or the caller
-			break;
-			// ##### end Gilbert 15/10 #####//
+			if( action_mode == 2 )
+			{
+				// In load mode, keep the browser open on error
+				if( retFlag < 0 )
+				{
+					retFlag = 0;
+					refreshFlag = LSOPTION_ALL;
+					continue;
+				}
+				// Success or cancel: exit menu
+				break;
+			}
+			// Save mode: exit on success or error, stay on cancel
+			if( retFlag != 0 )
+				break;
 		}
 		else if( action_mode == 1 && saveNewButton.detect() )
 		{
@@ -924,10 +1000,23 @@ int GameFileArray::process_action(int saveNew)
 		if( rc > 0 )
 		{
 			strcpy(last_file_name, (*this)[browse_recno]->file_name);
+			// clear any previous error message on successful load
+			has_error_msg = 0;
+			last_error_msg[0] = '\0';
 		}
 		else
 		{
-			box.msg(gameFile->status_str());
+			const char* errorMsg = gameFile->status_str();
+			fprintf(stderr, "[GameFileArray] process_action: Load failed (rc=%d), inline error: '%s'\n", rc, errorMsg ? errorMsg : "(null)");
+			fflush(stderr);
+
+			// Store the message to be rendered inline by the menu loop.
+			if( errorMsg && *errorMsg )
+			{
+				strncpy(last_error_msg, errorMsg, sizeof(last_error_msg)-1);
+				last_error_msg[sizeof(last_error_msg)-1] = '\0';
+				has_error_msg = 1;
+			}
 		}
 		return rc;
 	}

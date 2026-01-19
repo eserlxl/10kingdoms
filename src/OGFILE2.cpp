@@ -173,35 +173,40 @@ int GameFile::read_file(File* filePtr)
 {
 	//----- check version no. first ------//
 
+	MSG("read_file: Starting read_file()\n");
+	long filePosStart = filePtr->file_pos();
+	MSG("read_file: Starting file position: %ld\n", filePosStart);
+	
 	int originalRandomSeed = misc.get_random_seed();
 
 	//### begin alex 5/3 ###//
 	game_file_array.load_file_game_version = filePtr->file_get_short();
-	// fprintf(stderr, "[DEBUG] Loaded file game version: %d (raw)\n", game_file_array.load_file_game_version);
+	MSG("read_file: Loaded file game version (raw): %d\n", game_file_array.load_file_game_version);
 
 	// compare if same demo format or not
 	if( game_file_array.demo_format && game_file_array.load_file_game_version > 0
 		|| !game_file_array.demo_format && game_file_array.load_file_game_version < 0)
 	{
-		// fprintf(stderr, "[DEBUG] Demo format mismatch\n");
+		ERR("read_file: Demo format mismatch (demo_format=%d, load_file_game_version=%d)\n", 
+			game_file_array.demo_format, game_file_array.load_file_game_version);
 		return -1;
 	}
 
 	// take the absolute value of game version
 	game_file_array.load_file_game_version = abs(game_file_array.load_file_game_version);
-	// fprintf(stderr, "[DEBUG] Loaded file game version (abs): %d, current GAME_VERSION: %d\n", 
-	// 	game_file_array.load_file_game_version, GAME_VERSION);
+	MSG("read_file: Loaded file game version (abs): %d, current GAME_VERSION: %d\n", 
+		game_file_array.load_file_game_version, GAME_VERSION);
 
 	if(game_file_array.load_file_game_version > GAME_VERSION)
 	{
-		// fprintf(stderr, "[DEBUG] File version %d is newer than current version %d\n", 
-		// 	game_file_array.load_file_game_version, GAME_VERSION);
+		ERR("read_file: File version %d is newer than current version %d\n", 
+			game_file_array.load_file_game_version, GAME_VERSION);
 		return -1;		// the executing program can't handle saved game in future version
 	}
 
 	game_file_array.same_version = ( game_file_array.load_file_game_version/100==GAME_VERSION/100 );
-	// fprintf(stderr, "[DEBUG] same_version=%d (load_file_game_version/100=%d, GAME_VERSION/100=%d)\n",
-	// 	game_file_array.same_version, game_file_array.load_file_game_version/100, GAME_VERSION/100);
+	MSG("read_file: same_version=%d (load_file_game_version/100=%d, GAME_VERSION/100=%d)\n",
+		game_file_array.same_version, game_file_array.load_file_game_version/100, GAME_VERSION/100);
 	//#### end alex 5/3 ####//
 
 	//------------------------------------------------//
@@ -213,49 +218,69 @@ int GameFile::read_file(File* filePtr)
 
 	if( game_file_array.demo_format )
 	{
-		// fprintf(stderr, "[DEBUG] Reading demo format: read_file_1\n");
+		MSG("read_file: Reading demo format: read_file_1\n");
+		long filePosBefore1 = filePtr->file_pos();
 		if( !read_file_1(filePtr) )
 		{
-			// fprintf(stderr, "[DEBUG] read_file_1 failed\n");
+			ERR("read_file: read_file_1 failed at file position %ld\n", filePosBefore1);
 			return 0;
 		}
+		long filePosAfter1 = filePtr->file_pos();
+		MSG("read_file: read_file_1 succeeded (read %ld bytes)\n", filePosAfter1 - filePosBefore1);
 
-		// fprintf(stderr, "[DEBUG] Reading demo format: read_file_2\n");
+		MSG("read_file: Reading demo format: read_file_2\n");
+		long filePosBefore2 = filePtr->file_pos();
 		if( !read_file_2(filePtr) )
 		{
-			// fprintf(stderr, "[DEBUG] read_file_2 failed\n");
+			ERR("read_file: read_file_2 failed at file position %ld\n", filePosBefore2);
 			return 0;
 		}
+		long filePosAfter2 = filePtr->file_pos();
+		MSG("read_file: read_file_2 succeeded (read %ld bytes)\n", filePosAfter2 - filePosBefore2);
 	}
 	else
 	{
-		// fprintf(stderr, "[DEBUG] Reading normal format: read_file_2\n");
+		MSG("read_file: Reading normal format: read_file_2\n");
+		long filePosBefore2 = filePtr->file_pos();
 		if( !read_file_2(filePtr) )
 		{
-			// fprintf(stderr, "[DEBUG] read_file_2 failed\n");
+			ERR("read_file: read_file_2 failed at file position %ld\n", filePosBefore2);
 			return 0;
 		}
+		long filePosAfter2 = filePtr->file_pos();
+		MSG("read_file: read_file_2 succeeded (read %ld bytes)\n", filePosAfter2 - filePosBefore2);
 
-		// fprintf(stderr, "[DEBUG] Reading normal format: read_file_1\n");
+		MSG("read_file: Reading normal format: read_file_1\n");
+		long filePosBefore1 = filePtr->file_pos();
 		if( !read_file_1(filePtr) )
 		{
-			// fprintf(stderr, "[DEBUG] read_file_1 failed\n");
+			ERR("read_file: read_file_1 failed at file position %ld\n", filePosBefore1);
 			return 0;
 		}
+		long filePosAfter1 = filePtr->file_pos();
+		MSG("read_file: read_file_1 succeeded (read %ld bytes)\n", filePosAfter1 - filePosBefore1);
 	}
 
-	// fprintf(stderr, "[DEBUG] Reading: read_file_3\n");
+	MSG("read_file: Reading: read_file_3\n");
+	long filePosBefore3 = filePtr->file_pos();
 	if( !read_file_3(filePtr) )
 	{
-		// fprintf(stderr, "[DEBUG] read_file_3 failed\n");
+		ERR("read_file: read_file_3 failed at file position %ld\n", filePosBefore3);
 		return 0;
 	}
+	long filePosAfter3 = filePtr->file_pos();
+	MSG("read_file: read_file_3 succeeded (read %ld bytes)\n", filePosAfter3 - filePosBefore3);
 
 	//-------------------------------------//
 
 	err_when( originalRandomSeed != misc.get_random_seed() );
 
 	misc.set_random_seed(loaded_random_seed);
+	MSG("read_file: Random seed restored to %d\n", loaded_random_seed);
+	
+	long filePosEnd = filePtr->file_pos();
+	MSG("read_file: Completed successfully, final file position: %ld (total read: %ld bytes)\n", 
+		filePosEnd, filePosEnd - filePosStart);
 
 	return 1;
 }
@@ -493,60 +518,126 @@ int GameFile::write_file_3(File* filePtr)
 //
 int GameFile::read_file_1(File* filePtr)
 {
+	MSG("read_file_1: Starting\n");
+	
 	if( !read_book_mark( filePtr, BOOK_MARK+1 ) )
+	{
+		ERR("read_file_1: Failed at book mark 1\n");
 		return 0;
+	}
 
+	MSG("read_file_1: Reading race_res\n");
 	if( !race_res.read_file(filePtr) )
+	{
+		ERR("read_file_1: race_res.read_file failed\n");
 		return 0;
+	}
 
 	if( !read_book_mark( filePtr, BOOK_MARK+2 ) )
+	{
+		ERR("read_file_1: Failed at book mark 2\n");
 		return 0;
+	}
 
+	MSG("read_file_1: Reading unit_res\n");
 	if( !unit_res.read_file(filePtr) )
+	{
+		ERR("read_file_1: unit_res.read_file failed\n");
 		return 0;
+	}
 
 	if( !read_book_mark( filePtr, BOOK_MARK+3 ) )
+	{
+		ERR("read_file_1: Failed at book mark 3\n");
 		return 0;
+	}
 
+	MSG("read_file_1: Reading firm_res\n");
 	if( !firm_res.read_file(filePtr) )
+	{
+		ERR("read_file_1: firm_res.read_file failed\n");
 		return 0;
+	}
 
 	if( !read_book_mark( filePtr, BOOK_MARK+4 ) )
+	{
+		ERR("read_file_1: Failed at book mark 4\n");
 		return 0;
+	}
 
+	MSG("read_file_1: Reading town_res\n");
 	if( !town_res.read_file(filePtr) )
+	{
+		ERR("read_file_1: town_res.read_file failed\n");
 		return 0;
+	}
 
 	if( !read_book_mark( filePtr, BOOK_MARK+5 ) )
+	{
+		ERR("read_file_1: Failed at book mark 5\n");
 		return 0;
+	}
 
+	MSG("read_file_1: Reading tech_res\n");
 	if( !tech_res.read_file(filePtr) )
+	{
+		ERR("read_file_1: tech_res.read_file failed\n");
 		return 0;
+	}
 
 	if( !read_book_mark( filePtr, BOOK_MARK+6 ) )
+	{
+		ERR("read_file_1: Failed at book mark 6\n");
 		return 0;
+	}
 
+	MSG("read_file_1: Reading talk_res\n");
 	if( !talk_res.read_file(filePtr) )
+	{
+		ERR("read_file_1: talk_res.read_file failed\n");
 		return 0;
+	}
 
 	if( !read_book_mark( filePtr, BOOK_MARK+7 ) )
+	{
+		ERR("read_file_1: Failed at book mark 7\n");
 		return 0;
+	}
 
+	MSG("read_file_1: Reading raw_res\n");
 	if( !raw_res.read_file(filePtr) )
+	{
+		ERR("read_file_1: raw_res.read_file failed\n");
 		return 0;
+	}
 
 	if( !read_book_mark( filePtr, BOOK_MARK+8 ) )
+	{
+		ERR("read_file_1: Failed at book mark 8\n");
 		return 0;
+	}
 
+	MSG("read_file_1: Reading god_res\n");
 	if( !god_res.read_file(filePtr) )
+	{
+		ERR("read_file_1: god_res.read_file failed\n");
 		return 0;
+	}
 
 	if( !read_book_mark( filePtr, BOOK_MARK+9 ) )
+	{
+		ERR("read_file_1: Failed at book mark 9\n");
 		return 0;
+	}
 
+	MSG("read_file_1: Reading monster_res\n");
 	if( !monster_res.read_file(filePtr) )
+	{
+		ERR("read_file_1: monster_res.read_file failed\n");
 		return 0;
+	}
 
+	MSG("read_file_1: Completed successfully\n");
 	return 1;
 }
 //---------- End of function GameFile::read_file_1 -------//
@@ -560,42 +651,87 @@ int GameFile::read_file_1(File* filePtr)
 //
 int GameFile::read_file_2(File* filePtr)
 {
+	MSG("read_file_2: Starting\n");
+	
 	if( !read_book_mark( filePtr, BOOK_MARK+101 ) )
+	{
+		ERR("read_file_2: Failed at book mark 101\n");
 		return 0;
+	}
 
+	MSG("read_file_2: Reading game\n");
 	if( !game.read_file(filePtr) )
+	{
+		ERR("read_file_2: game.read_file failed\n");
 		return 0;
+	}
 
 	if( !read_book_mark( filePtr, BOOK_MARK+102 ) )
+	{
+		ERR("read_file_2: Failed at book mark 102\n");
 		return 0;
+	}
 
+	MSG("read_file_2: Reading config\n");
 	if( !config.read_file(filePtr, 1) )		// 1-keep system settings
+	{
+		ERR("read_file_2: config.read_file failed\n");
 		return 0;
+	}
 
 	if( !read_book_mark( filePtr, BOOK_MARK+103 ) )
+	{
+		ERR("read_file_2: Failed at book mark 103\n");
 		return 0;
+	}
 
+	MSG("read_file_2: Reading sys\n");
 	if( !sys.read_file(filePtr) )
+	{
+		ERR("read_file_2: sys.read_file failed\n");
 		return 0;
+	}
 
 	if( !read_book_mark( filePtr, BOOK_MARK+104 ) )
+	{
+		ERR("read_file_2: Failed at book mark 104\n");
 		return 0;
+	}
 
+	MSG("read_file_2: Reading info\n");
 	if( !info.read_file(filePtr) )
+	{
+		ERR("read_file_2: info.read_file failed\n");
 		return 0;
+	}
 
 	if( !read_book_mark( filePtr, BOOK_MARK+105 ) )
+	{
+		ERR("read_file_2: Failed at book mark 105\n");
 		return 0;
+	}
 
+	MSG("read_file_2: Reading power\n");
 	if( !power.read_file(filePtr) )
+	{
+		ERR("read_file_2: power.read_file failed\n");
 		return 0;
+	}
 
 	if( !read_book_mark( filePtr, BOOK_MARK+106 ) )
+	{
+		ERR("read_file_2: Failed at book mark 106\n");
 		return 0;
+	}
 
+	MSG("read_file_2: Reading weather\n");
 	if( !weather.read_file(filePtr) )
+	{
+		ERR("read_file_2: weather.read_file failed\n");
 		return 0;
+	}
 
+	MSG("read_file_2: Generating weather forecast\n");
 	weather_forecast[0] = weather;
 	weather_forecast[0].next_day();
 
@@ -606,39 +742,75 @@ int GameFile::read_file_2(File* filePtr)
 	}
 
 	if( !read_book_mark( filePtr, BOOK_MARK+107 ) )
+	{
+		ERR("read_file_2: Failed at book mark 107\n");
 		return 0;
+	}
 
+	MSG("read_file_2: Reading magic_weather\n");
 	if( !magic_weather.read_file(filePtr) )
+	{
+		ERR("read_file_2: magic_weather.read_file failed\n");
 		return 0;
+	}
 
 	sprite_res.update_speed();
 
 	if( !read_book_mark( filePtr, BOOK_MARK+108 ) )
+	{
+		ERR("read_file_2: Failed at book mark 108\n");
 		return 0;
+	}
 
+	MSG("read_file_2: Reading news_array\n");
 	if( !news_array.read_file(filePtr) )
+	{
+		ERR("read_file_2: news_array.read_file failed\n");
 		return 0;
+	}
 
 	if( !read_book_mark( filePtr, BOOK_MARK+109 ) )
+	{
+		ERR("read_file_2: Failed at book mark 109\n");
 		return 0;
+	}
 
+	MSG("read_file_2: Reading world\n");
 	if( !world.read_file(filePtr) )
+	{
+		ERR("read_file_2: world.read_file failed\n");
 		return 0;
+	}
 
 	if( !read_book_mark( filePtr, BOOK_MARK+110 ) )
+	{
+		ERR("read_file_2: Failed at book mark 110\n");
 		return 0;
+	}
 
+	MSG("read_file_2: Reading tutor\n");
 	if( !tutor.read_file(filePtr) )
+	{
+		ERR("read_file_2: tutor.read_file failed\n");
 		return 0;
+	}
 
 	//### begin alex 23/9 ###//
 	if( !read_book_mark( filePtr, BOOK_MARK+111 ) )
+	{
+		ERR("read_file_2: Failed at book mark 111\n");
 		return 0;
+	}
 
+	MSG("read_file_2: Reading seek_path\n");
 	if( !seek_path.read_file(filePtr) )
+	{
+		ERR("read_file_2: seek_path.read_file failed\n");
 		return 0;
+	}
 	//#### end alex 23/9 ####//
 
+	MSG("read_file_2: Completed successfully\n");
 	return 1;
 }
 //---------- End of function GameFile::read_file_2 -------//
@@ -651,121 +823,209 @@ int GameFile::read_file_2(File* filePtr)
 //
 int GameFile::read_file_3(File* filePtr)
 {
-	// fprintf(stderr, "[DEBUG] read_file_3: Checking book mark 201\n");
+	MSG("read_file_3: Starting\n");
+	
 	if( !read_book_mark( filePtr, BOOK_MARK+201 ) )
 	{
-		// fprintf(stderr, "[DEBUG] read_file_3: Book mark 201 failed\n");
+		ERR("read_file_3: Book mark 201 failed\n");
 		return 0;
 	}
 
-	// fprintf(stderr, "[DEBUG] read_file_3: Reading unit_array\n");
+	MSG("read_file_3: Reading unit_array\n");
+	long filePosBeforeUnitArray = filePtr->file_pos();
 	if( !unit_array.read_file(filePtr) )
 	{
-		// fprintf(stderr, "[DEBUG] read_file_3: unit_array.read_file failed\n");
+		ERR("read_file_3: unit_array.read_file failed at position %ld\n", filePosBeforeUnitArray);
 		return 0;
 	}
-	// fprintf(stderr, "[DEBUG] read_file_3: unit_array.read_file succeeded\n");
+	long filePosAfterUnitArray = filePtr->file_pos();
+	MSG("read_file_3: unit_array.read_file succeeded (read %ld bytes)\n", filePosAfterUnitArray - filePosBeforeUnitArray);
 
-	// long filePosBeforeBookMark202 = filePtr->file_pos();
-	// fprintf(stderr, "[DEBUG] read_file_3: File position before book mark 202: %ld\n", filePosBeforeBookMark202);
-	// fprintf(stderr, "[DEBUG] read_file_3: Checking book mark 202\n");
 	if( !read_book_mark( filePtr, BOOK_MARK+202 ) )
 	{
-		// fprintf(stderr, "[DEBUG] read_file_3: Book mark 202 failed\n");
+		ERR("read_file_3: Book mark 202 failed\n");
 		return 0;
 	}
 
-	// fprintf(stderr, "[DEBUG] read_file_3: Reading bullet_array\n");
+	MSG("read_file_3: Reading bullet_array\n");
 	if( !bullet_array.read_file(filePtr) )
 	{
-		// fprintf(stderr, "[DEBUG] read_file_3: bullet_array.read_file failed\n");
+		ERR("read_file_3: bullet_array.read_file failed\n");
 		return 0;
 	}
 
-	// fprintf(stderr, "[DEBUG] read_file_3: Checking book mark 203\n");
 	if( !read_book_mark( filePtr, BOOK_MARK+203 ) )
 	{
-		// fprintf(stderr, "[DEBUG] read_file_3: Book mark 203 failed\n");
+		ERR("read_file_3: Book mark 203 failed\n");
 		return 0;
 	}
 
+	MSG("read_file_3: Reading site_array\n");
 	if( !site_array.read_file(filePtr) )
+	{
+		ERR("read_file_3: site_array.read_file failed\n");
 		return 0;
+	}
 
 	if( !read_book_mark( filePtr, BOOK_MARK+204 ) )
+	{
+		ERR("read_file_3: Book mark 204 failed\n");
 		return 0;
+	}
 
+	MSG("read_file_3: Reading town_array\n");
 	if( !town_array.read_file(filePtr) )  // job will affect firm, group, item
+	{
+		ERR("read_file_3: town_array.read_file failed\n");
 		return 0;
+	}
 
 	if( !read_book_mark( filePtr, BOOK_MARK+205 ) )
+	{
+		ERR("read_file_3: Book mark 205 failed\n");
 		return 0;
+	}
 
+	MSG("read_file_3: Reading nation_array\n");
 	if( !nation_array.read_file(filePtr) )
+	{
+		ERR("read_file_3: nation_array.read_file failed\n");
 		return 0;
+	}
 
 	if( !read_book_mark( filePtr, BOOK_MARK+206 ) )
+	{
+		ERR("read_file_3: Book mark 206 failed\n");
 		return 0;
+	}
 
+	MSG("read_file_3: Reading firm_array\n");
 	if( !firm_array.read_file(filePtr) )
+	{
+		ERR("read_file_3: firm_array.read_file failed\n");
 		return 0;
+	}
 
 	if( !read_book_mark( filePtr, BOOK_MARK+207 ) )
+	{
+		ERR("read_file_3: Book mark 207 failed\n");
 		return 0;
+	}
 
+	MSG("read_file_3: Reading tornado_array\n");
 	if( !tornado_array.read_file(filePtr) )
+	{
+		ERR("read_file_3: tornado_array.read_file failed\n");
 		return 0;
+	}
 
 	if( !read_book_mark( filePtr, BOOK_MARK+208 ) )
+	{
+		ERR("read_file_3: Book mark 208 failed\n");
 		return 0;
+	}
 
+	MSG("read_file_3: Reading rebel_array\n");
 	if( !rebel_array.read_file(filePtr) )
+	{
+		ERR("read_file_3: rebel_array.read_file failed\n");
 		return 0;
+	}
 
 	if( !read_book_mark( filePtr, BOOK_MARK+209 ) )
+	{
+		ERR("read_file_3: Book mark 209 failed\n");
 		return 0;
+	}
 
+	MSG("read_file_3: Reading spy_array\n");
 	if( !spy_array.read_file(filePtr) )
+	{
+		ERR("read_file_3: spy_array.read_file failed\n");
 		return 0;
+	}
 
 	if( !read_book_mark( filePtr, BOOK_MARK+210 ) )
+	{
+		ERR("read_file_3: Book mark 210 failed\n");
 		return 0;
+	}
 
+	MSG("read_file_3: Reading snow_ground_array\n");
 	if( !snow_ground_array.read_file(filePtr) )
+	{
+		ERR("read_file_3: snow_ground_array.read_file failed\n");
 		return 0;
+	}
 
 	if( !read_book_mark( filePtr, BOOK_MARK+211 ) )
+	{
+		ERR("read_file_3: Book mark 211 failed\n");
 		return 0;
+	}
 
+	MSG("read_file_3: Reading region_array\n");
 	if( !region_array.read_file(filePtr) )
+	{
+		ERR("read_file_3: region_array.read_file failed\n");
 		return 0;
+	}
 
 	if( !read_book_mark( filePtr, BOOK_MARK+212 ) )
+	{
+		ERR("read_file_3: Book mark 212 failed\n");
 		return 0;
+	}
 
+	MSG("read_file_3: Reading news_array (second time)\n");
 	if( !news_array.read_file(filePtr) )
+	{
+		ERR("read_file_3: news_array.read_file failed\n");
 		return 0;
+	}
 
 	if( !read_book_mark( filePtr, BOOK_MARK+213 ) )
+	{
+		ERR("read_file_3: Book mark 213 failed\n");
 		return 0;
+	}
 
+	MSG("read_file_3: Reading rock_array\n");
 	if( !rock_array.read_file(filePtr) )
+	{
+		ERR("read_file_3: rock_array.read_file failed\n");
 		return 0;
+	}
 
 	if( !read_book_mark( filePtr, BOOK_MARK+214 ) )
+	{
+		ERR("read_file_3: Book mark 214 failed\n");
 		return 0;
+	}
 
+	MSG("read_file_3: Reading dirt_array\n");
 	if( !dirt_array.read_file(filePtr) )
+	{
+		ERR("read_file_3: dirt_array.read_file failed\n");
 		return 0;
+	}
 
 	// ##### begin Gilbert 2/10 ######//
 	if( !read_book_mark( filePtr, BOOK_MARK+215 ) )
+	{
+		ERR("read_file_3: Book mark 215 failed\n");
 		return 0;
+	}
 
+	MSG("read_file_3: Reading firm_die_array\n");
 	if( !firm_die_array.read_file(filePtr) )
+	{
+		ERR("read_file_3: firm_die_array.read_file failed\n");
 		return 0;
+	}
 	// ##### end Gilbert 2/10 ######//
 
+	MSG("read_file_3: Completed successfully\n");
 	return 1;
 }
 //---------- End of function GameFile::read_file_3 -------//
@@ -791,13 +1051,15 @@ int GameFile::read_book_mark(File* filePtr, short bookMark)
 {
 	sys.yield();
 
+	long filePos = filePtr->file_pos();
 	short readValue = filePtr->file_get_short();
 	if( readValue != bookMark )
 	{
-		// fprintf(stderr, "[DEBUG] read_book_mark: Expected %d (0x%04x), got %d (0x%04x)\n", 
-		// 	bookMark, bookMark, readValue, readValue);
+		ERR("read_book_mark: Book mark mismatch at position %ld - Expected %d (0x%04x), got %d (0x%04x)\n", 
+			filePos, bookMark, bookMark, readValue, readValue);
 		return 0;
 	}
+	MSG("read_book_mark: Book mark %d (0x%04x) matched at position %ld\n", bookMark, bookMark, filePos);
 	return 1;
 }
 //---------- End of function GameFile::read_book_mark -------//
@@ -1187,7 +1449,7 @@ static int dynarray_short_write_file(File* filePtr, DynArray* a)
 	if( !filePtr->file_write(&gf_rec, sizeof(DynArrayGF)) )
 		return 0;
 
-	if( a->last_ele > 0 )
+	if( a->last_ele > 0 && a->body_buf )
 	{
 		if( !filePtr->file_put_short_array((int16_t*)a->body_buf, a->last_ele) )
 			return 0;

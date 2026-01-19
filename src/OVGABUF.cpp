@@ -470,7 +470,8 @@ void VgaBuf::put_large_bitmap(int x1, int y1, File* filePtr)
 
 	if( pictSize <= COMMON_DATA_BUF_SIZE )
 	{
-		filePtr->file_read( sys.common_data_buf, pictSize );
+		if (!filePtr->file_read( sys.common_data_buf, pictSize ))
+			return;
 
 		if( is_front )
 			mouse.hide_area( x1,y1,x2,y2 );  // if the mouse cursor is in that area, hide it
@@ -490,7 +491,8 @@ void VgaBuf::put_large_bitmap(int x1, int y1, File* filePtr)
 
 		while( y1<=y2 )
 		{
-			filePtr->file_read( sys.common_data_buf, (unsigned)pictWidth * (ty-y1+1) );
+			if (!filePtr->file_read( sys.common_data_buf, (unsigned)pictWidth * (ty-y1+1) ))
+				return;
 
 			if( is_front )
 				mouse.hide_area( x1,y1,x2,ty );  // if the mouse cursor is in that area, hide it

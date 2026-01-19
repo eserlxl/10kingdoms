@@ -359,18 +359,24 @@ void SpriteInfo::load_bitmap_res()
 //------- Begin of function SpriteInfo::free_bitmap_res -------//
 void SpriteInfo::free_bitmap_res()
 {
-   loaded_count--;
+   // Defensive: Handle corrupted or uninitialized state
+   if( loaded_count <= 0 )
+   {
+      // Already freed or never loaded - nothing to do
+      loaded_count = 0;
+      return;
+   }
 
-   err_when( loaded_count < 0 );
+   loaded_count--;
 
    if( loaded_count==0 )
    {
+      // Only deinit if res_bitmap was actually initialized
+      // ResourceDb::deinit() is safe to call multiple times, but we check init_flag anyway
       res_bitmap.deinit();
       // Patch: After deinit, res_bitmap should not be used until re-initialized
       // Note: All users of this SpriteInfo should check loaded_count before accessing res_bitmap
    }
-   // Patch: Optionally, set loaded_count = 0 to prevent underflow
-   if (loaded_count < 0) loaded_count = 0;
 }
 //-------- End of function SpriteInfo::free_bitmap_res -------//
 

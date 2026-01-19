@@ -71,7 +71,8 @@ void ResourceIdx::init(const char* resName, int readAll, int useCommonBuf)
 
    //------------- open resource file ----------//
 
-   file_open( resName );
+   if (!file_open( resName ))
+      return;
 
    //------------ Init vars ---------------------//
 
@@ -93,7 +94,13 @@ void ResourceIdx::init(const char* resName, int readAll, int useCommonBuf)
 
    // rec_count+1 is the last index pointer for calculating last record size
 
-   file_read( index_buf, sizeof(ResIndex) * (rec_count+1) );
+   if (!file_read( index_buf, sizeof(ResIndex) * (rec_count+1) ))
+   {
+      mem_del(index_buf);
+      index_buf = NULL;
+      file_close();
+      return;
+   }
 
    //---------- Read in record data -------------//
 
@@ -103,7 +110,13 @@ void ResourceIdx::init(const char* resName, int readAll, int useCommonBuf)
 
       data_buf = mem_add( dataSize );
 
-      file_read( data_buf, dataSize );
+      if (!file_read( data_buf, dataSize ))
+      {
+         mem_del(data_buf);
+         data_buf = NULL;
+         file_close();
+         return;
+      }
       file_close();
    }
    else
@@ -270,7 +283,8 @@ char* ResourceIdx::get_data(int indexId)
 
 	dataSize = index_buf[indexId+1].pointer - index_buf[indexId].pointer;
 
-	file_seek( index_buf[indexId].pointer );
+	if (file_seek( index_buf[indexId].pointer ) < 0)
+		return NULL;
 
 	//--- if the user has custom assigned a buffer, read into that buffer ---//
 
@@ -278,14 +292,16 @@ char* ResourceIdx::get_data(int indexId)
 	{
 		if( user_start_read_pos > 0 )
 		{
-			file_seek(user_start_read_pos, SEEK_CUR);			// skip the width and height info
+			if (file_seek(user_start_read_pos, SEEK_CUR) < 0)			// skip the width and height info
+				return NULL;
 			dataSize -= user_start_read_pos;
 		}
 
 		if( dataSize > user_data_buf_size )
 			return NULL;
 
-		file_read( user_data_buf, dataSize );
+		if (!file_read( user_data_buf, dataSize ))
+			return NULL;
 
 		return user_data_buf;
 	}
@@ -301,7 +317,8 @@ char* ResourceIdx::get_data(int indexId)
 
 		data_buf_size = dataSize;
 
-		file_read( data_buf, dataSize );
+		if (!file_read( data_buf, dataSize ))
+			return NULL;
 
 		return data_buf;
 	}
@@ -334,7 +351,8 @@ File* ResourceIdx::get_file(const char* dataName, int& dataSize)
    {
       if( strcmp( index_buf[i].name, dataName ) == 0 )
       {
-	 file_seek( index_buf[i].pointer );
+	 if (file_seek( index_buf[i].pointer ) < 0)
+	    return NULL;
 
 	 dataSize = index_buf[i+1].pointer - index_buf[i].pointer;
 
@@ -366,7 +384,8 @@ File* ResourceIdx::get_file(int bitmapId, int& dataSize)
 
    //-------- Search for data name ----------//
 
-	file_seek( index_buf[bitmapId-1].pointer );
+	if (file_seek( index_buf[bitmapId-1].pointer ) < 0)
+		return NULL;
 
 	dataSize = index_buf[bitmapId].pointer - index_buf[bitmapId-1].pointer;
 

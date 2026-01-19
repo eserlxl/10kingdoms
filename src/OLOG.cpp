@@ -108,8 +108,13 @@ void Log::dump()
 	File f;
 	for(int n = LOG_VERSION-1; n >= 0; --n, filename[3]++)	// AM_A.LOG, AM_B.LOG ...
 	{
-		f.file_create(filename);
-		f.file_write( text_buffer[n].queue_buf, text_buffer[n].length() );
+		if (!f.file_create(filename))
+			continue;
+		if (!f.file_write( text_buffer[n].queue_buf, text_buffer[n].length() ))
+		{
+			f.file_close();
+			continue;
+		}
 		f.file_close();
 	}
 }

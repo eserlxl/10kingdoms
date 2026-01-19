@@ -66,7 +66,8 @@ void Resource::init(char* resName, int readAll, int useCommonBuf)
 
    long dataSize;
 
-   file_open(resName);
+   if (!file_open(resName))
+      return;
 
    read_all      = readAll;
    use_common_buf   = useCommonBuf;
@@ -82,7 +83,13 @@ void Resource::init(char* resName, int readAll, int useCommonBuf)
 
    // rec_count+1 is the last index pointer for calculating last record size
 
-   file_read( index_buf, sizeof(uint32_t) * (rec_count+1) );
+   if (!file_read( index_buf, sizeof(uint32_t) * (rec_count+1) ))
+   {
+      mem_del(index_buf);
+      index_buf = NULL;
+      file_close();
+      return;
+   }
 
    //---------- Read in record data -------------//
 
@@ -91,7 +98,13 @@ void Resource::init(char* resName, int readAll, int useCommonBuf)
       dataSize = index_buf[rec_count] - index_buf[0];
 
       data_buf = mem_add( dataSize );
-      file_read( data_buf, dataSize );
+      if (!file_read( data_buf, dataSize ))
+      {
+         mem_del(data_buf);
+         data_buf = NULL;
+         file_close();
+         return;
+      }
 
       file_close();
    }
@@ -183,9 +196,11 @@ char* Resource::read(int recNo)
 
    //------------ read data ------------//
 
-   file_seek( index_buf[recNo-1] );
+   if (file_seek( index_buf[recNo-1] ) < 0)
+      return NULL;
 
-   file_read( data_buf, dataSize );
+   if (!file_read( data_buf, dataSize ))
+      return NULL;
 
    return data_buf;
 }
@@ -215,7 +230,8 @@ File* Resource::get_file(int recNo, int& dataSize)
    if( recNo < 1 || recNo > rec_count )	   // when no in debug mode, err_when() will be removed
       return NULL;
 
-   file_seek( index_buf[recNo-1] );
+   if (file_seek( index_buf[recNo-1] ) < 0)
+      return NULL;
 
    return this;
 }

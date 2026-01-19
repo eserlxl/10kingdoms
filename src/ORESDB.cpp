@@ -75,14 +75,21 @@ void ResourceDb::init_imported(const char* resName, int cacheWholeFile, int useC
 
    read_all = cacheWholeFile;
 
-   file_open( resName );
+   if (!file_open( resName ))
+      return;
 
 	if( read_all )
 	{
 		data_buf_size = file_size();
 
 		data_buf = mem_add( data_buf_size );
-		file_read( data_buf, data_buf_size );
+		if (!file_read( data_buf, data_buf_size ))
+		{
+			mem_del(data_buf);
+			data_buf = NULL;
+			file_close();
+			return;
+		}
 		file_close();
 
 		use_common_buf = 0;  // don't use vga buffer if read all
@@ -131,7 +138,8 @@ char* ResourceDb::read_imported(long offset)
 	// ##### begin Gilbert 2/10 ######//
 	err_when(offset >= file_size());
 	// ##### end Gilbert 2/10 ######//
-	file_seek( offset );
+	if (file_seek( offset ) < 0)
+		return NULL;
 
 	data_buf_size = file_get_long();
 
@@ -140,7 +148,8 @@ char* ResourceDb::read_imported(long offset)
    if( !use_common_buf )
 		data_buf = mem_resize( data_buf, data_buf_size );
 
-	file_read( data_buf, data_buf_size );
+	if (!file_read( data_buf, data_buf_size ))
+		return NULL;
 
    return data_buf;
 }

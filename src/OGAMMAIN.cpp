@@ -38,6 +38,7 @@
 #include <OMUSIC.h>
 #include <OGAME.h>
 #include <OVGALOCK.h>
+#include <OBOX.h>
 #include "gettext.h"
 #include <ConfigAdv.h>
 
@@ -126,26 +127,38 @@ void Game::main_menu()
 			if(!menuBitmap)
 			{
 				int resSize;
-				File *resFile;
-				resFile = image_interface.get_file("SWRD-1", resSize);
-				menuBitmap = mem_add(resSize);
-				resFile->file_read(menuBitmap, resSize);
+			File *resFile;
+			resFile = image_interface.get_file("SWRD-1", resSize);
+			menuBitmap = mem_add(resSize);
+			if (!resFile->file_read(menuBitmap, resSize))
+			{
+				mem_del(menuBitmap);
+				menuBitmap = NULL;
+			}
 			}
 			if(!brightBitmap)
 			{
 				int resSize;
-				File *resFile;
-				resFile = image_interface.get_file("SWRD-1B", resSize);
-				brightBitmap = mem_add(resSize);
-				resFile->file_read(brightBitmap, resSize);
+			File *resFile;
+			resFile = image_interface.get_file("SWRD-1B", resSize);
+			brightBitmap = mem_add(resSize);
+			if (!resFile->file_read(brightBitmap, resSize))
+			{
+				mem_del(brightBitmap);
+				brightBitmap = NULL;
+			}
 			}
 			if(!darkBitmap)
 			{
 				int resSize;
-				File *resFile;
-				resFile = image_interface.get_file("SWRD-1C", resSize);
-				darkBitmap = mem_add(resSize);
-				resFile->file_read(darkBitmap, resSize);
+			File *resFile;
+			resFile = image_interface.get_file("SWRD-1C", resSize);
+			darkBitmap = mem_add(resSize);
+			if (!resFile->file_read(darkBitmap, resSize))
+			{
+				mem_del(darkBitmap);
+				darkBitmap = NULL;
+			}
 			}
 			
 			for( i = 0; i < MAIN_OPTION_COUNT; ++i )
@@ -593,8 +606,12 @@ void Game::single_player_menu()
 #else
 				resFile = image_interface.get_file("SWRD-4", resSize);
 #endif
-				menuBitmap = mem_add(resSize);
-				resFile->file_read(menuBitmap, resSize);
+			menuBitmap = mem_add(resSize);
+			if (!resFile->file_read(menuBitmap, resSize))
+			{
+				mem_del(menuBitmap);
+				menuBitmap = NULL;
+			}
 			}
 			if(!brightBitmap)
 			{
@@ -605,8 +622,12 @@ void Game::single_player_menu()
 #else
 				resFile = image_interface.get_file("SWRD-4B", resSize);
 #endif
-				brightBitmap = mem_add(resSize);
-				resFile->file_read(brightBitmap, resSize);
+			brightBitmap = mem_add(resSize);
+			if (!resFile->file_read(brightBitmap, resSize))
+			{
+				mem_del(brightBitmap);
+				brightBitmap = NULL;
+			}
 			}
 			if(!darkBitmap)
 			{
@@ -617,8 +638,12 @@ void Game::single_player_menu()
 #else
 				resFile = image_interface.get_file("SWRD-2C", resSize); // no SWRD-4C
 #endif
-				darkBitmap = mem_add(resSize);
-				resFile->file_read(darkBitmap, resSize);
+			darkBitmap = mem_add(resSize);
+			if (!resFile->file_read(darkBitmap, resSize))
+			{
+				mem_del(darkBitmap);
+				darkBitmap = NULL;
+			}
 			}
 
 			for( i = 0; i < SINGLE_PLAYER_OPTION_COUNT; ++i )
@@ -736,21 +761,21 @@ void Game::single_player_menu()
 						break;
 
 					case 3:
+					{
 						game_file_array.init("*.SAV");
 
-						if( game_file_array.load_game() == 1)
+						int loadResult = game_file_array.load_game();
+						if( loadResult == 1)
 						{
 							sys.set_speed(config_adv.game_load_default_frame_speed, COMMAND_AUTO);
 							battle.run_loaded();
 							deinit();
 						}
-						{
-							char signalExitFlagBackup = sys.signal_exit_flag;
-							sys.signal_exit_flag = 2;
-							game.deinit();   // game.deinit() is needed if game_file_array.menu fails
-							sys.signal_exit_flag = signalExitFlagBackup;
-						}
+						// On failure or cancel (loadResult != 1), stay in the single-player
+						// menu; the load dialog itself has already displayed any error
+						// message and remains open for the user to pick another slot.
 						break;
+					}
 
 					case 4:	
 						select_run_scenario();
@@ -854,24 +879,36 @@ void Game::multi_player_menu(int lobbied, char *game_host)
 				int resSize;
 				File *resFile;
 				resFile = image_interface.get_file("SWRD-2", resSize);
-				menuBitmap = mem_add(resSize);
-				resFile->file_read(menuBitmap, resSize);
+			menuBitmap = mem_add(resSize);
+			if (!resFile->file_read(menuBitmap, resSize))
+			{
+				mem_del(menuBitmap);
+				menuBitmap = NULL;
+			}
 			}
 			if(!brightBitmap)
 			{
 				int resSize;
 				File *resFile;
 				resFile = image_interface.get_file("SWRD-2B", resSize);
-				brightBitmap = mem_add(resSize);
-				resFile->file_read(brightBitmap, resSize);
+			brightBitmap = mem_add(resSize);
+			if (!resFile->file_read(brightBitmap, resSize))
+			{
+				mem_del(brightBitmap);
+				brightBitmap = NULL;
+			}
 			}
 			if(!darkBitmap)
 			{
 				int resSize;
 				File *resFile;
 				resFile = image_interface.get_file("SWRD-2C", resSize);
-				darkBitmap = mem_add(resSize);
-				resFile->file_read(darkBitmap, resSize);
+			darkBitmap = mem_add(resSize);
+			if (!resFile->file_read(darkBitmap, resSize))
+			{
+				mem_del(darkBitmap);
+				darkBitmap = NULL;
+			}
 			}
 
 			for( i = 0; i < MULTI_PLAYER_OPTION_COUNT; ++i )

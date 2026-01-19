@@ -193,11 +193,16 @@ void Info::init_random_seed(int randomSeed)
 	{
 		File fileMapSeed;
 
-		fileMapSeed.file_create( "MAP.RS" );
+		if (!fileMapSeed.file_create( "MAP.RS" ))
+			return;
 
 		String str(misc.format(random_seed,1));
 
-		fileMapSeed.file_write(str, str.len());
+		if (!fileMapSeed.file_write(str, str.len()))
+		{
+			fileMapSeed.file_close();
+			return;
+		}
 	}
 }
 //------- End of function Info::init_random_seed ------//

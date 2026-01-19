@@ -47,6 +47,9 @@ fi
 # Export environment variable for data path
 export TKDATA="$DATA_DIR"
 
+# Export debug channel for GameFile logging
+export TKDEBUG=GameFile
+
 # Change to data directory
 cd "$DATA_DIR"
 

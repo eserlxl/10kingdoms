@@ -70,8 +70,13 @@ void Database::open( const char* fileName, int bufferAll )
 {
    close();        // if there is a opened file attached to current database, close it first
 
-   file_open(fileName);
-   file_read( &dbf_header, sizeof(DbfHeader) );
+   if (!file_open(fileName))
+      return;
+   if (!file_read( &dbf_header, sizeof(DbfHeader) ))
+   {
+      file_close();
+      return;
+   }
 
    //..........................................//
 
@@ -79,8 +84,20 @@ void Database::open( const char* fileName, int bufferAll )
    {
       dbf_buf = mem_add( dbf_header.rec_size * dbf_header.last_rec );
 
-      file_seek( 1 + dbf_header.data_offset );
-      file_read( dbf_buf, dbf_header.rec_size*dbf_header.last_rec );
+      if (file_seek( 1 + dbf_header.data_offset ) < 0)
+      {
+         mem_del(dbf_buf);
+         dbf_buf = NULL;
+         file_close();
+         return;
+      }
+      if (!file_read( dbf_buf, dbf_header.rec_size*dbf_header.last_rec ))
+      {
+         mem_del(dbf_buf);
+         dbf_buf = NULL;
+         file_close();
+         return;
+      }
       file_close();
 
       dbf_buf_allocated = 1;	// we allocated the buffer
@@ -143,8 +160,10 @@ char* Database::read( long recNo )
       if( recNo == last_read_recno )    // the record to be read is the same as one in buffer, simply return it
 	 return rec_buf;
 
-      file_seek( 1+dbf_header.data_offset + dbf_header.rec_size * (recNo-1) );
-      file_read( rec_buf, dbf_header.rec_size );
+      if (file_seek( 1+dbf_header.data_offset + dbf_header.rec_size * (recNo-1) ) < 0)
+	 return NULL;
+      if (!file_read( rec_buf, dbf_header.rec_size ))
+	 return NULL;
 
       last_read_recno = recNo;
 

@@ -36,12 +36,14 @@
 #include <OSERES.h>
 // #### end Gilbert 29/5 #######//
 #include <math.h>
+#include <dbglog.h>
 //### begin alex 6/8 ###//
 #ifdef DEBUG
 #include <OSYS.h>
 #endif
 //#### end alex 6/8 ####//
 
+DBGLOG_DEFAULT_CHANNEL(WorldFire);
 
 //------------ define constant ------------
 #define SPREAD_RATE (config.fire_spread_rate)
@@ -119,6 +121,13 @@ void World::init_fire()
 // ----------- begin of function World::spread_fire ---------- //
 void World::spread_fire(Weather &w)
 {
+	// Defensive: Ensure world is properly initialized before processing
+	if( !loc_matrix || max_x_loc <= 0 || max_y_loc <= 0 )
+	{
+		ERR("World::spread_fire: World not properly initialized (loc_matrix=%p, max_x_loc=%d, max_y_loc=%d)\n", 
+			loc_matrix, max_x_loc, max_y_loc);
+		return;
+	}
 	
 	char fireValue;
 	int x,y;

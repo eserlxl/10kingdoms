@@ -621,12 +621,18 @@ static void test_lzw()
    {
       File f,g;
       Lzw lzw_c, lzw_d;    // one for compress, the other for decompress
-      f.file_open("NORMAL.SAV"); // BUGHERE: <same as above>
+      if (!f.file_open("NORMAL.SAV")) // BUGHERE: <same as above>
+         return;
 
       // read into buffer
       long fileSize = f.file_size();
       unsigned char *srcPtr = (unsigned char *) mem_add(fileSize);
-      f.file_read(srcPtr, fileSize);
+      if (!f.file_read(srcPtr, fileSize))
+      {
+         f.file_close();
+         mem_del(srcPtr);
+         return;
+      }
 
       // find compressed size to allocate space
       long compSize = lzw_c.compress(srcPtr, fileSize);
@@ -654,27 +660,58 @@ static void test_lzw()
       {
          unsigned char *writePtr = destPtr;
          long writeSize = (compSize +7) / 8;
-         g.file_create("NORMAL.LZ1");
+         if (!g.file_create("NORMAL.LZ1"))
+         {
+            mem_del(destPtr);
+            mem_del(srcPtr);
+            mem_del(backPtr);
+            return;
+         }
          for( ; writeSize > 0; writeSize -= 0x4000)
          {
-            g.file_write(writePtr, writeSize > 0x4000 ? 0x4000 : writeSize);
+            if (!g.file_write(writePtr, writeSize > 0x4000 ? 0x4000 : writeSize))
+            {
+               g.file_close();
+               mem_del(destPtr);
+               mem_del(srcPtr);
+               mem_del(backPtr);
+               return;
+            }
             writePtr += 0x4000;
          }
          g.file_close();
       }
 
       // test two, compress to a file
-      g.file_create("NORMAL.LZW");
+      if (!g.file_create("NORMAL.LZW"))
+      {
+         mem_del(destPtr);
+         mem_del(srcPtr);
+         mem_del(backPtr);
+         return;
+      }
       compSize = lzw_c.compress(srcPtr, fileSize, &g);
       g.file_close();
 
-      g.file_open("NORMAL.LZW");
+      if (!g.file_open("NORMAL.LZW"))
+      {
+         mem_del(destPtr);
+         mem_del(srcPtr);
+         mem_del(backPtr);
+         return;
+      }
       backSize = lzw_d.expand(&g, NULL);
       err_when(backSize != fileSize);
       backPtr = (unsigned char *) mem_resize(backPtr, backSize+4 );
       g.file_close();
 
-      g.file_open("NORMAL.LZW");
+      if (!g.file_open("NORMAL.LZW"))
+      {
+         mem_del(destPtr);
+         mem_del(srcPtr);
+         mem_del(backPtr);
+         return;
+      }
       if( backSize != lzw_d.expand(&g, backPtr))
       {
          err_here();
@@ -2726,7 +2763,8 @@ void Sys::load_game()
 
    game_file_array.init("*.SAV");          // reload any save game file
    game_file_array.menu(-2);               // save screen area to back buffer
-   switch( game_file_array.load_game() )
+   int loadResult = game_file_array.load_game();
+   switch( loadResult )
    {
       case 1:
          rc = 1;                 // fall through to case 0
@@ -2738,6 +2776,7 @@ void Sys::load_game()
 	  default:
 		 // case -1 and otherwise, set sys.signal_exit_flag to 1 to exit the game
 		 sys.signal_exit_flag = 1;
+		 rc = -1;  // Set rc to -1 so we can return early
    }
 
    game_file_array.menu(-1);               // restore screen area from back buffer
@@ -2745,7 +2784,19 @@ void Sys::load_game()
    //-----------------------------------//
    if( rc == -1)
    {
-      box.msg( _("Failed Loading Game") );
+      box.msg( _("Failed Loading Game: File is corrupted") );
+      // Game state has been cleaned up and reinitialized to empty state by GameFile::load_game()
+      // We can continue - just return to the menu
+      signal_exit_flag = 0;  // Don't exit - return to menu
+      return;
+   }
+   
+   if( rc == 0 )
+   {
+      box.msg( _("Failed Loading Game: Incompatible save game") );
+      // Game state has been cleaned up and reinitialized to empty state by GameFile::load_game()
+      // We can continue - just return to the menu
+      signal_exit_flag = 0;  // Don't exit - return to menu
       return;
    }
 

@@ -51,7 +51,13 @@ void Nation::think_spy()
 //
 int Nation::ai_assign_spy_to_town(int townRecno, int raceId)
 {
+	// Defensive check: ensure town exists and is valid
+	if( townRecno <= 0 || town_array.is_deleted(townRecno) )
+		return 0;
+
 	Town* townPtr = town_array[townRecno];
+	if( !townPtr )
+		return 0;
 
 	if( townPtr->population >= MAX_TOWN_POPULATION )
 		return 0;
@@ -75,7 +81,13 @@ int Nation::ai_assign_spy_to_town(int townRecno, int raceId)
 //
 int Nation::ai_assign_spy_to_firm(int firmRecno)
 {
+	// Defensive check: ensure firm exists and is valid
+	if( firmRecno <= 0 || firm_array.is_deleted(firmRecno) )
+		return 0;
+
 	Firm* firmPtr = firm_array[firmRecno];
+	if( !firmPtr )
+		return 0;
 
 	err_when( !firmPtr->worker_array );
 
@@ -139,28 +151,58 @@ int Nation::ai_assign_spy(int targetXLoc, int targetYLoc, int spyRaceId, int mob
 
 	//------ get the spy object of the unit ------//
 
-	Unit* unitPtr = unit_array[unitRecno];
+	// Defensive check: ensure unit exists and is valid
+	if( unit_array.is_deleted(unitRecno) )
+		return 0;
 
-	err_when( !unitPtr->spy_recno );
+	Unit* unitPtr = unit_array[unitRecno];
+	if( !unitPtr )
+		return 0;
+
+	if( !unitPtr->spy_recno )
+		return 0;
+
+	// Defensive check: ensure spy exists and is valid
+	if( spy_array.is_deleted(unitPtr->spy_recno) )
+		return 0;
 
 	spyPtr = spy_array[unitPtr->spy_recno];
+	if( !spyPtr )
+		return 0;
 
 	//------- get the nation of the assign destination -----//
 
+	// Defensive check: validate coordinates (world.get_loc already does this, but be explicit)
 	Location* locPtr = world.get_loc(targetXLoc, targetYLoc);
+	if( !locPtr )
+		return 0;
+
 	int 		 cloakedNationRecno;
 
 	if( locPtr->is_firm() )
 	{
-		Firm* firmPtr = firm_array[locPtr->firm_recno()];
+		int firmRecno = locPtr->firm_recno();
+		if( firmRecno <= 0 || firm_array.is_deleted(firmRecno) )
+			return 0;
 
-		err_when( firmPtr->nation_recno==0 );		// cannot assign to a monster firm
+		Firm* firmPtr = firm_array[firmRecno];
+		if( !firmPtr )
+			return 0;
+
+		if( firmPtr->nation_recno==0 )		// cannot assign to a monster firm
+			return 0;
 
 		cloakedNationRecno = firmPtr->nation_recno;
 	}
 	else if( locPtr->is_town() )
 	{
-		Town* townPtr = town_array[locPtr->town_recno()];
+		int townRecno = locPtr->town_recno();
+		if( townRecno <= 0 || town_array.is_deleted(townRecno) )
+			return 0;
+
+		Town* townPtr = town_array[townRecno];
+		if( !townPtr )
+			return 0;
 
 		cloakedNationRecno = townPtr->nation_recno;
 	}
@@ -180,7 +222,21 @@ int Nation::ai_assign_spy(int targetXLoc, int targetYLoc, int spyRaceId, int mob
 	//------ if the unit is under training ------//
 
 	if( trainTownRecno )
-		town_array[trainTownRecno]->train_unit_action_id = get_action(actionRecno)->action_id;
+	{
+		// Defensive check: ensure town exists and is valid
+		if( trainTownRecno > 0 && !town_array.is_deleted(trainTownRecno) )
+		{
+			Town* trainTown = town_array[trainTownRecno];
+			if( trainTown )
+			{
+				ActionNode* actionNode = get_action(actionRecno);
+				if( actionNode )
+				{
+					trainTown->train_unit_action_id = actionNode->action_id;
+				}
+			}
+		}
+	}
 
 	return 1;
 }
@@ -220,7 +276,13 @@ Spy* Nation::ai_find_spy(int targetXLoc, int targetYLoc, int spyRaceId, int mobi
 
 		if( spyPtr->spy_place == SPY_MOBILE )
 		{
+			// Defensive check: ensure unit exists and is valid
+			if( spyPtr->spy_place_para <= 0 || unit_array.is_deleted(spyPtr->spy_place_para) )
+				continue;
+
 			Unit* unitPtr = unit_array[spyPtr->spy_place_para];
+			if( !unitPtr )
+				continue;
 
 			// Don't 'find' units that are dying, under training by a town, or under AI orders
 			if( unitPtr->is_unit_dead() || !unitPtr->is_visible() || !unitPtr->is_ai_all_stop() )
@@ -236,7 +298,13 @@ Spy* Nation::ai_find_spy(int targetXLoc, int targetYLoc, int spyRaceId, int mobi
 
 			if( spyPtr->spy_place == SPY_FIRM )
 			{
+				// Defensive check: ensure firm exists and is valid
+				if( spyPtr->spy_place_para <= 0 || firm_array.is_deleted(spyPtr->spy_place_para) )
+					continue;
+
 				Firm* firmPtr = firm_array[spyPtr->spy_place_para];
+				if( !firmPtr )
+					continue;
 
 				if( firmPtr->nation_recno != nation_recno )		// only get spies from our own firms
 					continue;
@@ -246,7 +314,13 @@ Spy* Nation::ai_find_spy(int targetXLoc, int targetYLoc, int spyRaceId, int mobi
 			}
 			else if( spyPtr->spy_place == SPY_TOWN )
 			{
+				// Defensive check: ensure town exists and is valid
+				if( spyPtr->spy_place_para <= 0 || town_array.is_deleted(spyPtr->spy_place_para) )
+					continue;
+
 				Town* townPtr = town_array[spyPtr->spy_place_para];
+				if( !townPtr )
+					continue;
 
 				if( townPtr->nation_recno != nation_recno )		// only get spies from our own towns
 					continue;
@@ -292,10 +366,15 @@ int Nation::ai_assign_spy(ActionNode* actionNode)
 	if(!seek_path.total_node_avail)
 		return 0;
 
+	if( !actionNode )
+		return -1;
+
 	if( unit_array.is_deleted(actionNode->unit_recno) )
 		return -1;
 
 	Unit* spyUnit = unit_array[actionNode->unit_recno];
+	if( !spyUnit )
+		return -1;
 
 	if( !spyUnit->is_visible() )		// it's still under training, not available yet
 		return -1;
@@ -305,8 +384,14 @@ int Nation::ai_assign_spy(ActionNode* actionNode)
 
 	//------ change the cloak of the spy ------//
 
+	// Defensive check: ensure spy exists and is valid
+	if( spy_array.is_deleted(spyUnit->spy_recno) )
+		return -1;
+
 	int  newFlag;
 	Spy* spyPtr = spy_array[spyUnit->spy_recno];
+	if( !spyPtr )
+		return -1;
 
 	if( reputation < 0 )		// if the nation's reputation is negative, use sneak mode to avoid chance of being uncovered and further damage the reputation
 		newFlag = misc.random( 2+(-(int)reputation)/5 )==0;	// 2 to 22

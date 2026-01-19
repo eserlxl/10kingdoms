@@ -113,7 +113,8 @@ void BitMemStream::output_bits(unsigned short stringCode, unsigned stringLen)
 
 BitFileRead::BitFileRead(File *f) : filePtr(f), last_offset(0)
 {
-	f->file_read(&residue, sizeof(residue));
+	if (!f->file_read(&residue, sizeof(residue)))
+		residue = 0;
 }
 
 unsigned short BitFileRead::input_bits(unsigned stringLen)
@@ -126,7 +127,8 @@ unsigned short BitFileRead::input_bits(unsigned stringLen)
 			residue = 0;
 		else
 			residue >>= 8*byteFetch;
-		filePtr->file_read( sizeof(residue)-byteFetch+(unsigned char *)&residue, byteFetch );
+		if (!filePtr->file_read( sizeof(residue)-byteFetch+(unsigned char *)&residue, byteFetch ))
+			return 0;
 		last_offset += byteFetch;
 	}
 
@@ -154,7 +156,10 @@ BitFileWrite::BitFileWrite(File *f) : filePtr(f), residue(0), residue_len(0)
 BitFileWrite::~BitFileWrite()
 {
 	// flush output
-	filePtr->file_write(&residue, sizeof(residue));
+	if (!filePtr->file_write(&residue, sizeof(residue)))
+	{
+		// Failed to write residue
+	}
 }
 
 unsigned short BitFileWrite::input_bits(unsigned stringLen)
@@ -169,7 +174,8 @@ void BitFileWrite::output_bits(unsigned short stringCode, unsigned stringLen)
 	{
 		// number of byte to write, is residue_len / 8
 		int byteFlush = residue_len / 8;
-		filePtr->file_write( &residue, byteFlush );
+		if (!filePtr->file_write( &residue, byteFlush ))
+			return;
 		if( byteFlush >= sizeof(residue))			// if byteFlush == 4, residue >>= 32 does not set residue to 0
 			residue = 0;
 		else
