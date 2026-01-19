@@ -1517,7 +1517,15 @@ void Unit::attack_town(int townXLoc, int townYLoc, int xOffset, int yOffset, int
 	//------------------------------------------------------------//
 	// cannot attack this nation
 	//------------------------------------------------------------//
-	Town *townPtr = town_array[locPtr->town_recno()];
+	int townRecno = locPtr->town_recno();
+	if(town_array.is_deleted(townRecno))
+	{
+		// Town has been deleted, stop the attack
+		stop2(KEEP_DEFENSE_MODE);
+		return;
+	}
+	
+	Town *townPtr = town_array[townRecno];
 	err_when(townPtr->loc_x1!=townXLoc || townPtr->loc_y1!=townYLoc);
 	if(!nation_can_attack(townPtr->nation_recno))
 	{
