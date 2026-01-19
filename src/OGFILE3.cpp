@@ -43,6 +43,9 @@
 #include <ConfigAdv.h>
 #include <OGF_V1.h>
 #include <OGF_REC.h>
+#include <dbglog.h>
+
+DBGLOG_DEFAULT_CHANNEL(GameFile);
 
 //------- declare static functions -------//
 
@@ -131,22 +134,32 @@ int UnitArray::write_file(File* filePtr)
 //
 int UnitArray::read_file(File* filePtr)
 {
+	// MSG("UnitArray::read_file: Starting\n");
+	long filePosStart = filePtr->file_pos();
+	// MSG("UnitArray::read_file: Starting file position: %ld\n", filePosStart);
+	
 	Unit*   unitPtr;
 	int     i, unitId, emptyRoomCount=0;
 
+	// MSG("UnitArray::read_file: Reading restart_recno\n");
 	restart_recno    = filePtr->file_get_short();
 
+	// MSG("UnitArray::read_file: Reading unitCount\n");
 	int unitCount    = filePtr->file_get_short();  // get no. of units from file
-	// fprintf(stderr, "[DEBUG] UnitArray::read_file: unitCount=%d\n", unitCount);
+	// MSG("UnitArray::read_file: unitCount=%d\n", unitCount);
 
+	// MSG("UnitArray::read_file: Reading selected_recno, selected_count\n");
 	selected_recno   = filePtr->file_get_short();
 	selected_count   = filePtr->file_get_short();
+	// MSG("UnitArray::read_file: Reading cur_group_id, cur_team_id\n");
 	cur_group_id     = filePtr->file_get_long();
 	cur_team_id      = filePtr->file_get_long();
+	// MSG("UnitArray::read_file: Reading idle_blocked_unit_reset_count, unit_search_tries\n");
 	idle_blocked_unit_reset_count = filePtr->file_get_short();
 	unit_search_tries	= filePtr->file_get_long ();
 	unit_search_tries_flag = (char) filePtr->file_get_short();
 
+	// MSG("UnitArray::read_file: Reading visible_unit_count and unused shorts\n");
    visible_unit_count					= filePtr->file_get_short();
 	// unused short*4
 	filePtr->file_get_short();
@@ -154,14 +167,15 @@ int UnitArray::read_file(File* filePtr)
 	filePtr->file_get_short();
 	filePtr->file_get_short();
 
-   // long filePosBeforeUnits = filePtr->file_pos();
-   // fprintf(stderr, "[DEBUG] UnitArray::read_file: File position before reading units: %ld\n", filePosBeforeUnits);
+   long filePosBeforeUnits = filePtr->file_pos();
+   // MSG("UnitArray::read_file: File position before reading units: %ld\n", filePosBeforeUnits);
    
+   // MSG("UnitArray::read_file: Starting to read %d units\n", unitCount);
    for( i=1 ; i<=unitCount ; i++ )
    {
-      // long filePosBeforeUnit = filePtr->file_pos();
+      long filePosBeforeUnitId = filePtr->file_pos();
       unitId = filePtr->file_get_short();
-      // fprintf(stderr, "[DEBUG] Reading unit %d/%d: unitId=%d (0x%04x), file position: %ld\n", i, unitCount, unitId, unitId, filePosBeforeUnit);
+      // MSG("UnitArray::read_file: Unit %d/%d: unitId=%d at position %ld\n", i, unitCount, unitId, filePosBeforeUnitId);
 
       if( unitId==0 )  // the unit has been deleted
       {
@@ -194,29 +208,32 @@ int UnitArray::read_file(File* filePtr)
       {
          //----- validate unitId before creating unit -----------//
          if( unitId < 1 || unitId > unit_res.unit_info_count ) {
-			// fprintf(stderr, "[DEBUG] Invalid unitId=%d (0x%04x), unit_info_count=%d, i=%d/%d - this suggests file corruption or misalignment\n", 
-			// 	unitId, unitId, unit_res.unit_info_count, i, unitCount);
+			ERR("UnitArray::read_file: Invalid unitId=%d (0x%04x), unit_info_count=%d, i=%d/%d - this suggests file corruption or misalignment\n", 
+				unitId, unitId, unit_res.unit_info_count, i, unitCount);
 			
 			// Try to recover: if unitId looks like it might be part of unit data (e.g., sprite_id = 256),
 			// we might be misaligned due to old format writing unit data for deleted units.
 			// Seek back 2 bytes (we just read the short) and try to read UnitGF to get the real unit_id
 			if( unitId >= 256 && unitId < 1000 && i > 1 ) {
-				// fprintf(stderr, "[DEBUG] Attempting recovery: unitId=%d might be sprite_id from misaligned read\n", unitId);
+				// MSG("UnitArray::read_file: Attempting recovery: unitId=%d might be sprite_id from misaligned read\n", unitId);
 				long currentPos = filePtr->file_pos();
-				// fprintf(stderr, "[DEBUG] Current file position: %ld, seeking back 2 bytes\n", currentPos);
-				filePtr->file_seek(-2, SEEK_CUR); // Seek back to before we read the invalid unitId
+				// MSG("UnitArray::read_file: Current file position: %ld, seeking back 2 bytes\n", currentPos);
+				if (filePtr->file_seek(-2, SEEK_CUR) < 0) // Seek back to before we read the invalid unitId
+					return 0;
 				
 				// Try to read UnitGF structure to get the actual unit_id
 				UnitGF tempGF;
+				long recoveryPos = filePtr->file_pos();
+				// MSG("UnitArray::read_file: Recovery: Attempting to read UnitGF at position %ld\n", recoveryPos);
 				if( filePtr->file_read(&tempGF, sizeof(UnitGF)) ) {
 					// Extract unit_id from the structure (it's at offset after sprite fields)
 					int8_t actualUnitId = tempGF.unit_id;
-					// fprintf(stderr, "[DEBUG] Recovered: read UnitGF, actual unit_id=%d\n", actualUnitId);
+					// MSG("UnitArray::read_file: Recovery: Read UnitGF, actual unit_id=%d\n", actualUnitId);
 					
 					// Check if actualUnitId is valid
-					// fprintf(stderr, "[DEBUG] Recovery: actual unit_id=%d, unit_info_count=%d\n", actualUnitId, unit_res.unit_info_count);
+					// MSG("UnitArray::read_file: Recovery: actual unit_id=%d, unit_info_count=%d\n", actualUnitId, unit_res.unit_info_count);
 					if( actualUnitId >= 1 && actualUnitId <= unit_res.unit_info_count ) {
-						// fprintf(stderr, "[DEBUG] Recovery successful! Actual unitId=%d, file was misaligned\n", actualUnitId);
+						// MSG("UnitArray::read_file: Recovery successful! Actual unitId=%d, file was misaligned\n", actualUnitId);
 						unitId = actualUnitId;
 						
 						// We've already read UnitGF into tempGF, so we need to process it and continue reading the rest
@@ -253,7 +270,7 @@ int UnitArray::read_file(File* filePtr)
 							if( !filePtr->file_read(node_record_array, sizeof(ResultNodeGF)*unitPtr->result_node_count) )
 							{
 								mem_del(node_record_array);
-								// fprintf(stderr, "[DEBUG] Recovery: Failed to read result_node_array\n");
+								ERR("UnitArray::read_file: Recovery: Failed to read result_node_array for unitId=%d\n", unitId);
 								return 0;
 							}
 							unitPtr->result_node_array = (ResultNode*) mem_add(sizeof(ResultNode) * unitPtr->result_node_count);
@@ -274,7 +291,7 @@ int UnitArray::read_file(File* filePtr)
 							if( !filePtr->file_read(node_record_array, sizeof(ResultNodeGF)*unitPtr->way_point_array_size) )
 							{
 								mem_del(node_record_array);
-								// fprintf(stderr, "[DEBUG] Recovery: Failed to read way_point_array\n");
+								ERR("UnitArray::read_file: Recovery: Failed to read way_point_array for unitId=%d\n", unitId);
 								return 0;
 							}
 							unitPtr->way_point_array = (ResultNode*) mem_add(sizeof(ResultNode)*unitPtr->way_point_array_size);
@@ -292,7 +309,8 @@ int UnitArray::read_file(File* filePtr)
 						safe_free((void*&)unitPtr->team_info);
 						if( gf_rec.unit.has_team_info )
 						{
-							if( filePtr->file_read(&gf_rec, sizeof(TeamInfoGF)) )
+							// Read into the team_info member of the union for consistency with write
+							if( filePtr->file_read(&gf_rec.team_info, sizeof(TeamInfoGF)) )
 							{
 								unitPtr->team_info = (TeamInfo*) mem_add(sizeof(TeamInfo));
 								memset(unitPtr->team_info, 0, sizeof(TeamInfo));
@@ -314,7 +332,7 @@ int UnitArray::read_file(File* filePtr)
 						// Read derived class data
 						if( !unitPtr->read_derived_file( filePtr ) )
 						{
-							// fprintf(stderr, "[DEBUG] Recovery: read_derived_file failed for unitId=%d\n", unitId);
+							ERR("UnitArray::read_file: Recovery: read_derived_file failed for unitId=%d\n", unitId);
 							return 0;
 						}
 						
@@ -325,26 +343,45 @@ int UnitArray::read_file(File* filePtr)
 					} else if( actualUnitId == 0 ) {
 						// If actualUnitId is 0, this might be a deleted unit that had its data written
 						// We need to skip the unit data to maintain alignment
-						// fprintf(stderr, "[DEBUG] Recovery: Detected deleted unit (unit_id=0) with unit data written - this is the misalignment cause\n");
-						// fprintf(stderr, "[DEBUG] Recovery: Need to skip unit data for this deleted unit to maintain alignment\n");
+						ERR("UnitArray::read_file: Recovery: Detected deleted unit (unit_id=0) with unit data written - this is the misalignment cause\n");
+						ERR("UnitArray::read_file: Recovery: Need to skip unit data for this deleted unit to maintain alignment\n");
 						// Skip the rest of UnitGF (we've already read it into tempGF)
 						// Then skip result_node_array, way_point_array, team_info, and derived data
 						// This is complex without knowing unit_id - for now, fail with clear message
-						// fprintf(stderr, "[DEBUG] Recovery: File format mismatch - deleted units have unit data written.\n");
-						// fprintf(stderr, "[DEBUG] Recovery: Please resave the game with the current version.\n");
+						ERR("UnitArray::read_file: Recovery: File format mismatch - deleted units have unit data written.\n");
+						ERR("UnitArray::read_file: Recovery: Please resave the game with the current version.\n");
 						return 0;
 					} else {
-						// fprintf(stderr, "[DEBUG] Recovery failed: actual unit_id=%d is also invalid (out of range 1-%d)\n", 
-						// 	actualUnitId, unit_res.unit_info_count);
-						// fprintf(stderr, "[DEBUG] Recovery: This suggests severe file corruption or incompatible format\n");
+						ERR("UnitArray::read_file: Recovery failed: actual unit_id=%d is also invalid (out of range 1-%d)\n", 
+							actualUnitId, unit_res.unit_info_count);
+						ERR("UnitArray::read_file: Recovery: This suggests severe file corruption at unit %d/%d (position %ld)\n", 
+							i, unitCount, filePosBeforeUnitId);
+						ERR("UnitArray::read_file: Recovery: File may be corrupted or from an incompatible version\n");
+						// Try to continue by skipping this corrupted unit
+						// We've already read UnitGF, so we need to skip the rest of the unit data
+						// This is risky, but better than failing completely
+						// MSG("UnitArray::read_file: Attempting to skip corrupted unit %d and continue loading\n", i);
+						add_blank(1);  // Add a blank slot for this corrupted unit
+						// We've already read UnitGF (sizeof(UnitGF) bytes), so we're at the right position
+						// But we need to skip result_node_array, way_point_array, team_info, and derived data
+						// Without knowing the unit_id, we can't know the sizes. This is complex.
+						// For now, fail but with a clear message
+						ERR("UnitArray::read_file: Cannot safely skip corrupted unit - file is too corrupted to recover\n");
+						return 0;
 					}
 				} else {
-					// fprintf(stderr, "[DEBUG] Recovery failed: could not read UnitGF structure\n");
+					ERR("UnitArray::read_file: Recovery failed: could not read UnitGF structure at position %ld\n", recoveryPos);
+					ERR("UnitArray::read_file: File appears corrupted at unit %d/%d\n", i, unitCount);
+					return 0;
 				}
+			} else {
+				ERR("UnitArray::read_file: Invalid unitId=%d at unit %d/%d, but recovery condition not met (not in range 256-999 or i=%d <= 1)\n", 
+					unitId, i, unitCount, i);
 			}
 			
-			// fprintf(stderr, "[DEBUG] The save file appears to be from an incompatible version or corrupted.\n");
-			// fprintf(stderr, "[DEBUG] Please resave the game with the current version, or use a save file created with this version.\n");
+			ERR("UnitArray::read_file: The save file appears to be from an incompatible version or corrupted at unit %d/%d (position %ld).\n", 
+				i, unitCount, filePosBeforeUnitId);
+			ERR("UnitArray::read_file: Please resave the game with the current version, or use a save file created with this version.\n");
             return 0;
          }
          //----- create unit object -----------//
@@ -352,32 +389,39 @@ int UnitArray::read_file(File* filePtr)
          unitPtr->unit_id = unitId;
 
          long filePosBeforeUnitData = filePtr->file_pos();
+         // MSG("UnitArray::read_file: Unit %d (unitId=%d): Reading base class data at position %ld\n", i, unitId, filePosBeforeUnitData);
          
          //---- read data in base class -----//
 
          if( !unitPtr->read_file( filePtr ) )
          {
-			// fprintf(stderr, "[DEBUG] Unit::read_file failed for unitId=%d, i=%d\n", unitId, i);
+			ERR("UnitArray::read_file: Unit::read_file failed for unitId=%d, unit index %d, position %ld\n", unitId, i, filePosBeforeUnitData);
             return 0;
 		}
+		long filePosAfterUnitData = filePtr->file_pos();
+		// MSG("UnitArray::read_file: Unit %d (unitId=%d): Base class read succeeded (read %ld bytes)\n", i, unitId, filePosAfterUnitData - filePosBeforeUnitData);
 		// long filePosAfterUnitData = filePtr->file_pos();
 		// fprintf(stderr, "[DEBUG] Unit %d (unitId=%d): read_file consumed %ld bytes\n", i, unitId, filePosAfterUnitData - filePosBeforeUnitData);
 
          //----- read data in derived class -----//
+         long filePosBeforeDerived = filePtr->file_pos();
+         // MSG("UnitArray::read_file: Unit %d (unitId=%d): Reading derived class data at position %ld\n", i, unitId, filePosBeforeDerived);
 
          if( !unitPtr->read_derived_file( filePtr ) )
          {
-			// fprintf(stderr, "[DEBUG] Unit::read_derived_file failed for unitId=%d, i=%d\n", unitId, i);
+			ERR("UnitArray::read_file: Unit::read_derived_file failed for unitId=%d, unit index %d, position %ld\n", unitId, i, filePosBeforeDerived);
             return 0;
 		}
+		long filePosAfterDerived = filePtr->file_pos();
+		// MSG("UnitArray::read_file: Unit %d (unitId=%d): Derived class read succeeded (read %ld bytes)\n", i, unitId, filePosAfterDerived - filePosBeforeDerived);
 		// long filePosAfterDerived = filePtr->file_pos();
 		// fprintf(stderr, "[DEBUG] Unit %d (unitId=%d): read_derived_file consumed %ld bytes\n", i, unitId, filePosAfterDerived - filePosAfterUnitData);
 
 			unitPtr->fix_attack_info();
       }
    }
-   // long filePosAfterAllUnits = filePtr->file_pos();
-   // fprintf(stderr, "[DEBUG] UnitArray::read_file: Finished reading all %d units, total bytes read: %ld\n", unitCount, filePosAfterAllUnits - filePosBeforeUnits);
+   long filePosAfterAllUnits = filePtr->file_pos();
+   // MSG("UnitArray::read_file: Finished reading all %d units, total bytes read: %ld\n", unitCount, filePosAfterAllUnits - filePosBeforeUnits);
 
 	//-------- linkout() those record added by add_blank() ----------//
    //-- So they will be marked deleted in DynArrayB and can be -----//
@@ -397,17 +441,18 @@ int UnitArray::read_file(File* filePtr)
    }
 
    //------- read empty room array --------//
-   // fprintf(stderr, "[DEBUG] UnitArray::read_file: About to read empty_room_array, expected emptyRoomCount=%d\n", emptyRoomCount);
+   long filePosBeforeEmptyRoom = filePtr->file_pos();
+   // MSG("UnitArray::read_file: About to read empty_room_array at position %ld, expected emptyRoomCount=%d\n", filePosBeforeEmptyRoom, emptyRoomCount);
    if( !read_empty_room(filePtr) )
    {
-      // fprintf(stderr, "[DEBUG] UnitArray::read_file: read_empty_room failed\n");
+      ERR("UnitArray::read_file: read_empty_room failed at position %ld\n", filePosBeforeEmptyRoom);
       return 0;
    }
-   // fprintf(stderr, "[DEBUG] UnitArray::read_file: Finished reading empty_room_array, empty_room_count=%d (expected %d)\n", empty_room_count, emptyRoomCount);
+   // MSG("UnitArray::read_file: Finished reading empty_room_array, empty_room_count=%d (expected %d)\n", empty_room_count, emptyRoomCount);
    
    // Log file position after reading empty_room_array
-   // long filePosAfterEmptyRoom = filePtr->file_pos();
-   // fprintf(stderr, "[DEBUG] UnitArray::read_file: File position after empty_room_array: %ld\n", filePosAfterEmptyRoom);
+   long filePosAfterEmptyRoom = filePtr->file_pos();
+   // MSG("UnitArray::read_file: File position after empty_room_array: %ld (read %ld bytes)\n", filePosAfterEmptyRoom, filePosAfterEmptyRoom - filePosBeforeEmptyRoom);
    
    // Defensive: Validate empty_room_count matches what we expect
    // If there's a significant mismatch (> 10 units difference), the file is likely corrupted or from incompatible version
@@ -416,14 +461,14 @@ int UnitArray::read_file(File* filePtr)
       int diff = abs(empty_room_count - emptyRoomCount);
       if( diff > 10 || empty_room_count > 100 )
       {
-         // fprintf(stderr, "[DEBUG] UnitArray::read_file: ERROR - empty_room_count mismatch! Read %d but expected %d (diff=%d) - file may be corrupted or from incompatible version\n", 
-         //    empty_room_count, emptyRoomCount, diff);
-         // fprintf(stderr, "[DEBUG] UnitArray::read_file: This suggests the save file format is incompatible. Please resave the game with the current version.\n");
+         ERR("UnitArray::read_file: ERROR - empty_room_count mismatch! Read %d but expected %d (diff=%d) - file may be corrupted or from incompatible version\n", 
+            empty_room_count, emptyRoomCount, diff);
+         ERR("UnitArray::read_file: This suggests the save file format is incompatible. Please resave the game with the current version.\n");
          return 0; // Fail the load
       }
       else
       {
-         // fprintf(stderr, "[DEBUG] UnitArray::read_file: WARNING - empty_room_count mismatch! Read %d but expected %d (diff=%d) - minor difference, continuing\n", 
+         // MSG("UnitArray::read_file: WARNING - empty_room_count mismatch! Read %d but expected %d (diff=%d) - minor difference, continuing\n", 
          //    empty_room_count, emptyRoomCount, diff);
       }
    }
@@ -440,7 +485,8 @@ int UnitArray::read_file(File* filePtr)
    }
 #endif
 
-   // fprintf(stderr, "[DEBUG] UnitArray::read_file: Returning success\n");
+   long filePosEnd = filePtr->file_pos();
+   // MSG("UnitArray::read_file: Completed successfully, final position: %ld (total read: %ld bytes)\n", filePosEnd, filePosEnd - filePosStart);
    return 1;
 }
 //--------- End of function UnitArray::read_file ---------------//
@@ -455,51 +501,354 @@ int UnitArray::read_file(File* filePtr)
 //
 int Unit::write_file(File* filePtr)
 {
+	long filePosBeforeUnitGF = filePtr->file_pos();
+	// MSG("Unit::write_file: Writing UnitGF at position %ld (writing %zu bytes)\n", filePosBeforeUnitGF, sizeof(UnitGF));
+	
+	// CRITICAL: Validate result_node_array BEFORE writing UnitGF
+	// If validation fails, we must set result_node_count to 0 before write_record
+	// to ensure UnitGF is written with count=0, preventing a mismatch when loading
+	bool result_node_array_valid = false;
+	if( result_node_array )
+	{
+		// Defensive: Validate result_node_count before writing
+		// Reasonable bounds: 0 to 10000 (paths shouldn't be longer than this)
+		if( result_node_count < 0 || result_node_count > 10000 )
+		{
+			ERR("Unit::write_file: CORRUPTION DETECTED! Invalid result_node_count=%d (unit_id=%d) - should be 0-10000\n", 
+				result_node_count, unit_id);
+			ERR("Unit::write_file: This indicates memory corruption during gameplay. Setting count to 0 in UnitGF to prevent file corruption.\n");
+			result_node_count = 0;
+			result_node_array = nullptr;
+		}
+		else
+		{
+			// Defensive: Validate result_node_array pointer is reasonable
+			if( (uintptr_t)result_node_array < 0x1000 || (uintptr_t)result_node_array == 0xdeadbeef )
+			{
+				ERR("Unit::write_file: CORRUPTION DETECTED! Invalid result_node_array pointer=%p (unit_id=%d, count=%d)\n", 
+					result_node_array, unit_id, result_node_count);
+				ERR("Unit::write_file: This indicates memory corruption during gameplay. Setting count to 0 in UnitGF to prevent file corruption.\n");
+				result_node_count = 0;
+				result_node_array = nullptr;
+			}
+			else
+			{
+				result_node_array_valid = true;
+			}
+		}
+	}
+	else
+	{
+		// CRITICAL: If result_node_array is nullptr but result_node_count > 0, this is inconsistent
+		// Set count to 0 to prevent writing UnitGF with a non-zero count but no array data
+		// This can happen if the array was freed (e.g., path completed) but count wasn't reset
+		if( result_node_count > 0 )
+		{
+			// Note: This should be rare now that next_move() resets the count, but keep as defensive check
+			// MSG("Unit::write_file: Fixing inconsistency: result_node_array is nullptr but result_node_count=%d (unit_id=%d), resetting count\n",
+			// 	result_node_count, unit_id);
+			result_node_count = 0;
+		}
+	}
+	
+	// CRITICAL: Validate way_point_array BEFORE writing UnitGF
+	// If validation fails, we must set way_point_array_size to 0 before write_record
+	// to ensure UnitGF is written with size=0, preventing a mismatch when loading
+	bool way_point_array_valid = false;
+	if( way_point_array )
+	{
+		// Defensive: Validate way_point_array_size before writing
+		// Reasonable bounds: 0 to 10000 (paths shouldn't be longer than this)
+		if( way_point_array_size < 0 || way_point_array_size > 10000 )
+		{
+			ERR("Unit::write_file: CORRUPTION DETECTED! Invalid way_point_array_size=%d (unit_id=%d) - should be 0-10000\n", 
+				way_point_array_size, unit_id);
+			ERR("Unit::write_file: This indicates memory corruption during gameplay. Setting size to 0 in UnitGF to prevent file corruption.\n");
+			way_point_array_size = 0;
+			way_point_array = nullptr;
+		}
+		else
+		{
+			// Defensive: Validate way_point_array pointer is reasonable
+			if( (uintptr_t)way_point_array < 0x1000 || (uintptr_t)way_point_array == 0xdeadbeef )
+			{
+				ERR("Unit::write_file: CORRUPTION DETECTED! Invalid way_point_array pointer=%p (unit_id=%d, size=%d)\n", 
+					way_point_array, unit_id, way_point_array_size);
+				ERR("Unit::write_file: This indicates memory corruption during gameplay. Setting size to 0 in UnitGF to prevent file corruption.\n");
+				way_point_array_size = 0;
+				way_point_array = nullptr;
+			}
+			else
+			{
+				way_point_array_valid = true;
+			}
+		}
+	}
+	else
+	{
+		// CRITICAL: If way_point_array is nullptr but way_point_array_size > 0, this is inconsistent
+		// Set size to 0 to prevent writing UnitGF with a non-zero size but no array data
+		// This can happen if the array was freed but size wasn't reset
+		if( way_point_array_size > 0 )
+		{
+			// Note: This should be rare since reset_way_point_array() resets the size, but keep as defensive check
+			// MSG("Unit::write_file: Fixing inconsistency: way_point_array is nullptr but way_point_array_size=%d (unit_id=%d), resetting size\n",
+			// 	way_point_array_size, unit_id);
+			way_point_array_size = 0;
+		}
+	}
+	
+	// CRITICAL: Capture values BEFORE write_record, as write_record copies them to UnitGF
+	// Also preserve the validation state to ensure consistency
+	int saved_result_node_count = result_node_count;
+	int saved_way_point_array_size = way_point_array_size;
+	bool saved_result_node_array_valid = result_node_array_valid;
+	bool saved_way_point_array_valid = way_point_array_valid;
+	void* saved_result_node_array_ptr = result_node_array;  // Save pointer for later validation
+	void* saved_way_point_array_ptr = way_point_array;     // Save pointer for later validation
+	
 	write_record(&gf_rec.unit);
-	if( !filePtr->file_write(&gf_rec, sizeof(UnitGF)) )
+	
+	// Verify that write_record correctly copied result_node_count to UnitGF
+	if( gf_rec.unit.result_node_count != saved_result_node_count )
+	{
+		ERR("Unit::write_file: CORRUPTION DETECTED! result_node_count changed during write_record: was %d, now UnitGF has %d (unit_id=%d)\n",
+			saved_result_node_count, gf_rec.unit.result_node_count, unit_id);
+		ERR("Unit::write_file: This should never happen - write_record should copy the value, not modify it.\n");
+		// Use the value from UnitGF to maintain consistency
+		result_node_count = gf_rec.unit.result_node_count;
+		// If UnitGF has a non-zero count but we determined the array is invalid, this is a problem
+		if( !result_node_array_valid && gf_rec.unit.result_node_count > 0 )
+		{
+			ERR("Unit::write_file: CRITICAL! UnitGF was written with count=%d but result_node_array is invalid - this will cause load failure!\n",
+				gf_rec.unit.result_node_count);
+			ERR("Unit::write_file: Attempting to correct by setting count to 0 in memory (but UnitGF already written with wrong count).\n");
+			result_node_count = 0;
+		}
+	}
+	
+	// Verify that write_record correctly copied way_point_array_size to UnitGF
+	if( gf_rec.unit.way_point_array_size != saved_way_point_array_size )
+	{
+		ERR("Unit::write_file: CORRUPTION DETECTED! way_point_array_size changed during write_record: was %d, now UnitGF has %d (unit_id=%d)\n",
+			saved_way_point_array_size, gf_rec.unit.way_point_array_size, unit_id);
+		ERR("Unit::write_file: This should never happen - write_record should copy the value, not modify it.\n");
+		// Use the value from UnitGF to maintain consistency
+		way_point_array_size = gf_rec.unit.way_point_array_size;
+		// If UnitGF has a non-zero size but we determined the array is invalid, this is a problem
+		if( !way_point_array_valid && gf_rec.unit.way_point_array_size > 0 )
+		{
+			ERR("Unit::write_file: CRITICAL! UnitGF was written with size=%d but way_point_array is invalid - this will cause load failure!\n",
+				gf_rec.unit.way_point_array_size);
+			ERR("Unit::write_file: Attempting to correct by setting size to 0 in memory (but UnitGF already written with wrong size).\n");
+			way_point_array_size = 0;
+		}
+	}
+	
+	// Write from the unit member of the union for consistency and clarity
+	// (though &gf_rec and &gf_rec.unit are the same address in a union)
+	if( !filePtr->file_write(&gf_rec.unit, sizeof(UnitGF)) )
+	{
+		ERR("Unit::write_file: Failed to write UnitGF at position %ld\n", filePosBeforeUnitGF);
 		return 0;
+	}
+	long filePosAfterUnitGF = filePtr->file_pos();
+	// MSG("Unit::write_file: UnitGF written successfully (wrote %ld bytes, expected %zu)\n", filePosAfterUnitGF - filePosBeforeUnitGF, sizeof(UnitGF));
 
 	//--------------- write memory data ----------------//
 
-	if( result_node_array )
+	// Use saved validation state to ensure consistency - the array might have been freed/invalidated
+	// between validation and writing, but if UnitGF promises data, we must write it
+	bool should_write_result_node_array = (saved_result_node_array_valid && saved_result_node_count > 0 && 
+	                                       saved_result_node_array_ptr != nullptr);
+	
+	if( should_write_result_node_array && result_node_array && result_node_array_valid && result_node_count > 0 )
 	{
-		ResultNodeGF *node_record_array = (ResultNodeGF*) mem_add(sizeof(ResultNode)*result_node_count);
-		for( int i=0; i<result_node_count; i++ )
+		// CRITICAL: Verify that result_node_count in UnitGF matches the actual count
+		// This prevents writing incorrect record sizes if memory was corrupted between writing UnitGF and writing result_node_array
+		if( gf_rec.unit.result_node_count != result_node_count )
 		{
-			ResultNode *node = result_node_array+i;
-			node->write_record(node_record_array+i);
+			ERR("Unit::write_file: CORRUPTION DETECTED! result_node_count mismatch: UnitGF has %d but Unit object has %d (unit_id=%d)\n",
+				gf_rec.unit.result_node_count, result_node_count, unit_id);
+			ERR("Unit::write_file: This indicates memory corruption occurred between writing UnitGF and writing result_node_array.\n");
+			ERR("Unit::write_file: The count in UnitGF was written as %d, but we're trying to write %d nodes.\n",
+				gf_rec.unit.result_node_count, result_node_count);
+			ERR("Unit::write_file: Using the count from UnitGF (%d) to maintain file consistency, but this may indicate data loss.\n",
+				gf_rec.unit.result_node_count);
+			// Use the count from UnitGF to maintain consistency with what was already written
+			result_node_count = gf_rec.unit.result_node_count;
+			// If the count is now 0 or invalid, skip writing
+			if( result_node_count <= 0 || result_node_count > 10000 )
+			{
+				ERR("Unit::write_file: UnitGF count is also invalid (%d), skipping result_node_array write\n", result_node_count);
+				result_node_count = 0;
+				result_node_array = nullptr;
+				// Continue without writing result_node_array - but this should not happen since we validated before
+			}
 		}
-		if( !filePtr->file_write(node_record_array, sizeof(ResultNodeGF)*result_node_count) )
+		
+		// Only write if we still have valid data after the check above
+		if( result_node_array && result_node_count > 0 )
 		{
+			size_t writeSize = sizeof(ResultNodeGF)*result_node_count;
+					// MSG("Unit::write_file: Verified result_node_count=%d matches UnitGF.count=%d before writing result_node_array\n",
+					// 	result_node_count, gf_rec.unit.result_node_count);
+					long filePosBeforeResultNodes = filePtr->file_pos();
+					// MSG("Unit::write_file: Writing result_node_array, count=%d, size=%zu bytes at position %ld\n", 
+					// 	result_node_count, writeSize, filePosBeforeResultNodes);
+					// MSG("Unit::write_file: sizeof(ResultNodeGF)=%zu, calculated writeSize=%zu (count * sizeof)\n",
+					// 	sizeof(ResultNodeGF), writeSize);
+					// Allocate using ResultNodeGF size, not ResultNode size - they may differ
+					ResultNodeGF *node_record_array = (ResultNodeGF*) mem_add(sizeof(ResultNodeGF)*result_node_count);
+					for( int i=0; i<result_node_count; i++ )
+					{
+						ResultNode *node = result_node_array+i;
+						node->write_record(node_record_array+i);
+					}
+						if( !filePtr->file_write(node_record_array, writeSize) )
+					{
+						ERR("Unit::write_file: Failed to write result_node_array at position %ld\n", filePosBeforeResultNodes);
+						mem_del(node_record_array);
+						return 0;
+					}
+					long filePosAfterResultNodes = filePtr->file_pos();
+					long bytesWritten = filePosAfterResultNodes - filePosBeforeResultNodes;
+					// MSG("Unit::write_file: result_node_array written successfully (wrote %ld bytes, expected %zu)\n", 
+					// 	bytesWritten, writeSize);
+					
+					// Defensive: Validate that we actually wrote the expected amount
+					// In STRUCTURED mode, file position should move by: 2 (header) + writeSize (data)
+					long expectedBytesWritten = 2 + (long)writeSize;
+					if( bytesWritten < expectedBytesWritten )
+					{
+						ERR("Unit::write_file: CORRUPTION DETECTED! Wrote only %ld bytes but expected at least %ld bytes (2-byte header + %zu data) for unit_id=%d, count=%d\n",
+							bytesWritten, expectedBytesWritten, writeSize, unit_id, result_node_count);
+						ERR("Unit::write_file: This suggests the file write failed partway through or the file system is corrupted.\n");
+						mem_del(node_record_array);
+						return 0; // Fail the save to prevent corrupted file
+					}
+					
+					// Additional validation: Check if bytesWritten is significantly larger than expected
+					// This would indicate the record size header was written incorrectly
+					if( bytesWritten > expectedBytesWritten + 2 )
+					{
+						ERR("Unit::write_file: CORRUPTION DETECTED! Wrote %ld bytes but expected %ld bytes (2-byte header + %zu data) for unit_id=%d, count=%d\n",
+							bytesWritten, expectedBytesWritten, writeSize, unit_id, result_node_count);
+						ERR("Unit::write_file: File position moved %ld bytes more than expected - record size header may have been written incorrectly.\n",
+							bytesWritten - expectedBytesWritten);
+						ERR("Unit::write_file: This suggests memory corruption or incorrect dataSize passed to file_write.\n");
+						mem_del(node_record_array);
+						return 0; // Fail the save to prevent corrupted file
+					}
+					
 			mem_del(node_record_array);
-			return 0;
 		}
-		mem_del(node_record_array);
+	}
+	
+	// CRITICAL: Verify that if UnitGF has result_node_count > 0, we actually wrote the array
+	// Use saved validation state to check if we SHOULD have written it
+	if( gf_rec.unit.result_node_count > 0 && !should_write_result_node_array )
+	{
+		ERR("Unit::write_file: CRITICAL INCONSISTENCY! UnitGF has result_node_count=%d but result_node_array was not written (unit_id=%d)\n",
+			gf_rec.unit.result_node_count, unit_id);
+		ERR("Unit::write_file: This will cause load failure - UnitGF promises %d nodes but no array data exists.\n",
+			gf_rec.unit.result_node_count);
+		ERR("Unit::write_file: saved_result_node_array_valid=%d, saved_result_node_count=%d, saved_result_node_array_ptr=%p\n",
+			saved_result_node_array_valid, saved_result_node_count, saved_result_node_array_ptr);
+		ERR("Unit::write_file: This suggests the array was invalid during validation but UnitGF was written with count > 0.\n");
+		ERR("Unit::write_file: Failing save to prevent corrupted file.\n");
+		return 0; // Fail the save to prevent corruption
 	}
 
 	//### begin alex 15/10 ###//
-	if(way_point_array)
+	// Use saved validation state to ensure consistency
+	bool should_write_way_point_array = (saved_way_point_array_valid && saved_way_point_array_size > 0 && 
+	                                     saved_way_point_array_ptr != nullptr);
+	
+	if( should_write_way_point_array && way_point_array && way_point_array_valid && way_point_array_size > 0 )
 	{
-		err_when(way_point_array_size==0 || way_point_array_size<way_point_count);
-		ResultNodeGF *node_record_array = (ResultNodeGF*) mem_add(sizeof(ResultNodeGF)*way_point_array_size);
-		for( int i=0; i<way_point_array_size; i++ )
+		// Validation already done before UnitGF write - just verify consistency
+		if( gf_rec.unit.way_point_array_size != way_point_array_size )
 		{
-			ResultNode *node = way_point_array+i;
-			node->write_record(node_record_array+i);
+			ERR("Unit::write_file: CORRUPTION DETECTED! way_point_array_size mismatch: UnitGF has %d but Unit object has %d (unit_id=%d)\n",
+				gf_rec.unit.way_point_array_size, way_point_array_size, unit_id);
+			ERR("Unit::write_file: This indicates memory corruption occurred between writing UnitGF and writing way_point_array.\n");
+			ERR("Unit::write_file: Using the size from UnitGF (%d) to maintain file consistency, but this may indicate data loss.\n",
+				gf_rec.unit.way_point_array_size);
+			// Use the size from UnitGF to maintain consistency with what was already written
+			way_point_array_size = gf_rec.unit.way_point_array_size;
+			// If the size is now 0 or invalid, skip writing
+			if( way_point_array_size <= 0 || way_point_array_size > 10000 )
+			{
+				ERR("Unit::write_file: UnitGF size is also invalid (%d), skipping way_point_array write\n", way_point_array_size);
+				way_point_array_size = 0;
+				way_point_array = nullptr;
+				// Continue without writing way_point_array - but this should not happen since we validated before
+			}
 		}
-		if( !filePtr->file_write(node_record_array, sizeof(ResultNodeGF)*way_point_array_size) )
+		
+		// Only write if we still have valid data after the check above
+		if( way_point_array && way_point_array_size > 0 )
 		{
+			err_when(way_point_array_size==0 || way_point_array_size<way_point_count);
+			size_t wayPointWriteSize = sizeof(ResultNodeGF)*way_point_array_size;
+			long filePosBeforeWayPoints = filePtr->file_pos();
+			// MSG("Unit::write_file: Writing way_point_array, size=%d, writeSize=%zu bytes at position %ld\n", 
+			// 	way_point_array_size, wayPointWriteSize, filePosBeforeWayPoints);
+			ResultNodeGF *node_record_array = (ResultNodeGF*) mem_add(sizeof(ResultNodeGF)*way_point_array_size);
+			for( int i=0; i<way_point_array_size; i++ )
+			{
+				ResultNode *node = way_point_array+i;
+				node->write_record(node_record_array+i);
+			}
+			if( !filePtr->file_write(node_record_array, wayPointWriteSize) )
+			{
+				ERR("Unit::write_file: Failed to write way_point_array at position %ld\n", filePosBeforeWayPoints);
+				mem_del(node_record_array);
+				return 0;
+			}
+			long filePosAfterWayPoints = filePtr->file_pos();
+			long bytesWritten = filePosAfterWayPoints - filePosBeforeWayPoints;
+			// MSG("Unit::write_file: way_point_array written successfully (wrote %ld bytes, expected %zu)\n", 
+			// 	bytesWritten, wayPointWriteSize);
+			
+			// Defensive: Validate that we actually wrote the expected amount
+			long expectedBytesWritten = 2 + (long)wayPointWriteSize;
+			if( bytesWritten < expectedBytesWritten )
+			{
+				ERR("Unit::write_file: CORRUPTION DETECTED! Wrote only %ld bytes but expected at least %ld bytes (2-byte header + %zu data) for unit_id=%d, size=%d\n",
+					bytesWritten, expectedBytesWritten, wayPointWriteSize, unit_id, way_point_array_size);
+				ERR("Unit::write_file: This suggests the file write failed partway through or the file system is corrupted.\n");
+				mem_del(node_record_array);
+				return 0; // Fail the save to prevent corrupted file
+			}
+			
 			mem_del(node_record_array);
-			return 0;
 		}
-		mem_del(node_record_array);
+	}
+	
+	// CRITICAL: Verify that if UnitGF has way_point_array_size > 0, we actually wrote the array
+	// Use saved validation state to check if we SHOULD have written it
+	if( gf_rec.unit.way_point_array_size > 0 && !should_write_way_point_array )
+	{
+		ERR("Unit::write_file: CRITICAL INCONSISTENCY! UnitGF has way_point_array_size=%d but way_point_array was not written (unit_id=%d)\n",
+			gf_rec.unit.way_point_array_size, unit_id);
+		ERR("Unit::write_file: This will cause load failure - UnitGF promises %d way points but no array data exists.\n",
+			gf_rec.unit.way_point_array_size);
+		ERR("Unit::write_file: saved_way_point_array_valid=%d, saved_way_point_array_size=%d, saved_way_point_array_ptr=%p\n",
+			saved_way_point_array_valid, saved_way_point_array_size, saved_way_point_array_ptr);
+		ERR("Unit::write_file: This suggests the array was invalid during validation but UnitGF was written with size > 0.\n");
+		ERR("Unit::write_file: Failing save to prevent corrupted file.\n");
+		return 0; // Fail the save to prevent corruption
 	}
 	//#### end alex 15/10 ####//
 
 	if( team_info )
 	{
 		team_info->write_record(&gf_rec.team_info);
-		if( !filePtr->file_write(&gf_rec, sizeof(TeamInfoGF)) )
+		// Write from the team_info member of the union, not from the start of the union
+		// This ensures we only write TeamInfoGF bytes, not leftover data from previous writes
+		if( !filePtr->file_write(&gf_rec.team_info, sizeof(TeamInfoGF)) )
 			return 0;
 	}
 
@@ -512,8 +861,40 @@ int Unit::write_file(File* filePtr)
 //
 int Unit::read_file(File* filePtr)
 {
-	if( !filePtr->file_read(&gf_rec, sizeof(UnitGF)) )
+	long filePosBeforeUnitGF = filePtr->file_pos();
+	// MSG("Unit::read_file: Reading UnitGF at position %ld (expecting %zu bytes)\n", filePosBeforeUnitGF, sizeof(UnitGF));
+	// Read into the unit member of the union for consistency with write
+	if( !filePtr->file_read(&gf_rec.unit, sizeof(UnitGF)) )
+	{
+		ERR("Unit::read_file: Failed to read UnitGF at position %ld\n", filePosBeforeUnitGF);
 		return 0;
+	}
+	long filePosAfterUnitGF = filePtr->file_pos();
+	long bytesMoved = filePosAfterUnitGF - filePosBeforeUnitGF;
+	// MSG("Unit::read_file: UnitGF read successfully (file position moved %ld bytes, expected %zu), unit_id=%d\n", bytesMoved, sizeof(UnitGF), gf_rec.unit.unit_id);
+	
+	// In STRUCTURED mode, file_read() writes a 2-byte record size header, then the data.
+	// So we expect: sizeof(UnitGF) (unstructured) or sizeof(UnitGF) + 2 (structured with header)
+	// Anything significantly smaller indicates corruption/truncation.
+	// Anything significantly larger (>10 bytes more) also indicates corruption.
+	long minExpected = (long)sizeof(UnitGF);      // unstructured: just the data
+	long maxExpected = (long)sizeof(UnitGF) + 2;   // structured: 2-byte header + data
+	
+	if( bytesMoved < minExpected || bytesMoved > maxExpected + 10 )
+	{
+		ERR("Unit::read_file: Corrupted UnitGF record at position %ld: moved %ld bytes, expected between %ld and %ld bytes - file is corrupted!\n", 
+			filePosBeforeUnitGF, bytesMoved, minExpected, maxExpected);
+		return 0;
+	}
+	// else if( bytesMoved == maxExpected )
+	// {
+	// 	MSG("Unit::read_file: File position moved %ld bytes (structured record with 2-byte header - this is OK)\n", bytesMoved);
+	// }
+	// else if( bytesMoved != minExpected )
+	// {
+	// 	MSG("Unit::read_file: File position moved %ld bytes instead of %zu (within acceptable range)\n", 
+	// 		bytesMoved, sizeof(UnitGF));
+	// }
 	read_record(&gf_rec.unit);
 
 	//--------------- read in memory data ----------------//
@@ -530,11 +911,66 @@ int Unit::read_file(File* filePtr)
 	// Defensive: Only allocate if count > 0
 	if( result_node_count > 0 )
 	{
-		ResultNodeGF *node_record_array = (ResultNodeGF*) mem_add(sizeof(ResultNode)*result_node_count);
+		long filePosBeforeResultNodes = filePtr->file_pos();
+		size_t expectedSize = sizeof(ResultNodeGF)*result_node_count;
+		// MSG("Unit::read_file: Reading result_node_array, count=%d, expected size=%zu bytes at position %ld\n", 
+		// 	result_node_count, expectedSize, filePosBeforeResultNodes);
+		// Allocate using ResultNodeGF size, not ResultNode size - they may differ
+		ResultNodeGF *node_record_array = (ResultNodeGF*) mem_add(sizeof(ResultNodeGF)*result_node_count);
 
-		if( !filePtr->file_read(node_record_array, sizeof(ResultNodeGF)*result_node_count) )
+		if( !filePtr->file_read(node_record_array, expectedSize) )
 		{
+			ERR("Unit::read_file: Failed to read result_node_array at position %ld (expected %zu bytes)\n", 
+				filePosBeforeResultNodes, expectedSize);
 			mem_del(node_record_array);
+			// Ensure pointers are nullptr so deinit() doesn't try to free invalid pointers
+			result_node_array = nullptr;
+			result_node_count = 0;
+			return 0;
+		}
+		
+		long filePosAfterRead = filePtr->file_pos();
+		long bytesMoved = filePosAfterRead - filePosBeforeResultNodes;
+		// MSG("Unit::read_file: result_node_array file position moved %ld bytes (expected ~%zu, count=%d, sizeof(ResultNodeGF)=%zu)\n", 
+		// 	bytesMoved, expectedSize, result_node_count, sizeof(ResultNodeGF));
+		
+		// Validate that we read the correct amount of data
+		// In STRUCTURED mode, file position moves by: 2 (header) + recordSize (data)
+		// The record size header should match expectedSize exactly (or be 0 if > 0xFFFF)
+		// We need exactly expectedSize bytes of actual data, so file position should move by exactly 2 + expectedSize
+		long expectedMove = 2 + (long)expectedSize;  // 2-byte header + data
+		
+		// Allow small tolerance (up to 2 bytes) for potential rounding or minor format differences
+		// But if it's significantly different, it's corruption
+		if( bytesMoved < expectedMove - 2 )
+		{
+			ERR("Unit::read_file: result_node_array read too little data: moved %ld bytes, expected at least %ld bytes (2-byte header + %zu data) - file may be corrupted!\n", 
+				bytesMoved, expectedMove, expectedSize);
+			ERR("Unit::read_file: This suggests the save file was corrupted during writing or the file format is incompatible.\n");
+			ERR("Unit::read_file: unit_id=%d, result_node_count=%d, sizeof(ResultNodeGF)=%zu\n", 
+				gf_rec.unit.unit_id, result_node_count, sizeof(ResultNodeGF));
+			mem_del(node_record_array);
+			// Ensure pointers are nullptr so deinit() doesn't try to free invalid pointers
+			result_node_array = nullptr;
+			result_node_count = 0;
+			return 0;
+		}
+		
+		// Check if record size is significantly larger than expected (indicates corruption or misalignment)
+		// If bytesMoved is more than 2 bytes larger than expected, the record size header was wrong
+		if( bytesMoved > expectedMove + 2 )
+		{
+			ERR("Unit::read_file: result_node_array record size mismatch: moved %ld bytes, expected %ld bytes (2-byte header + %zu data) - file may be corrupted!\n", 
+				bytesMoved, expectedMove, expectedSize);
+			ERR("Unit::read_file: The record size header in the file says %ld bytes of data, but we expected %zu bytes.\n",
+				bytesMoved - 2, expectedSize);
+			ERR("Unit::read_file: This suggests file corruption, misalignment, or the file was written with incorrect data sizes.\n");
+			ERR("Unit::read_file: unit_id=%d, result_node_count=%d, sizeof(ResultNodeGF)=%zu\n", 
+				gf_rec.unit.unit_id, result_node_count, sizeof(ResultNodeGF));
+			mem_del(node_record_array);
+			// Ensure pointers are nullptr so deinit() doesn't try to free invalid pointers
+			result_node_array = nullptr;
+			result_node_count = 0;
 			return 0;
 		}
 		
@@ -551,10 +987,13 @@ int Unit::read_file(File* filePtr)
 	safe_free((void*&)way_point_array);
 	if( way_point_array_size > 0 )
 	{
+		long filePosBeforeWayPoints = filePtr->file_pos();
+		// MSG("Unit::read_file: Reading way_point_array, size=%d at position %ld\n", way_point_array_size, filePosBeforeWayPoints);
 		ResultNodeGF *node_record_array = (ResultNodeGF*) mem_add(sizeof(ResultNodeGF)*way_point_array_size);
 		memset(node_record_array, 0, sizeof(ResultNodeGF)*way_point_array_size); // Patch: zero-initialize
 		if( !filePtr->file_read(node_record_array, sizeof(ResultNodeGF)*way_point_array_size) )
 		{
+			ERR("Unit::read_file: Failed to read way_point_array at position %ld\n", filePosBeforeWayPoints);
 			mem_del(node_record_array);
 			return 0;
 		}
@@ -566,6 +1005,8 @@ int Unit::read_file(File* filePtr)
 			node->read_record(node_record_array+i);
 		}
 		mem_del(node_record_array);
+		long filePosAfterWayPoints = filePtr->file_pos();
+		// MSG("Unit::read_file: way_point_array read successfully (read %ld bytes)\n", filePosAfterWayPoints - filePosBeforeWayPoints);
 	}
 	//#### end alex 15/10 ####//
 
@@ -574,12 +1015,19 @@ int Unit::read_file(File* filePtr)
 	// This matches the write logic which only writes TeamInfoGF if team_info exists
 	if( gf_rec.unit.has_team_info )
 	{
-		if( filePtr->file_read(&gf_rec, sizeof(TeamInfoGF)) )
+		long filePosBeforeTeamInfo = filePtr->file_pos();
+		// MSG("Unit::read_file: Reading team_info at position %ld\n", filePosBeforeTeamInfo);
+		// Read into the team_info member of the union for consistency with write
+		if( !filePtr->file_read(&gf_rec.team_info, sizeof(TeamInfoGF)) )
 		{
-			team_info = (TeamInfo*) mem_add(sizeof(TeamInfo));
-			memset(team_info, 0, sizeof(TeamInfo)); // Patch: zero-initialize
-			team_info->read_record(&gf_rec.team_info);
+			ERR("Unit::read_file: Failed to read team_info at position %ld\n", filePosBeforeTeamInfo);
+			return 0;
 		}
+		team_info = (TeamInfo*) mem_add(sizeof(TeamInfo));
+		memset(team_info, 0, sizeof(TeamInfo)); // Patch: zero-initialize
+		team_info->read_record(&gf_rec.team_info);
+		long filePosAfterTeamInfo = filePtr->file_pos();
+		// MSG("Unit::read_file: team_info read successfully (read %ld bytes)\n", filePosAfterTeamInfo - filePosBeforeTeamInfo);
 	}
 
 	//----------- post-process the data read ----------//
@@ -610,11 +1058,23 @@ int Unit::write_derived_file(File* filePtr)
    //--- write data in derived class -----//
 
 	int writeSize = unit_array.unit_class_size(unit_id)-sizeof(Unit);
+	
+	long filePosBeforeDerived = filePtr->file_pos();
+	// MSG("Unit::write_derived_file: Writing derived class data for unit_id=%d, writeSize=%d at position %ld\n", unit_id, writeSize, filePosBeforeDerived);
 
    if( writeSize > 0 )
    {
       if( !filePtr->file_write( (char*) this + sizeof(Unit), writeSize ) )
+      {
+         ERR("Unit::write_derived_file: Failed to write %d bytes of derived class data for unit_id=%d at position %ld\n", writeSize, unit_id, filePosBeforeDerived);
          return 0;
+      }
+      long filePosAfterDerived = filePtr->file_pos();
+      // MSG("Unit::write_derived_file: Successfully wrote %ld bytes of derived class data for unit_id=%d\n", filePosAfterDerived - filePosBeforeDerived, unit_id);
+   }
+   else
+   {
+      // MSG("Unit::write_derived_file: No derived class data to write for unit_id=%d (writeSize=%d)\n", unit_id, writeSize);
    }
 
    return 1;
@@ -629,12 +1089,24 @@ int Unit::read_derived_file(File* filePtr)
 	//--- read data in derived class -----//
 
    int readSize = unit_array.unit_class_size(unit_id) - sizeof(Unit);
+   
+   long filePosBeforeDerived = filePtr->file_pos();
+   // MSG("Unit::read_derived_file: Reading derived class data for unit_id=%d, readSize=%d at position %ld\n", unit_id, readSize, filePosBeforeDerived);
 
    if( readSize > 0 )
    {
       if( !filePtr->file_read( (char*) this + sizeof(Unit), readSize ) )
+      {
+         ERR("Unit::read_derived_file: Failed to read %d bytes of derived class data for unit_id=%d at position %ld\n", readSize, unit_id, filePosBeforeDerived);
          return 0;
-	}
+      }
+      long filePosAfterDerived = filePtr->file_pos();
+      // MSG("Unit::read_derived_file: Successfully read %ld bytes of derived class data for unit_id=%d\n", filePosAfterDerived - filePosBeforeDerived, unit_id);
+   }
+   else
+   {
+      // MSG("Unit::read_derived_file: No derived class data to read for unit_id=%d (readSize=%d)\n", unit_id, readSize);
+   }
 
    return 1;
 }
@@ -645,7 +1117,8 @@ int Unit::read_derived_file(File* filePtr)
 int UnitCaravan::write_derived_file(File *filePtr)
 {
 	write_derived_record(&gf_rec.unit_caravan);
-	if( !filePtr->file_write(&gf_rec, sizeof(UnitCaravanGF)) )
+	// Write from the unit_caravan member of the union, not from the start of the union
+	if( !filePtr->file_write(&gf_rec.unit_caravan, sizeof(UnitCaravanGF)) )
 		return 0;
 	return 1;
 }
@@ -655,7 +1128,8 @@ int UnitCaravan::write_derived_file(File *filePtr)
 //--------- Begin of function UnitCaravan::read_derived_file ---------//
 int UnitCaravan::read_derived_file(File* filePtr)
 {
-	if( !filePtr->file_read(&gf_rec, sizeof(UnitCaravanGF)) )
+	// Read into the unit_caravan member of the union for consistency with write
+	if( !filePtr->file_read(&gf_rec.unit_caravan, sizeof(UnitCaravanGF)) )
 		return 0;
 	read_derived_record(&gf_rec.unit_caravan);
 	return 1;
@@ -667,7 +1141,8 @@ int UnitCaravan::read_derived_file(File* filePtr)
 int UnitExpCart::write_derived_file(File *filePtr)
 {
 	write_derived_record(&gf_rec.unit_exp_cart);
-	if( !filePtr->file_write(&gf_rec, sizeof(UnitExpCartGF)) )
+	// Write from the unit_exp_cart member of the union, not from the start of the union
+	if( !filePtr->file_write(&gf_rec.unit_exp_cart, sizeof(UnitExpCartGF)) )
 		return 0;
 	return 1;
 }
@@ -677,7 +1152,8 @@ int UnitExpCart::write_derived_file(File *filePtr)
 //--------- Begin of function UnitExpCart::read_derived_file ---------//
 int UnitExpCart::read_derived_file(File* filePtr)
 {
-	if( !filePtr->file_read(&gf_rec, sizeof(UnitExpCartGF)) )
+	// Read into the unit_exp_cart member of the union for consistency with write
+	if( !filePtr->file_read(&gf_rec.unit_exp_cart, sizeof(UnitExpCartGF)) )
 		return 0;
 	read_derived_record(&gf_rec.unit_exp_cart);
 	return 1;
@@ -689,7 +1165,8 @@ int UnitExpCart::read_derived_file(File* filePtr)
 int UnitGod::write_derived_file(File *filePtr)
 {
 	write_derived_record(&gf_rec.unit_god);
-	if( !filePtr->file_write(&gf_rec, sizeof(UnitGodGF)) )
+	// Write from the unit_god member of the union, not from the start of the union
+	if( !filePtr->file_write(&gf_rec.unit_god, sizeof(UnitGodGF)) )
 		return 0;
 	return 1;
 }
@@ -699,7 +1176,8 @@ int UnitGod::write_derived_file(File *filePtr)
 //--------- Begin of function UnitGod::read_derived_file ---------//
 int UnitGod::read_derived_file(File* filePtr)
 {
-	if( !filePtr->file_read(&gf_rec, sizeof(UnitGodGF)) )
+	// Read into the unit_god member of the union for consistency with write
+	if( !filePtr->file_read(&gf_rec.unit_god, sizeof(UnitGodGF)) )
 		return 0;
 	read_derived_record(&gf_rec.unit_god);
 	return 1;
@@ -711,7 +1189,8 @@ int UnitGod::read_derived_file(File* filePtr)
 int UnitMarine::write_derived_file(File *filePtr)
 {
 	write_derived_record(&gf_rec.unit_marine);
-	if( !filePtr->file_write(&gf_rec, sizeof(UnitMarineGF)) )
+	// Write from the unit_marine member of the union, not from the start of the union
+	if( !filePtr->file_write(&gf_rec.unit_marine, sizeof(UnitMarineGF)) )
 		return 0;
 	return 1;
 }
@@ -721,7 +1200,8 @@ int UnitMarine::write_derived_file(File *filePtr)
 //--------- Begin of function UnitMarine::read_derived_file ---------//
 int UnitMarine::read_derived_file(File* filePtr)
 {
-	if( !filePtr->file_read(&gf_rec, sizeof(UnitMarineGF)) )
+	// Read into the unit_marine member of the union for consistency with write
+	if( !filePtr->file_read(&gf_rec.unit_marine, sizeof(UnitMarineGF)) )
 		return 0;
 	read_derived_record(&gf_rec.unit_marine);
 
@@ -738,7 +1218,8 @@ int UnitMarine::read_derived_file(File* filePtr)
 int UnitMonster::write_derived_file(File *filePtr)
 {
 	write_derived_record(&gf_rec.unit_monster);
-	if( !filePtr->file_write(&gf_rec, sizeof(UnitMonsterGF)) )
+	// Write from the unit_monster member of the union, not from the start of the union
+	if( !filePtr->file_write(&gf_rec.unit_monster, sizeof(UnitMonsterGF)) )
 		return 0;
 	return 1;
 }
@@ -748,7 +1229,8 @@ int UnitMonster::write_derived_file(File *filePtr)
 //--------- Begin of function UnitMonster::read_derived_file ---------//
 int UnitMonster::read_derived_file(File* filePtr)
 {
-	if( !filePtr->file_read(&gf_rec, sizeof(UnitMonsterGF)) )
+	// Read into the unit_monster member of the union for consistency with write
+	if( !filePtr->file_read(&gf_rec.unit_monster, sizeof(UnitMonsterGF)) )
 		return 0;
 	read_derived_record(&gf_rec.unit_monster);
 	return 1;
@@ -760,7 +1242,8 @@ int UnitMonster::read_derived_file(File* filePtr)
 int UnitVehicle::write_derived_file(File *filePtr)
 {
 	write_derived_record(&gf_rec.unit_vehicle);
-	if( !filePtr->file_write(&gf_rec, sizeof(UnitVehicleGF)) )
+	// Write from the unit_vehicle member of the union, not from the start of the union
+	if( !filePtr->file_write(&gf_rec.unit_vehicle, sizeof(UnitVehicleGF)) )
 		return 0;
 	return 1;
 }
@@ -770,7 +1253,8 @@ int UnitVehicle::write_derived_file(File *filePtr)
 //--------- Begin of function UnitVehicle::read_derived_file ---------//
 int UnitVehicle::read_derived_file(File* filePtr)
 {
-	if( !filePtr->file_read(&gf_rec, sizeof(UnitVehicleGF)) )
+	// Read into the unit_vehicle member of the union for consistency with write
+	if( !filePtr->file_read(&gf_rec.unit_vehicle, sizeof(UnitVehicleGF)) )
 		return 0;
 	read_derived_record(&gf_rec.unit_vehicle);
 	return 1;
@@ -1642,7 +2126,8 @@ int TownArray::write_file(File* filePtr)
 	filePtr->file_put_short( size()  );  // no. of towns in town_array
 	filePtr->file_put_short( selected_recno );
 	write_record(&gf_rec.town_array);
-	filePtr->file_write(&gf_rec, sizeof(TownArrayGF));
+	if (!filePtr->file_write(&gf_rec, sizeof(TownArrayGF)))
+		return 0;
 
 	filePtr->file_put_short( Town::if_town_recno );
 
@@ -1693,12 +2178,14 @@ int TownArray::read_file(File* filePtr)
 
 	if(!game_file_array.same_version)
 	{
-		filePtr->file_read(&gf_rec, sizeof(Version_1_TownArrayGF));
+		if (!filePtr->file_read(&gf_rec, sizeof(Version_1_TownArrayGF)))
+			return 0;
 		read_record_v1(&gf_rec.town_array_v1);
 	}
 	else
 	{
-		filePtr->file_read(&gf_rec, sizeof(TownArrayGF));
+		if (!filePtr->file_read(&gf_rec, sizeof(TownArrayGF)))
+			return 0;
 		read_record(&gf_rec.town_array);
 	}
 
@@ -1957,7 +2444,10 @@ static void write_ai_info(File* filePtr, short* aiInfoArray, short aiInfoCount, 
 {
 	filePtr->file_put_short( aiInfoCount );
 	filePtr->file_put_short( aiInfoSize  );
-	filePtr->file_put_short_array( aiInfoArray, aiInfoCount );
+	if( aiInfoCount > 0 && aiInfoArray )
+	{
+		filePtr->file_put_short_array( aiInfoArray, aiInfoCount );
+	}
 }
 //----------- End of static function write_ai_info ---------//
 
@@ -2059,7 +2549,15 @@ static void read_ai_info(File* filePtr, short** aiInfoArrayPtr, short& aiInfoCou
 	if (actualSize > 0) {
 		*aiInfoArrayPtr = (short*) mem_add(actualSize * sizeof(short));
 		if (*aiInfoArrayPtr) {
-			filePtr->file_get_short_array(*aiInfoArrayPtr, actualSize);
+			if( !filePtr->file_get_short_array((int16_t*)*aiInfoArrayPtr, actualSize) )
+			{
+				// If read fails, clean up
+				mem_del(*aiInfoArrayPtr);
+				*aiInfoArrayPtr = nullptr;
+				aiInfoCount = 0;
+				aiInfoSize = 0;
+				return;
+			}
 		} else {
 			aiInfoCount = 0;
 			aiInfoSize = 0;
@@ -2625,7 +3123,8 @@ int NewsArray::write_file(File* filePtr)
 {
 	//----- save news_array parameters -----//
 
-	filePtr->file_write(news_type_option, sizeof(news_type_option));
+	if (!filePtr->file_write(news_type_option, sizeof(news_type_option)))
+		return 0;
 
 	filePtr->file_put_short(news_who_option);
 	filePtr->file_put_long(last_clear_recno);
@@ -2663,7 +3162,8 @@ int NewsArray::read_file(File* filePtr)
 {
 	//----- read news_array parameters -----//
 
-	filePtr->file_read(news_type_option, sizeof(news_type_option));
+	if (!filePtr->file_read(news_type_option, sizeof(news_type_option)))
+		return 0;
 
 	news_who_option   = (char) filePtr->file_get_short();
 	last_clear_recno  = filePtr->file_get_long();

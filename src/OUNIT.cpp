@@ -317,8 +317,19 @@ void Unit::deinit_unit_id()
       return;
 
    //-----------------------------------------//
+   // Defensive: Validate unit_id before accessing unit_res
+   if( !unit_id || unit_id < 1 || unit_id > unit_res.unit_info_count )
+   {
+      // Invalid unit_id - skip cleanup to prevent crash
+      return;
+   }
 
    UnitInfo *unitInfo = unit_res[unit_id];
+   if( !unitInfo )
+   {
+      // unitInfo is NULL - skip cleanup
+      return;
+   }
 
    if( nation_recno )
    {
@@ -352,7 +363,7 @@ void Unit::deinit_unit_id()
 
 	//--------- decrease monster count ----------//
 
-	if( unit_res[unit_id]->unit_class == UNIT_CLASS_MONSTER )
+	if( unitInfo->unit_class == UNIT_CLASS_MONSTER )
 	{
 		unit_res.mobile_monster_count--;
 
@@ -435,18 +446,29 @@ void Unit::init_sprite(int startXLoc, int startYLoc)
 
 void Unit::deinit()
 {
-	if (result_node_array && result_node_array != (ResultNode*)0xdeadbeef) {
-		mem_del(result_node_array);
-		result_node_array = nullptr;
-	}
-	if (way_point_array && way_point_array != (ResultNode*)0xdeadbeef) {
-		mem_del(way_point_array);
-		way_point_array = nullptr;
-	}
-	if (team_info && team_info != (TeamInfo*)0xdeadbeef) {
-		mem_del(team_info);
-		team_info = nullptr;
-	}
+	// Defensive: Safe pointer validation and freeing
+	// Only free pointers that are valid (not nullptr, not 0xdeadbeef, not small integers)
+	// Pointers allocated by mem_add should be in a reasonable heap range
+	auto safe_free = [](void*& ptr) {
+		if (ptr && ptr != (void*)0xdeadbeef && (uintptr_t)ptr > 0x1000) {
+			// Note: mem_del() will abort if pointer is not found in tracking table
+			// This is by design to catch memory corruption bugs
+			// If we get here with an invalid pointer, it indicates a serious bug
+			mem_del(ptr);
+		}
+		ptr = nullptr;
+	};
+
+	safe_free((void*&)result_node_array);
+	safe_free((void*&)way_point_array);
+	safe_free((void*&)team_info);
+	
+	// Reset counts to maintain consistency (defensive - unit is being destroyed anyway)
+	result_node_count = 0;
+	result_node_recno = 0;
+	result_path_dist = 0;
+	way_point_array_size = 0;
+	way_point_count = 0;
 
 	err_when( unit_array.is_truly_deleted(sprite_recno) );
 
@@ -470,12 +492,10 @@ void Unit::deinit()
    }
 
    //------------ free up team_info -----------//
-
-   if( team_info )
-   {
-      mem_del(team_info);
-      team_info = nullptr;
-   }
+   // Note: team_info is already freed at the beginning of deinit() if it exists
+   // This section is kept for backward compatibility but should not execute
+   // (team_info should be nullptr by now)
+   // Removed duplicate free to prevent double-free crashes
 
    //---- if this is a general, deinit its link with its soldiers ----//
    //
@@ -727,13 +747,23 @@ void Unit::king_die()
 {
    //--------- add news ---------//
 
+   // Safety check: make sure nation_recno is valid before accessing nation_array
+   if( !nation_recno || nation_array.is_deleted(nation_recno) )
+   {
+      // Nation doesn't exist or is invalid - skip king_die processing
+      // This can happen during cleanup after a failed load
+      return;
+   }
+
    news_array.king_die(nation_recno);
 
    //--- see if the units, firms and towns of the nation are all destroyed ---//
 
    Nation* nationPtr = nation_array[nation_recno];
-
-	nationPtr->king_unit_recno = 0;
+   if( nationPtr )
+   {
+      nationPtr->king_unit_recno = 0;
+   }
 }
 //----------- End of function Unit::king_die -----------//
 

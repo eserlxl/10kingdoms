@@ -1341,6 +1341,8 @@ void Unit::next_move()
 
       mem_del(result_node_array);
       result_node_array = nullptr;
+      result_node_count = 0;  // Reset count to maintain consistency with nullptr array
+      result_node_recno = 0;  // Reset recno for consistency
 		set_idle();
 		
 		if(action_mode2==ACTION_MOVE) //--------- used to terminate action_mode==ACTION_MOVE

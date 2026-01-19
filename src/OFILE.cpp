@@ -50,15 +50,21 @@ DBGLOG_DEFAULT_CHANNEL(File);
 //
 int File::file_open(const char* fileName, int handleError, int fileType)
 {
+	// MSG("file_open: Attempting to open file '%s' (handleError=%d, fileType=%d)\n", fileName, handleError, fileType);
+	
 	if(strlen(fileName) >= FilePath::MAX_FILE_PATH)
 	{
+		ERR("file_open: File name too long (%zu >= %d)\n", strlen(fileName), FilePath::MAX_FILE_PATH);
 		if (handleError)
 			err.run("File : file name is too long.");
 		return 0;
 	}
 
 	if (file_handle != NULL)
+	{
+		// MSG("file_open: Closing previously open file\n");
 		file_close();
+	}
 
 	strcpy(file_name, fileName);
 	handle_error = handleError;
@@ -67,11 +73,14 @@ int File::file_open(const char* fileName, int handleError, int fileType)
 	file_handle = fopen(fileName, "rb");
 	if (!file_handle)
 	{
+		ERR("file_open: Failed to open file '%s': %s (errno=%d)\n", fileName, strerror(errno), errno);
 		if (handleError)
 			err.run("[File::file_open] error opening file %s: %s\n", fileName, strerror(errno));
 		return 0;
 	}
 
+	long fileSize = file_size();
+	// MSG("file_open: Successfully opened file '%s', size=%ld bytes\n", fileName, fileSize);
 	return 1;
 }
 //---------- End of function File::file_open ----------//
@@ -153,6 +162,8 @@ int File::file_write(void* dataBuf, unsigned dataSize)
 {
 	err_when(!file_handle);
 
+	long filePosBefore = file_pos();
+	
 	if (file_type == File::STRUCTURED)
 	{
 		// writing record size
@@ -163,15 +174,45 @@ int File::file_write(void* dataBuf, unsigned dataSize)
 			// correctly read though (if proper data size will be
 			// specified when calling successive file_read).
 			file_put_unsigned_short(0);
-			MSG("[File::file_write] warning: record size exceeds uint16 MAX value\n");
+			// MSG("[File::file_write] warning: record size exceeds uint16 MAX value\n");
 		}
 		else
 		{
+			// MSG("[File::file_write] Writing record size header: %u bytes at position %ld\n", dataSize, filePosBefore);
 			file_put_unsigned_short(dataSize);
+			// Verify the header was written correctly by checking file position
+			long filePosAfterHeader = file_pos();
+			if( filePosAfterHeader != filePosBefore + 2 )
+			{
+				ERR("[File::file_write] Header write verification failed! Position moved %ld bytes (expected 2) at %ld\n",
+					filePosAfterHeader - filePosBefore, filePosBefore);
+			}
+		}
+		
+		// Check if header write failed
+		if (ferror(file_handle))
+		{
+			if (handle_error)
+				err.run("[File::file_write] error occurred while writing record size header to file: %s\n", file_name);
+			else
+				ERR("[File::file_write] error occurred while writing record size header to file: %s\n", file_name);
+			return 0;
 		}
 	}
 
-	fwrite(dataBuf, 1, dataSize, file_handle);
+	size_t bytesWritten = fwrite(dataBuf, 1, dataSize, file_handle);
+
+	// Defensive: Check if fwrite wrote all requested bytes
+	if (bytesWritten != dataSize)
+	{
+		ERR("[File::file_write] Partial write detected! Wrote %zu bytes but requested %u bytes at position %ld in file: %s\n",
+			bytesWritten, dataSize, filePosBefore, file_name);
+		if (handle_error)
+			err.run("[File::file_write] partial write: %zu/%u bytes written to file: %s\n", bytesWritten, dataSize, file_name);
+		else
+			ERR("[File::file_write] partial write: %zu/%u bytes written to file: %s\n", bytesWritten, dataSize, file_name);
+		return 0;
+	}
 
 	if (ferror(file_handle))
 	{
@@ -200,7 +241,12 @@ int File::file_read(void* dataBuf, unsigned dataSize)
 {
 	err_when(!file_handle);
 
+	long filePosBefore = file_pos();
 	unsigned bytesToRead = dataSize, recordSize = dataSize;
+	
+	// Maximum reasonable record size: 10MB (should be much smaller for game data)
+	// This is used for validation to detect corrupted record sizes
+	static const unsigned MAX_REASONABLE_RECORD_SIZE = 10 * 1024 * 1024;
 
 	if (file_type == File::STRUCTURED)
 	{
@@ -208,23 +254,89 @@ int File::file_read(void* dataBuf, unsigned dataSize)
 		// Add error checking to prevent uninitialized value usage
 		if (ferror(file_handle) || feof(file_handle))
 		{
+			ERR("file_read: Error reading record size from file '%s' at position %ld\n", file_name, filePosBefore);
 			if (handle_error)
 				err.run("[File::file_read] error occurred while reading record size from file: %s\n", file_name);
 			else
 				ERR("[File::file_read] error occurred while reading record size from file: %s\n", file_name);
 			return 0;
 		}
+		
+		// Validate recordSize - it should be reasonable
+		// If recordSize is 0, it means the actual size > 0xFFFF, so use dataSize
+		// If recordSize is corrupted (unreasonably large), reject it
+		if (recordSize > 0 && recordSize > MAX_REASONABLE_RECORD_SIZE)
+		{
+			ERR("file_read: Corrupted record size %u (0x%x) at position %ld - exceeds maximum reasonable size %u (requested %u bytes)\n", 
+				recordSize, recordSize, filePosBefore, MAX_REASONABLE_RECORD_SIZE, dataSize);
+			if (handle_error)
+				err.run("[File::file_read] corrupted record size %u in file: %s\n", recordSize, file_name);
+			return 0;
+		}
+		
+		// Also check if recordSize is suspiciously large compared to what we requested
+		// If it's more than 100x larger, it's likely corrupted
+		if (recordSize > 0 && dataSize > 0 && recordSize > dataSize * 100)
+		{
+			ERR("file_read: Suspicious record size %u at position %ld - %u times larger than requested %u bytes\n", 
+				recordSize, filePosBefore, recordSize / dataSize, dataSize);
+			if (handle_error)
+				err.run("[File::file_read] suspicious record size %u (requested %u) in file: %s\n", recordSize, dataSize, file_name);
+			return 0;
+		}
+		
+		// Defensive: Check if record size significantly differs from expected (indicates corruption/misalignment)
+		// If recordSize < dataSize, we can't read enough data - this is a fatal error
+		// If recordSize > dataSize, we can read dataSize bytes and skip the rest - this is recoverable
+		// Allow small tolerance (up to 2 bytes) for minor format differences
+		if (recordSize > 0 && dataSize > 0)
+		{
+			if (recordSize < dataSize)
+			{
+				// Not enough data in the record - fatal error
+				unsigned diff = dataSize - recordSize;
+				ERR("file_read: Record size too small at position %ld - file has %u bytes but we expected %u bytes (missing: %u)\n", 
+					filePosBefore, recordSize, dataSize, diff);
+				ERR("file_read: This suggests file corruption, truncation, or the file was written with incorrect data sizes.\n");
+				if (handle_error)
+					err.run("[File::file_read] record size too small %u vs %u in file: %s\n", recordSize, dataSize, file_name);
+				return 0;
+			}
+			else if (recordSize > dataSize)
+			{
+				// More data than expected - warn but allow recovery by reading dataSize and skipping the rest
+				unsigned diff = recordSize - dataSize;
+				if (diff > 2 && diff > dataSize * 0.1) // More than 2 bytes and more than 10% difference
+				{
+					ERR("file_read: Record size larger than expected at position %ld - file has %u bytes but we expected %u bytes (extra: %u)\n", 
+						filePosBefore, recordSize, dataSize, diff);
+					ERR("file_read: This suggests file corruption, misalignment, or the file was written with incorrect data sizes.\n");
+					ERR("file_read: Attempting recovery by reading %u bytes and skipping the remaining %u bytes.\n", dataSize, diff);
+					// Don't return 0 - allow recovery by reading dataSize bytes and skipping the rest
+				}
+			}
+		}
+		
 		if (recordSize && recordSize < dataSize) // recordSize==0, if the size > 0xFFFF
 			bytesToRead = recordSize; // the read size is the minimum of the record size and the supposed read size
+		// MSG("file_read: Reading structured record (requested=%u, recordSize=%u, bytesToRead=%u) at position %ld\n", 
+		// 	dataSize, recordSize, bytesToRead, filePosBefore);
+	}
+	else
+	{
+		// MSG("file_read: Reading %u bytes at position %ld\n", dataSize, filePosBefore);
 	}
 
-	fread(dataBuf, 1, bytesToRead, file_handle);
+	size_t itemsRead = fread(dataBuf, 1, bytesToRead, file_handle);
 
 	// In the case of file_type == File::STRUCTURED
 	// if the record was read partially,
 	// skip remaining bytes in record and seek to next one
 	if (bytesToRead < recordSize)
-		file_seek(recordSize - bytesToRead, SEEK_CUR);
+	{
+		if (file_seek(recordSize - bytesToRead, SEEK_CUR) < 0)
+			return 0;
+	}
 
 	// In the case of file_type == File::STRUCTURED
 	// if the actual record size was smaller than requested data size,
@@ -234,6 +346,8 @@ int File::file_read(void* dataBuf, unsigned dataSize)
 
 	if (ferror(file_handle))
 	{
+		ERR("file_read: Error occurred while reading file '%s' at position %ld (read %zu of %u bytes)\n", 
+			file_name, filePosBefore, itemsRead, bytesToRead);
 		// This used to prompt for a retry -- was this necessary?
 		if (handle_error)
 			err.run("[File::file_read] error occurred while reading file: %s\n", file_name);
@@ -242,6 +356,15 @@ int File::file_read(void* dataBuf, unsigned dataSize)
 		return 0;
 	}
 
+	if (itemsRead != bytesToRead)
+	{
+		ERR("file_read: Short read from file '%s' at position %ld (read %zu of %u bytes)\n", 
+			file_name, filePosBefore, itemsRead, bytesToRead);
+		return 0;
+	}
+
+	long filePosAfter = file_pos();
+	// MSG("file_read: Successfully read %zu bytes (position %ld -> %ld)\n", itemsRead, filePosBefore, filePosAfter);
 	return 1;
 }
 //---------- End of function File::file_read ----------//
@@ -388,9 +511,35 @@ int File::file_get_short_array(int16_t *in, int count)
 	unsigned arrayBytes = count*sizeof(int16_t);
 	unsigned bytesToRead = arrayBytes;
 	unsigned recordBytes = arrayBytes;
+	
+	// Maximum reasonable record size: 10MB (should be much smaller for game data)
+	// This is used for validation to detect corrupted record sizes
+	static const unsigned MAX_REASONABLE_RECORD_SIZE = 10 * 1024 * 1024;
+	
 	if( file_type == File::STRUCTURED )
 	{
 		recordBytes = file_get_unsigned_short();
+		
+		// Validate recordBytes - it should be reasonable
+		if (recordBytes > 0 && recordBytes > MAX_REASONABLE_RECORD_SIZE)
+		{
+			ERR("file_get_short_array: Corrupted record size %u (0x%x) - exceeds maximum reasonable size %u\n", 
+				recordBytes, recordBytes, MAX_REASONABLE_RECORD_SIZE);
+			if (handle_error)
+				err.run("[File::file_get_short_array] corrupted record size %u in file: %s\n", recordBytes, file_name);
+			return 0;
+		}
+		
+		// Also check if recordBytes is suspiciously large compared to what we requested
+		if (recordBytes > 0 && arrayBytes > 0 && recordBytes > arrayBytes * 100)
+		{
+			ERR("file_get_short_array: Suspicious record size %u - %u times larger than requested %u bytes\n", 
+				recordBytes, recordBytes / arrayBytes, arrayBytes);
+			if (handle_error)
+				err.run("[File::file_get_short_array] suspicious record size %u (requested %u) in file: %s\n", recordBytes, arrayBytes, file_name);
+			return 0;
+		}
+		
 		bytesToRead = MIN(arrayBytes, recordBytes);
 	}
 
@@ -400,7 +549,10 @@ int File::file_get_short_array(int16_t *in, int count)
 	//-------- if the data size has been reduced ----------//
 
 	if( bytesToRead < recordBytes )
-		file_seek(recordBytes - bytesToRead, SEEK_CUR);
+	{
+		if (file_seek(recordBytes - bytesToRead, SEEK_CUR) < 0)
+			return 0;
+	}
 
 	//---- if the data size has been increased, reset the unread area ---//
 
