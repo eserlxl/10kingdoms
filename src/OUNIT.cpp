@@ -885,7 +885,7 @@ int Unit::is_own()
 //
 int Unit::is_own_spy()
 {
-   return spy_recno && spy_array[spy_recno]->true_nation_recno == nation_array.player_recno;
+   return spy_recno && !spy_array.is_deleted(spy_recno) && spy_array[spy_recno]->true_nation_recno == nation_array.player_recno;
 }
 //----------- End of function Unit::is_own_spy ---------//
 
@@ -899,7 +899,7 @@ int Unit::is_nation(int nationRecno)
    if( nation_recno == nationRecno )
       return 1;
 
-   if( spy_recno && spy_array[spy_recno]->true_nation_recno == nationRecno )
+   if( spy_recno && !spy_array.is_deleted(spy_recno) && spy_array[spy_recno]->true_nation_recno == nationRecno )
       return 1;
 
    return 0;
@@ -924,7 +924,7 @@ int Unit::is_civilian()
 //
 int Unit::true_nation_recno()
 {
-   if( spy_recno )
+   if( spy_recno && !spy_array.is_deleted(spy_recno) )
       return spy_array[spy_recno]->true_nation_recno;
    else
       return nation_recno;
