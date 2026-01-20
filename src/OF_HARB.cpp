@@ -1089,6 +1089,10 @@ void FirmHarbor::sail_ship(int unitRecno, char remoteAction)
 
 	//------------------------------------------------------------//
 
+	// Check if unit exists before accessing it (may be deleted during deinit)
+	if( unit_array.is_deleted(unitRecno) || unit_array.is_truly_deleted(unitRecno) )
+		return;
+
 	Unit* unitPtr = unit_array[unitRecno];
 
 	err_when( unitPtr->unit_mode != UNIT_MODE_IN_HARBOR || unitPtr->unit_mode_para != firm_recno );
@@ -1230,6 +1234,31 @@ void FirmHarbor::add_hosted_ship(int shipRecno)
 void FirmHarbor::del_hosted_ship(int delUnitRecno)
 {
 	//---- reset the unit_mode of the ship ----//
+
+	// Check if unit exists before accessing it (may be deleted during deinit)
+	if( unit_array.is_deleted(delUnitRecno) || unit_array.is_truly_deleted(delUnitRecno) )
+	{
+		// Unit already deleted, just remove from array
+		int i;
+		for( i=0 ; i<ship_count ; i++ )
+		{
+			if( ship_recno_array[i] == delUnitRecno )
+			{
+				err_when( ship_count > MAX_SHIP_IN_HARBOR );
+
+				misc.del_array_rec( ship_recno_array, ship_count, sizeof(ship_recno_array[0]), i+1 );
+				break;
+			}
+		}
+
+		if( i < ship_count )
+			ship_count--;
+
+		if( firm_recno == firm_array.selected_recno )
+			put_info(INFO_UPDATE);
+
+		return;
+	}
 
 	unit_array[delUnitRecno]->set_mode(0);
 
