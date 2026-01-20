@@ -176,35 +176,56 @@ void World::spread_fire(Weather &w)
 				// ------- burn units ---------//
 				else if( locPtr->has_unit(UNIT_LAND))
 				{
-					targetUnit = unit_array[locPtr->unit_recno(UNIT_LAND)];
-					targetUnit->hit_points -= (float)2.0*flameDamage;
-					if( targetUnit->hit_points <= 0 )
-						targetUnit->hit_points = (float) 0;
+					int unitRecno = locPtr->unit_recno(UNIT_LAND);
+					if( unitRecno > 0 && !unit_array.is_deleted(unitRecno) )
+					{
+						targetUnit = unit_array[unitRecno];
+						if( targetUnit )
+						{
+							targetUnit->hit_points -= (float)2.0*flameDamage;
+							if( targetUnit->hit_points <= 0 )
+								targetUnit->hit_points = (float) 0;
+						}
+					}
 				}
 				else if( locPtr->has_unit(UNIT_SEA))
 				{
-					targetUnit = unit_array[locPtr->unit_recno(UNIT_SEA)];
-					targetUnit->hit_points -= (float)2.0*flameDamage;
-					if( targetUnit->hit_points <= 0 )
-						targetUnit->hit_points = (float) 0;
-				}
-				else if( locPtr->is_firm() && firm_res[firm_array[locPtr->firm_recno()]->firm_id]->buildable)
-				{
-					Firm *targetFirm = firm_array[locPtr->firm_recno()];
-					//### begin alex 6/8 ###//
-					#ifdef DEBUG
-					if(debug_sim_game_type!=2)
-					#endif
-					//#### end alex 6/8 ####//
-					targetFirm->hit_points -= flameDamage;
-					if( targetFirm->hit_points <= 0)
+					int unitRecno = locPtr->unit_recno(UNIT_SEA);
+					if( unitRecno > 0 && !unit_array.is_deleted(unitRecno) )
 					{
-						targetFirm->hit_points = (float) 0;
-						// ###### begin Gilbert 29/5 ########//
-						se_res.sound(targetFirm->center_x, targetFirm->center_y, 1,
-							'F', targetFirm->firm_id, "DIE" );
-						// ###### end Gilbert 29/5 ########//
-						firm_array.del_firm(locPtr->firm_recno());
+						targetUnit = unit_array[unitRecno];
+						if( targetUnit )
+						{
+							targetUnit->hit_points -= (float)2.0*flameDamage;
+							if( targetUnit->hit_points <= 0 )
+								targetUnit->hit_points = (float) 0;
+						}
+					}
+				}
+				else if( locPtr->is_firm() )
+				{
+					int firmRecno = locPtr->firm_recno();
+					if( firmRecno > 0 && !firm_array.is_deleted(firmRecno) )
+					{
+						Firm *targetFirm = firm_array[firmRecno];
+						if( targetFirm && firm_res[targetFirm->firm_id]->buildable )
+						{
+							//### begin alex 6/8 ###//
+							#ifdef DEBUG
+							if(debug_sim_game_type!=2)
+							#endif
+							//#### end alex 6/8 ####//
+							targetFirm->hit_points -= flameDamage;
+							if( targetFirm->hit_points <= 0)
+							{
+								targetFirm->hit_points = (float) 0;
+								// ###### begin Gilbert 29/5 ########//
+								se_res.sound(targetFirm->center_x, targetFirm->center_y, 1,
+									'F', targetFirm->firm_id, "DIE" );
+								// ###### end Gilbert 29/5 ########//
+								firm_array.del_firm(firmRecno);
+							}
+						}
 					}
 				}
 
