@@ -146,9 +146,14 @@ void World::spread_fire(Weather &w)
 	// -------------update fire_level-----------
 	for( y = scan_fire_y; y < max_y_loc; y += SCAN_FIRE_DIST)
 	{
-		locPtr = get_loc(scan_fire_x,y);
-		for( x = scan_fire_x; x < max_x_loc; x += SCAN_FIRE_DIST, locPtr+=SCAN_FIRE_DIST)
+		for( x = scan_fire_x; x < max_x_loc; x += SCAN_FIRE_DIST)
 		{
+			locPtr = get_loc(x, y);
+			if( !locPtr )
+			{
+				ERR("World::spread_fire: get_loc(%d,%d) returned NULL\n", x, y);
+				continue;
+			}
 			char oldFireValue = fireValue = locPtr->fire_str();
 			char flammability = locPtr->fire_src();
 
@@ -208,28 +213,32 @@ void World::spread_fire(Weather &w)
 
 					Location *sidePtr;
 					// spread of north square
-					if( y>0 && (sidePtr = get_loc(x,y-1))->fire_src() >0
+					if( y>0 && (sidePtr = get_loc(x,y-1)) != NULL
+						&& sidePtr->fire_src() >0
 						&& sidePtr->fire_str() <= 0)
 					{
 						sidePtr->add_fire_str(bound_zero(char(SPREAD_RATE+windCos)));
 					}
 
 					// spread of south square
-					if( y<max_y_loc-1 && (sidePtr = get_loc(x,y+1))->fire_src() >0
+					if( y<max_y_loc-1 && (sidePtr = get_loc(x,y+1)) != NULL
+						&& sidePtr->fire_src() >0
 						&& sidePtr->fire_str() <= 0)
 					{
 						sidePtr->add_fire_str(bound_zero(char(SPREAD_RATE-windCos)));
 					}
 
 					// spread of east square
-					if( x<max_x_loc-1 && (sidePtr = get_loc(x+1,y))->fire_src() >0
+					if( x<max_x_loc-1 && (sidePtr = get_loc(x+1,y)) != NULL
+						&& sidePtr->fire_src() >0
 						&& sidePtr->fire_str() <= 0)
 					{
 						sidePtr->add_fire_str(bound_zero(char(SPREAD_RATE+windSin)));
 					}
 
 					// spread of west square
-					if( x>0 && (sidePtr = get_loc(x-1,y))->fire_src() >0
+					if( x>0 && (sidePtr = get_loc(x-1,y)) != NULL
+						&& sidePtr->fire_src() >0
 						&& sidePtr->fire_str() <= 0)
 					{
 						sidePtr->add_fire_str(bound_zero(char(SPREAD_RATE-windSin)));
