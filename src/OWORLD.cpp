@@ -816,10 +816,14 @@ int World::locate_space(int* pxLoc1, int* pyLoc1, int xLoc2, int yLoc2,
 {
 	int &xLoc1 = *pxLoc1, &yLoc1 = *pyLoc1;
 
-	if( !regionId )
-		regionId = get_loc(xLoc1, yLoc1)->region_id;
+	Location* startLoc = get_loc(xLoc1, yLoc1);
+	if( !startLoc )
+		return 0;  // Invalid coordinates or world not initialized
 
-	int isPlateau = get_loc(xLoc1, yLoc1)->is_plateau();
+	if( !regionId )
+		regionId = startLoc->region_id;
+
+	int isPlateau = startLoc->is_plateau();
 
 	//-----------------------------------------------------------//
 	// xLoc, yLoc is the adjusted upper left corner location of

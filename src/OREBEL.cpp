@@ -639,6 +639,8 @@ int Rebel::think_settle_new()
 	//------- get the leader unit's info -----------//
 
 	Unit* leaderUnit = unit_array[leader_unit_recno];
+	if( !leaderUnit )
+		return 0;  // Leader unit not found
 
 	int   leaderXLoc=leaderUnit->cur_x_loc(), leaderYLoc=leaderUnit->cur_y_loc();
 
