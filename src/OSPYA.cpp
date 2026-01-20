@@ -586,6 +586,8 @@ int SpyArray::catch_spy(int spyPlace, int spyPlacePara)
 			continue;
 
 		spyPtr = spy_array[i];
+		if( !spyPtr )		// defensive check: ensure spy pointer is valid
+			continue;
 
 		if( spyPtr->spy_place == spyPlace &&
 			 spyPtr->spy_place_para == spyPlacePara )
@@ -612,6 +614,8 @@ int SpyArray::catch_spy(int spyPlace, int spyPlacePara)
 			continue;
 
 		spyPtr = spy_array[i];
+		if( !spyPtr )		// defensive check: ensure spy pointer is valid
+			continue;
 
 		if( spyPtr->action_mode == SPY_IDLE )		// it is very hard to get caught in sleep mode
 			continue;
