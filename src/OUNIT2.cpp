@@ -371,6 +371,10 @@ void Unit::resume_original_attack_action()
 //
 void Unit::ask_team_help_attack(Unit* attackerUnit)
 {
+	// Defensive check: ensure attackerUnit is valid before accessing
+	if(!attackerUnit)
+		return;
+	
 	//--- if the attacking unit is our unit (this can happen if the unit is porcupine) ---//
 
 	if( attackerUnit->nation_recno == nation_recno )
@@ -412,8 +416,12 @@ void Unit::ask_team_help_attack(Unit* attackerUnit)
 
 			if( unitPtr->cur_action==SPRITE_IDLE && unitPtr->is_visible() )
 			{
-				unitPtr->attack_unit(attackerUnit->sprite_recno);
-				return;
+				// Defensive check: ensure attackerUnit is still valid before calling attack_unit
+				if(attackerUnit && !unit_array.is_deleted(attackerUnit->sprite_recno))
+				{
+					unitPtr->attack_unit(attackerUnit->sprite_recno);
+					return;
+				}
 			}
 
 			if( config_adv.unit_ai_team_help && (unitPtr->ai_unit||!nation_recno) &&
@@ -425,8 +433,12 @@ void Unit::ask_team_help_attack(Unit* attackerUnit)
 				unitPtr->action_mode==ACTION_SETTLE)
 				)
 			{
-				unitPtr->attack_unit(attackerUnit->sprite_recno);
-				return;
+				// Defensive check: ensure attackerUnit is still valid before calling attack_unit
+				if(attackerUnit && !unit_array.is_deleted(attackerUnit->sprite_recno))
+				{
+					unitPtr->attack_unit(attackerUnit->sprite_recno);
+					return;
+				}
 			}
 		}
 	}

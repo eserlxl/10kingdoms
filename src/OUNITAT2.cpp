@@ -117,8 +117,15 @@ void Unit::attack_unit(int targetXLoc, int targetYLoc, int xOffset, int yOffset,
 
 	if(targetMobileType)
 	{
-		Unit *targetUnit = unit_array[locPtr->unit_recno(targetMobileType)];
-		attack_unit(targetUnit->sprite_recno, xOffset, yOffset, resetBlockedEdge);
+		short targetUnitRecno = locPtr->unit_recno(targetMobileType);
+		if(targetUnitRecno > 0 && !unit_array.is_deleted(targetUnitRecno))
+		{
+			Unit *targetUnit = unit_array[targetUnitRecno];
+			if(targetUnit)
+			{
+				attack_unit(targetUnit->sprite_recno, xOffset, yOffset, resetBlockedEdge);
+			}
+		}
 	}
 
 	//------ set ai_original_target_?_loc --------//
@@ -171,14 +178,35 @@ void Unit::attack_unit(short targetRecno, int xOffset, int yOffset, int resetBlo
 	//----------------------------------------------------------------------------------//
 	int curXLoc = next_x_loc();
 	int curYLoc = next_y_loc();
-	err_when(unit_array.is_deleted(targetRecno));
+	
+	// Defensive check: validate targetRecno before accessing
+	if(targetRecno <= 0 || unit_array.is_deleted(targetRecno))
+	{
+		stop2(KEEP_DEFENSE_MODE);
+		return;
+	}
+	
 	Unit	*targetUnit = unit_array[targetRecno];
+	
+	// Defensive check: ensure targetUnit is valid before dereferencing
+	if(!targetUnit)
+	{
+		stop2(KEEP_DEFENSE_MODE);
+		return;
+	}
+	
 	char	targetMobileType = targetUnit->mobile_type;
 	int	targetXLoc = targetUnit->next_x_loc();
 	int	targetYLoc = targetUnit->next_y_loc();
 	int	diffTerritoryAttack = 0, maxRange=0;
 	Location *locPtr = world.get_loc(targetUnit->next_x_loc(), targetUnit->next_y_loc());
-	err_when(!locPtr);
+	
+	// Defensive check: ensure location pointer is valid
+	if(!locPtr)
+	{
+		stop2(KEEP_DEFENSE_MODE);
+		return;
+	}
 
 	if(targetMobileType && mobile_type!=UNIT_AIR) // air unit can move to anywhere
 	{
