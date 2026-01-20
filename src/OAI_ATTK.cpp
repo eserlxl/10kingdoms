@@ -503,6 +503,10 @@ int Nation::ai_attack_order_nearby_mobile(int targetXLoc, int targetYLoc, int ta
 
 		locPtr = world.get_loc(xLoc, yLoc);
 
+		// Defensive check: ensure location pointer is valid before dereferencing
+		if(!locPtr)
+			continue;
+
 		if( locPtr->region_id != targetRegionId )
 			continue;
 
@@ -513,10 +517,14 @@ int Nation::ai_attack_order_nearby_mobile(int targetXLoc, int targetYLoc, int ta
 
 		int unitRecno = locPtr->unit_recno(UNIT_LAND);
 
-		if( unit_array.is_deleted(unitRecno) )		// the unit is dying
+		if( unitRecno <= 0 || unit_array.is_deleted(unitRecno) )		// the unit is dying or invalid
 			continue;
 
 		Unit* unitPtr = unit_array[unitRecno];
+		
+		// Defensive check: ensure unit pointer is valid before dereferencing
+		if(!unitPtr)
+			continue;
 
 		//--- if if this is our own military unit ----//
 

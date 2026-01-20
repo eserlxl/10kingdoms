@@ -70,24 +70,46 @@ void Unit::attack_unit(int targetXLoc, int targetYLoc, int xOffset, int yOffset,
 {
 	Location* locPtr = world.get_loc(targetXLoc, targetYLoc);
 
+	// Defensive check: ensure location pointer is valid before dereferencing
+	if(!locPtr)
+	{
+		stop2(KEEP_DEFENSE_MODE);
+		return;
+	}
+
 	//--- AI attacking a nation which its NationRelation::should_attack is 0 ---//
 
 	int targetNationRecno = 0;
 
 	if( locPtr->has_unit(UNIT_LAND) )
 	{
-		Unit* unitPtr = unit_array[ locPtr->unit_recno(UNIT_LAND) ];
-
-		if( unitPtr->unit_id != UNIT_EXPLOSIVE_CART )	// attacking own porcupine is allowed
-			targetNationRecno = unitPtr->nation_recno;
+		short unitRecno = locPtr->unit_recno(UNIT_LAND);
+		if(unitRecno > 0 && !unit_array.is_deleted(unitRecno))
+		{
+			Unit* unitPtr = unit_array[unitRecno];
+			if(unitPtr && unitPtr->unit_id != UNIT_EXPLOSIVE_CART)	// attacking own porcupine is allowed
+				targetNationRecno = unitPtr->nation_recno;
+		}
 	}
 	else if( locPtr->is_firm() )
 	{
-		targetNationRecno = firm_array[locPtr->firm_recno()]->nation_recno;
+		short firmRecno = locPtr->firm_recno();
+		if(firmRecno > 0 && !firm_array.is_deleted(firmRecno))
+		{
+			Firm* firmPtr = firm_array[firmRecno];
+			if(firmPtr)
+				targetNationRecno = firmPtr->nation_recno;
+		}
 	}
 	else if( locPtr->is_town() )
 	{
-		targetNationRecno = town_array[locPtr->town_recno()]->nation_recno;
+		short townRecno = locPtr->town_recno();
+		if(townRecno > 0 && !town_array.is_deleted(townRecno))
+		{
+			Town* townPtr = town_array[townRecno];
+			if(townPtr)
+				targetNationRecno = townPtr->nation_recno;
+		}
 	}
 
 	if( nation_recno && targetNationRecno )
